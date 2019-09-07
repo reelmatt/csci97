@@ -1,0 +1,72 @@
+# create-ledger <name> description <description> seed <seed> 
+create-ledger test description "test ledger" seed "cambridge"
+
+
+# create-account <account-id>
+create-account mary
+create-account bob
+create-account bill
+create-account susan
+
+
+# get-account-balance <account-id>
+# expect 0 balance
+get-account-balance mary
+
+
+#process-transaction <transaction-id> amount <amount> fee <fee> payload <payload> payer <account-address> receiver <account-address>
+
+
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer master receiver mary
+process-transaction 2 amount 1000 fee 10 payload "fund account" payer master receiver bob
+process-transaction 3 amount 1000 fee 10 payload "fund account" payer master receiver bill
+process-transaction 4 amount 1000 fee 10 payload "fund account" payer master receiver susan
+
+
+# expect balance of 1000
+get-account-balance mary
+
+
+process-transaction 4 amount 200 fee 10 payload "september rent" payer susan receiver mary
+
+
+# expect balance of 1000 + 200 => 1200
+get-account-balance mary
+
+
+# expect balance of 1000 - 200 - 10 => 790
+get-account-balance susan
+
+
+# show all account balances for master, mary, bob, bill, and susan
+get-account-balances 
+
+
+process-transaction 5 amount 20 fee 10 payload "uber" payer bob receiver mary
+process-transaction 6 amount 20 fee 10 payload "uber" payer bob receiver mary
+process-transaction 7 amount 20 fee 10 payload "uber" payer bob receiver mary
+process-transaction 8 amount 20 fee 10 payload "uber" payer bob receiver mary
+process-transaction 9 amount 20 fee 10 payload "uber" payer bob receiver mary
+process-transaction 10 amount 20 fee 10 payload "uber" payer bob receiver mary
+process-transaction 11 amount 20 fee 10 payload "uber" payer bob receiver mary
+
+
+# show the details of block #1
+get-block 1
+
+
+#show the details of transaction 10
+get-transaction 10
+
+
+# this transaction should fail since it exceeds the account balance for “bob”.
+process-transaction 12 amount 2000 fee 10 payload "food" payer bob receiver mary
+
+
+# this transaction should fail since the minimum fee is not provided  
+process-transaction 11 amount 20 fee 5 payload "food" payer bob receiver mary
+
+
+# validate the state of the block chain
+Validate
+
