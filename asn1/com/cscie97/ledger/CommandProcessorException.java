@@ -5,16 +5,20 @@ public class CommandProcessorException extends Exception {
     private String reason;
     private int lineNumber;
 
-    public String CommandProcessorException(String command, String reason, Integer lineNumber) {
-        command = command;
-        reason = reason;
-        lineNumber = lineNumber;
+    public CommandProcessorException() {
+        super();
+    }
 
-        System.out.println("command: " + command);
-        System.out.println("reason: " + reason);
-        System.out.println("line number: " + lineNumber);
+    public CommandProcessorException(String message, String reason, int lineNumber) {
+        super(message);
+        this.command = message;
+        this.reason = reason;
+        this.lineNumber = lineNumber;
 
-        return command;
+        System.out.println("command: " + this.command);
+        System.out.println("reason: " + this.reason);
+        System.out.println("line number: " + this.lineNumber);
+
     }
 
 }
