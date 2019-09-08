@@ -14,10 +14,10 @@ public class CommandProcessor {
     private Ledger ledger = null;
 
     public void processCommand(String commandLine) {
-        System.out.println(commandLine);
+        System.out.println("\n" + commandLine);
         List<String> args = parseCommand(commandLine);
 
-        System.out.println("\targs IN COMMAND: " + args.toString());
+//        System.out.println("\targs IN COMMAND: " + args.toString());
         String command = args.remove(0);
         switch (command) {
             case "create-ledger":
@@ -25,6 +25,9 @@ public class CommandProcessor {
                 break;
             case "create-account":
                 createAccount(args);
+                break;
+            case "get-account-balance":
+                getAccountBalance(args);
                 break;
             default:
                 System.out.println("Other command is " + command);
@@ -60,7 +63,7 @@ public class CommandProcessor {
         }
     }
 
-    private static List parseCommand(String command) {
+    private static List<String> parseCommand(String command) {
         List<String> matchList = new ArrayList<String>();
         Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"");
         Matcher regexMatcher = regex.matcher(command);
@@ -78,20 +81,22 @@ public class CommandProcessor {
     }
 
     private void createAccount(List<String> args) {
-        System.out.println("\targs IN COMMAND: " + args.toString());
+//        System.out.println("\targs IN COMMAND: " + args.toString());
 
         if (this.ledger != null) {
             String account = this.ledger.createAccount(args.get(0));
-            System.out.println("Created account... " + account);
+            Account newAccount = new Account(account);
+            System.out.println("Created account... " + newAccount);
         }
         return;
     }
 
     private void createLedger(List<String> args) {
-        System.out.println("\targs IN COMMAND: " + args.toString());
+//        System.out.println("\targs IN COMMAND: " + args.toString());
         this.ledger = new Ledger(args.get(0), args.get(1), args.get(2));
 
-        System.out.print("Created ledger, name is... " + this.ledger.toString());
+        System.out.println("Created ledger, name is... " + this.ledger.toString());
+        System.out.println("The ledger currently has " + this.ledger.numberOfBlocks() + " blocks.");
         return;
     }
 
@@ -99,8 +104,9 @@ public class CommandProcessor {
 
     }
 
-    private void getAccountBalance() {
-
+    private void getAccountBalance(List<String> args) {
+        System.out.println(args.get(0) + " has an account balance of " + this.ledger.getAccountBalance(args.get(0)));
+        return;
     }
 
     private void getBlock() {
