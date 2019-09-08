@@ -14,7 +14,7 @@ public class Account {
         this.balance = startingValue;
     }
 
-    public toString() {
+    public String toString() {
         return this.address + " has a balance of " + this.balance;
     }
 }

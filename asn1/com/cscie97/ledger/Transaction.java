@@ -6,5 +6,8 @@ public class Transaction {
     private Integer fee;
     private String payload;
 
-
+    public Transaction(Integer amount, Integer fee) {
+        this.amount = amount;
+        this.fee = fee;
+    }
 }
