@@ -8,6 +8,7 @@ public class Ledger {
     private String name;
     private String description;
     private String seed;
+    private Integer minimumFee = 10;
 
     // Associations
     private Block genesisBlock;
