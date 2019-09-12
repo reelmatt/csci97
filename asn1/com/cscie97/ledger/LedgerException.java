@@ -12,6 +12,12 @@ public class LedgerException extends Exception {
         super(message);
         this.action = message;
         this.reason = reason;
-        System.out.println("LedgerException....");
+    }
+
+    public String getReason() {
+        return this.reason;
+    }
+    public String toString() {
+        return this.action + ": " + this.reason;
     }
 }
