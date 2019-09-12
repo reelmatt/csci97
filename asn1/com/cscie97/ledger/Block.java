@@ -9,11 +9,16 @@ import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Block - Aggregates groups of transactions in the blockchain.
+ *
+ * @author Matthew Thomas
+ */
 public class Block {
     // Properties
     private Integer blockNumber;
     public String previousHash;
-    private String hash;
+    public String hash;
 
     // Associations
     private List<Transaction> transactionList;
@@ -26,7 +31,13 @@ public class Block {
         this.previousHash = (previousBlock != null) ? previousBlock.previousHash : null;
 
         this.transactionList = new ArrayList<Transaction>();
-        this.accountBalanceMap = new HashMap<String, Account>();
+
+        if (previousBlock != null) {
+            this.accountBalanceMap = previousBlock.getBalanceMap();
+        } else {
+            this.accountBalanceMap = new HashMap<String, Account>();
+        }
+
         this.previousBlock = previousBlock;
         //
 //        Account master = new Account("master");
@@ -34,18 +45,68 @@ public class Block {
 //        this.accountBalanceMap.put("master", master);
     }
 
+    public Map<String, Account> getBalanceMap() {
+        return this.accountBalanceMap;
+    }
 
-    public void addAccount(String accountId, Account account) {
-        this.accountBalanceMap.put(accountId, account);
+    public void addAccount(Account account) {
+//        System.out.println("BLOCK: addAccount()" + account.getId());
+        this.accountBalanceMap.put(account.getId(), account);
         return;
     }
 
     public Account getAccount(String address) {
+//        System.out.println("BLOCK: get account " + address);
+//        System.out.println("Map size() is " + this.accountBalanceMap.size());
         return this.accountBalanceMap.get(address);
     }
 
+    public int addValidTransaction(Transaction transaction) {
+        // Add valid transaction to list
+        this.transactionList.add(transaction);
+
+//        System.out.println("BLOCK: added transaction " + transaction.getTransactionId() + " to block " + this.blockNumber);
+        // Check if we've reached 10 transactions for the block
+        if (this.transactionList.size() == 10 ) {
+            System.out.println("BLOCK: we've reached 10 transactions");
+            return 10;
+        }
+
+        return this.transactionList.size();
+    }
+
+    public Transaction getTransaction(String transactionId) {
+//        System.out.println("BLOCK: in getTransaction()");
+        for (Transaction transaction : transactionList) {
+//            System.out.print("BLOCK: transaction = " + transaction.getTransactionId());
+//            System.out.print("\ttransactionId = " + transactionId + "\n");
+            if ( transactionId.equals(transaction.getTransactionId()) ) {
+//                System.out.println("BLOCK: transaction found...");
+                return transaction;
+            }
+        }
+//        System.out.println("BLOCK: NO TRANSACTION FOUND.");
+        return null;
+    }
+
     public String toString() {
-        return "Block " + this.blockNumber + " has a hash of " + this.hash;
+        String block = "---------------------------\n";
+        block +=       "Block #" + this.blockNumber + "\n";
+        block +=       "previousHash: " + this.previousHash + "\n";
+        block +=       "hash: " + this.hash + "\n";
+        block +=       "---------------------------\n";
+
+        for (Transaction transaction : transactionList) {
+            block += "Transaction #" + transaction.getTransactionId() + "\n";
+        }
+
+        for( Map.Entry<String, Account> entry: this.accountBalanceMap.entrySet() ) {
+            block += "Account " + entry.getKey() + " balance: " + entry.getValue().getBalance() + "\n";
+        }
+
+        block +=       "---------------------------\n";
+        return block;
+//        return "Block " + this.blockNumber + " has a hash of " + this.hash;
     }
 
     // with help from StackOverflow
