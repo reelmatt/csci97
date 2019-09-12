@@ -7,14 +7,28 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-// Regex pattern and matching found in this StackOverflow post
-// https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double?rq=1
+/**
+ * CommandProcessor - Utility class to feed Ledger a set of operations.
+ *
+ * Citations:
+ *
+ * Regex pattern and matching found in this StackOverflow post
+ * https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double?rq=1
+ */
 public class CommandProcessor {
-
+    /** Ledger to perform actions on. */
     private Ledger ledger = null;
 
-    public void processCommand(String commandLine) {
-        System.out.println("\n" + commandLine);
+    /**
+     * Process a single command.
+     *
+     * Output of the command is formatted and displayed to stdout.
+     *
+     * @param commandLine
+     * @throws CommandProcessorException
+     */
+    public void processCommand(String commandLine) throws CommandProcessorException {
+
         List<String> args = parseCommand(commandLine);
 
 //        System.out.println("\targs IN COMMAND: " + args.toString());
@@ -27,7 +41,11 @@ public class CommandProcessor {
                 createAccount(args);
                 break;
             case "get-account-balance":
+            case "get-account-balances":
                 getAccountBalance(args);
+                break;
+            case "get-block":
+                getBlock(args);
                 break;
             case "process-transaction":
                 processTransaction(args);
@@ -39,30 +57,41 @@ public class CommandProcessor {
         return;
     }
 
-    public void processCommandFile(String file) throws CommandProcessorException {
-        System.out.println("file is " + file);
+    /**
+     * Process a set of commands provided within the given 'commandFile'.
+     *
+     * @param file
+     * @throws CommandProcessorException
+     */
+    public void processCommandFile(String commandFile) throws CommandProcessorException {
         String currentLine = "";
+        Integer currentLineNumber = 0;
 
         try {
-            FileReader testScript = new FileReader(file);
+            FileReader testScript = new FileReader(commandFile);
             BufferedReader reader = new BufferedReader(testScript);
 
             while ( (currentLine = reader.readLine()) != null ) {
+                currentLineNumber++;
+
                 if (currentLine.length() > 0 && currentLine.charAt(0) != '#') {
                      processCommand(currentLine);
+                } else {
+                    System.out.println();
                 }
             }
 
-            System.out.println("Reached EOF, closing file....");
             reader.close();
         } catch (FileNotFoundException e) {
-            System.out.println("file not found");
-            System.out.println(e);
-            throw new CommandProcessorException(currentLine, "file not found", 23);
+            System.err.println("file not found");
+            System.err.println(e);
+            throw new CommandProcessorException(currentLine, "file not found", currentLineNumber);
         } catch (IOException e) {
-            System.out.println("oops, IO exception");
-            System.out.println(e);
-            throw new CommandProcessorException(currentLine, "file not found", 23);
+            System.err.println("oops, IO exception");
+            System.err.println(e);
+            throw new CommandProcessorException(currentLine, "IO exception", currentLineNumber);
+        } catch (CommandProcessorException e) {
+            System.err.println(e.toString());
         }
     }
 
@@ -84,61 +113,114 @@ public class CommandProcessor {
     }
 
     private void createAccount(List<String> args) {
-//        System.out.println("\targs IN COMMAND: " + args.toString());
 
         if (this.ledger != null) {
             try {
                 Account account = this.ledger.createAccount(args.get(0));
-
+                System.out.println("Created account '" + account.getId() + "'.");
             } catch (LedgerException e) {
-
+                System.err.println(e.toString());
             }
-//            Account newAccount = new Account(account);
-//            System.out.println("Created account... " + newAccount);
         }
         return;
     }
 
     private void createLedger(List<String> args) {
-//        System.out.println("\targs IN COMMAND: " + args.toString());
-        this.ledger = new Ledger(args.get(0), args.get(1), args.get(2));
+        try {
+            this.ledger = new Ledger(args.get(0), args.get(1), args.get(2));
+        } catch (LedgerException e) {
+            System.err.println(e.toString());
+        }
 
-        System.out.println("Created ledger, name is... " + this.ledger.toString());
-        System.out.println("The ledger currently has " + this.ledger.numberOfBlocks() + " blocks.");
+        System.out.println("Created ledger '" + args.get(0) + "'.");
         return;
     }
 
     private void processTransaction(List<String> args) {
-        Account payer = this.ledger.getAccount(args.get(8));
-        Account receiver = this.ledger.getAccount(args.get(10));
+        String id = null;
+        String payload;
+        Account payer, receiver;
 
+        try {
+            // If the transaction is null, or doesn't exist, allowed to make a new one
+            if (this.ledger.getTransaction(args.get(0)) == null) {
+                id = args.get(0);
+            } else {
+                throw new LedgerException("process transaction", "Transaction already exists.");
+            }
+
+            payer = this.ledger.getAccount(args.get(8));
+            receiver = this.ledger.getAccount(args.get(10));
+        } catch (LedgerException e) {
+            System.err.println(e.toString());
+            return;
+        }
+
+        // Create the transaction
         Transaction newTransaction = new Transaction(
-                args.get(0),                    // id
+                id,                             // id
                 Integer.parseInt(args.get(2)),  // amount
                 Integer.parseInt(args.get(4)),  // fee
                 args.get(6),                    // payload
-                payer,
-                receiver
+                payer,                          // payer Account
+                receiver                        // receiver's Account
         );
-        System.out.println("processTransaction -- " + newTransaction.toString());
 
+        // Try to process it, adding to in-progress Block
+        try {
+            String transactionStatus = this.ledger.processTransaction(newTransaction);
+            System.out.println("Processed transaction #" + transactionStatus);
+        } catch (LedgerException e) {
+            System.err.println(e.toString());
+        }
 
-        String transactionStatus = this.ledger.processTransaction(newTransaction);
-        System.out.println("processTransaction -- " + transactionStatus);
 
         return;
     }
 
     private void getAccountBalance(List<String> args) {
-        System.out.println(args.get(0) + " has an account balance of " + this.ledger.getAccountBalance(args.get(0)));
+        try {
+            // No arguments, get all balances
+            if (args.size() == 0) {
+                this.ledger.getAccountBalances();
+            } else {
+                System.out.println(args.get(0) + " has an account balance of " + this.ledger.getAccountBalance(args.get(0)));
+            }
+        } catch (LedgerException e) {
+            System.err.println(e.toString());
+        }
+
         return;
     }
 
-    private void getBlock() {
+    private void getBlock(List<String> args) throws CommandProcessorException {
+        Block block;
 
+        if ( (block = this.ledger.getBlock(Integer.parseInt(args.get(0)))) == null ) {
+            throw new CommandProcessorException("get block", "Block " + args.get(0) + " does not exist.");
+        }
+//        try {
+//            block = this.ledger.getBlock(Integer.parseInt(args.get(0)));
+//        } catch (LedgerException e) {
+//
+//        }
+        System.out.print(block);
+//        System.out.println("Retrieved block #" + args.get(0));
+        return;
     }
 
-    private void getTransaction() {
+    private void getTransaction(List<String> args) throws CommandProcessorException {
+        Transaction transaction;
+
+        try {
+            if ( (transaction = this.ledger.getTransaction(args.get(0))) == null ) {
+                throw new CommandProcessorException();
+            }
+
+            System.out.println("Retrieved transaction #" + args.get(0));
+        } catch (LedgerException e) {
+
+        }
 
     }
 

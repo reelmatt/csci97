@@ -3,22 +3,31 @@ package com.cscie97.ledger;
 public class CommandProcessorException extends Exception {
     private String command;
     private String reason;
-    private int lineNumber;
+    private int lineNumber = -1;
 
     public CommandProcessorException() {
         super();
     }
 
-    public CommandProcessorException(String message, String reason, int lineNumber) {
-        super(message);
-        this.command = message;
+    public CommandProcessorException(String command, String reason) {
+        super(command);
+        this.command = command;
         this.reason = reason;
-        this.lineNumber = lineNumber;
-
-        System.out.println("command: " + this.command);
-        System.out.println("reason: " + this.reason);
-        System.out.println("line number: " + this.lineNumber);
-
     }
 
+    public CommandProcessorException(String command, String reason, int lineNumber) {
+        super(command);
+        this.command = command;
+        this.reason = reason;
+        this.lineNumber = lineNumber;
+    }
+    public String toString() {
+        String error = this.command + ": " + this.reason;
+
+        if (this.lineNumber != -1) {
+            String line = " (line " + this.lineNumber + ").";
+            error += line;
+        }
+        return error;
+    }
 }
