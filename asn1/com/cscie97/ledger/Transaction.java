@@ -3,13 +3,16 @@ package com.cscie97.ledger;
 public class Transaction {
     // Properties
     private String transactionId;
-    private int amount;
-    private int fee;
+    public int amount;
+    public int fee;
     private String payload;
 
+    // Constants
+    private static final Integer MIN_FEE = 10;
+
     // Associations
-    private Account payer;
-    private Account receiver;
+    public Account payer;
+    public Account receiver;
 
     public Transaction(String id, int amount, int fee, String payload, Account payer, Account receiver) {
         this.transactionId = id;
@@ -20,7 +23,26 @@ public class Transaction {
         this.receiver = receiver;
     }
 
+    public String getTransactionId() {
+        return this.transactionId;
+    }
 
+
+
+    public Boolean validate() {
+        int withdrawal = this.amount + this.fee;
+
+        if (payer.getBalance() < withdrawal) {
+            // Payer does not have enough funds
+        } else if (this.fee < MIN_FEE) {
+            // The fee is less than the minimum
+        } else {
+            // It is a valid transaction
+            return true;
+        }
+
+        return false;
+    }
 
     public String toString() {
         return "Transaction " + this.transactionId + " for amount " + this.amount + " and payload of " + this.payload;
