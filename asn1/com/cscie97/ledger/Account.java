@@ -15,6 +15,20 @@ public class Account {
 
     }
 
+    public String getId() {
+        return this.address;
+    }
+
+    public void withdraw(int amount) {
+        this.balance -= amount;
+        return;
+    }
+
+    public void deposit(int amount) {
+        this.balance += amount;
+        return;
+    }
+
     public Integer getBalance() {
         return this.balance;
     }
