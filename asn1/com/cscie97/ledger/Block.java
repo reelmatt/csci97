@@ -3,6 +3,8 @@ package com.cscie97.ledger;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Base64;
+import java.util.List;
+import java.util.ArrayList;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -10,33 +12,36 @@ import java.security.NoSuchAlgorithmException;
 public class Block {
     // Properties
     private Integer blockNumber;
-    private String previousHash;
+    public String previousHash;
     private String hash;
 
     // Associations
-    private Transaction transactionList;
+    private List<Transaction> transactionList;
     private Map<String, Account> accountBalanceMap;
     private Block previousBlock;
 
-    public Block (int number) {
+
+    public Block (int number, Block previousBlock) {
         this.blockNumber = number;
+        this.previousHash = (previousBlock != null) ? previousBlock.previousHash : null;
+
+        this.transactionList = new ArrayList<Transaction>();
         this.accountBalanceMap = new HashMap<String, Account>();
-
-        Account master = new Account("master", Integer.MAX_VALUE);
-
-        this.accountBalanceMap.put("master", master);
-        this.hash = computeHash();
+        this.previousBlock = previousBlock;
+        //
+//        Account master = new Account("master");
+//
+//        this.accountBalanceMap.put("master", master);
     }
 
-    public Block (int number, String previousHash) {
-        this.blockNumber = number;
-        this.previousHash = previousHash;
-        this.hash = computeHash();
-    }
 
+    public void addAccount(String accountId, Account account) {
+        this.accountBalanceMap.put(accountId, account);
+        return;
+    }
 
     public Account getAccount(String address) {
-        return this.accountBalanceMap.get("master");
+        return this.accountBalanceMap.get(address);
     }
 
     public String toString() {
