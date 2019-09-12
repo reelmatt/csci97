@@ -6,12 +6,17 @@ public class Account {
 
     public Account (String accountId) {
         this.address = accountId;
-        this.balance = 0;
+
+        if (accountId == "master") {
+            this.balance = Integer.MAX_VALUE;
+        } else {
+            this.balance = 0;
+        }
+
     }
 
-    public Account (String accountId, Integer startingValue) {
-        this.address = accountId;
-        this.balance = startingValue;
+    public Integer getBalance() {
+        return this.balance;
     }
 
     public String toString() {
