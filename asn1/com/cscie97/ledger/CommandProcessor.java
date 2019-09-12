@@ -19,7 +19,7 @@ public class CommandProcessor {
 
 //        System.out.println("\targs IN COMMAND: " + args.toString());
         String command = args.remove(0);
-        switch (command) {
+        switch (command.toLowerCase()) {
             case "create-ledger":
                 createLedger(args);
                 break;
@@ -28,6 +28,9 @@ public class CommandProcessor {
                 break;
             case "get-account-balance":
                 getAccountBalance(args);
+                break;
+            case "process-transaction":
+                processTransaction(args);
                 break;
             default:
                 System.out.println("Other command is " + command);
@@ -84,9 +87,14 @@ public class CommandProcessor {
 //        System.out.println("\targs IN COMMAND: " + args.toString());
 
         if (this.ledger != null) {
-            String account = this.ledger.createAccount(args.get(0));
-            Account newAccount = new Account(account);
-            System.out.println("Created account... " + newAccount);
+            try {
+                Account account = this.ledger.createAccount(args.get(0));
+
+            } catch (LedgerException e) {
+
+            }
+//            Account newAccount = new Account(account);
+//            System.out.println("Created account... " + newAccount);
         }
         return;
     }
@@ -100,8 +108,25 @@ public class CommandProcessor {
         return;
     }
 
-    private void processTransaction() {
+    private void processTransaction(List<String> args) {
+        Account payer = this.ledger.getAccount(args.get(8));
+        Account receiver = this.ledger.getAccount(args.get(10));
 
+        Transaction newTransaction = new Transaction(
+                args.get(0),                    // id
+                Integer.parseInt(args.get(2)),  // amount
+                Integer.parseInt(args.get(4)),  // fee
+                args.get(6),                    // payload
+                payer,
+                receiver
+        );
+        System.out.println("processTransaction -- " + newTransaction.toString());
+
+
+        String transactionStatus = this.ledger.processTransaction(newTransaction);
+        System.out.println("processTransaction -- " + transactionStatus);
+
+        return;
     }
 
     private void getAccountBalance(List<String> args) {
