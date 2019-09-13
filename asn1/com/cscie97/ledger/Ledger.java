@@ -129,75 +129,33 @@ public class Ledger {
      * @return
      */
     public String processTransaction(Transaction transaction) throws LedgerException {
+        // Get total withdrawal amount
+        int withdrawal = transaction.getAmount() + transaction.getFee();
 
-        if ( transaction.validate() ) {
-
-            transaction.payer.withdraw(transaction.amount + transaction.fee);
-            transaction.receiver.deposit(transaction.amount);
-
-            int index = this.accountList.indexOf("master");
-
-            Account master = this.currentBlock.getAccount("master");
-            master.deposit(transaction.fee);
-
-//            this.accountList.get(index).deposit(transaction.fee);
-        } else {
-            throw new LedgerException("process transaction", "Invalid transaction.");
+        // Validate transaction
+        if ( transaction.payer.getBalance() < withdrawal ) {
+            throw new LedgerException("process transaction", "Insufficient balance.");
+        } else if ( transaction.fee < transaction.getMinFee() ) {
+            throw new LedgerException("process transaction", "Minimum fee not provided.");
         }
 
+        // Otherwise, a valid transaction
+        // Transfer funds
+        transaction.payer.withdraw(transaction.amount + transaction.fee);
+        transaction.receiver.deposit(transaction.amount);
 
+        Account master = this.currentBlock.getAccount("master");
+        master.deposit(transaction.fee);
+
+        // Add completed transaction to block
         int numberOfTransactions = this.currentBlock.addTransaction(transaction);
-//        System.out.println("NUM TRANSACTIONS: " + numberOfTransactions);
 
         // When transaction limit reached, commit block and create new one
         if (numberOfTransactions == TRANSACTIONS_PER_BLOCK) {
-//            System.out.println("Time to duplicate block");
-            ByteArrayOutputStream bos = null;
 
-            try {
-                // Create byte array output stream and use it to create object output stream
-                bos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = new ObjectOutputStream(bos);
+            ByteArrayOutputStream bos = serializeObject(this.currentBlock);
+            Block clone = (Block) deserializeObject(bos);
 
-                oos.writeObject(this.currentBlock);		// serialize
-                oos.flush();
-
-//                System.out.println("SERIALIZE COMPLETE");
-
-
-            } catch (IOException e) {
-//                System.out.println("serialize io");
-//                System.out.println(e);
-            }
-
-            Block clone = null;
-
-            try {
-                // toByteArray creates & returns a copy of stream’s byte array
-                byte[] bytes = bos.toByteArray();
-
-                // Create byte array input stream and use it to create object input stream
-                ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-
-                ObjectInputStream ois = new ObjectInputStream(bis);
-                clone = (Block) ois.readObject();		// deserialize & typecast
-
-
-            } catch (IOException e) {
-//                System.out.println("deserialize io");
-            } catch (ClassNotFoundException e) {
-//                System.out.println("deserialize class not found");
-            }
-
-
-
-//             System.out.println("\n\nCLONE");
-//            System.out.println(clone);
-
-//            Block oldBlock = this.currentBlock;
-//            ByteArrayOutputStream b = serializeObject(this.currentBlock);
-//            Block oldBlock = (Block) deserializeObject(b);
-//            Block oldBlock = (Block) serializeObject(this.currentBlock, Block);
 
             this.blockMap.put((this.blockMap.size() + 1), this.currentBlock);
             this.currentBlock = clone;
@@ -211,31 +169,44 @@ public class Ledger {
 
     private ByteArrayOutputStream serializeObject(Object object) {
         System.out.println("IN SERIALIZE, object is " + object);
+        ByteArrayOutputStream bos = null;
 
+        try {
+            // Create byte array output stream and use it to create object output stream
+            bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
 
-
-
-        return null;
+            oos.writeObject(object);		// serialize
+            oos.flush();
+        } catch (IOException e) {
+//                System.out.println("serialize io");
+//                System.out.println(e);
+        }
+        return bos;
     }
 
     private Object deserializeObject(ByteArrayOutputStream b) {
-        Object object2 = null;
+        Object clone = null;
+
         try {
-            ByteArrayInputStream bais = new ByteArrayInputStream(b.toByteArray());
-            ObjectInputStream ois = new ObjectInputStream(bais);
+            // toByteArray creates & returns a copy of stream’s byte array
+            byte[] bytes = b.toByteArray();
 
-            object2 = ois.readObject();
+            // Create byte array input stream and use it to create object input stream
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
 
-            ois.close();
-            bais.close();
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            clone = ois.readObject();		// deserialize & typecast
 
 
         } catch (IOException e) {
-            System.out.println("deserialize io");
+//                System.out.println("deserialize io");
         } catch (ClassNotFoundException e) {
-            System.out.println("deserialize class not found");
+//                System.out.println("deserialize class not found");
         }
-        return object2;
+
+        return clone;
+
     }
 
     /**
@@ -249,8 +220,10 @@ public class Ledger {
      * @throws LedgerException  If the account does not exist.
      */
     public Account getAccount(String accountId) throws LedgerException {
-//        Account account = this.accountList.get(accountId);
+        // Account comes from the current block
         Account account = this.currentBlock.getAccount(accountId);
+
+        // If account does not exist, throw exception
         if (account == null) {
             throw new LedgerException(
                 "get account",
