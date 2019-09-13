@@ -5,9 +5,23 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
+
+// For serialziation
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 
 /**
  * Ledger - Manages the Blocks of the blockchain.
+ *
+ * The Ledger manages the transactions, accounts, and blocks that make up the
+ * Blockchain. Users submit transactions which, once validated, are added to a
+ * block. As Blocks fill up with Transactions, Account balances are updated,
+ * and the Blocks are added to the Ledger. Once committed to the Ledger, a
+ * Block, and the contained Transactions and Account balances are immutable.
  *
  * @author Matthew Thomas
  */
@@ -28,8 +42,8 @@ public class Ledger {
     private static final int TRANSACTIONS_PER_BLOCK = 10;
 
     /** List of accounts managed by the Ledger. */
-    private Map<String, Account> accountList;
-    // private List<Account> accountList;
+//    private Map<String, Account> accountList;
+     private List<String> accountList;
 
     /** Initial Block of the blockchain. */
     private Block genesisBlock;
@@ -57,7 +71,8 @@ public class Ledger {
         this.seed = seed;
 
         // Initialize internal trackers
-        this.accountList = new HashMap<String, Account>();
+//        this.accountList = new HashMap<String, Account>();
+        this.accountList = new ArrayList<String>();
         this.blockMap = new LinkedHashMap<Integer, Block>();
 
         // Create genesisBlock and set it as the currentBlock
@@ -66,7 +81,7 @@ public class Ledger {
 
         // Try creating master account
         try {
-            this.currentBlock.addAccount(createAccount("master"));
+            Account master = createAccount("master");
         } catch (LedgerException e) {
             throw new LedgerException("initialize ledger", e.getReason());
         }
@@ -78,13 +93,14 @@ public class Ledger {
      * Assigns a unique identifier and sets the balance to 0. If it is the
      * master account, the balance is set to Integer.MAX_VALUE.
      *
-     * @param   accountId   Name of the account.
-     * @return              The account identifier assigned by the Ledger.
-     * @throws LedgerException
+     * @param   accountId       Name of the account.
+     * @return                  The account identifier assigned by the Ledger.
+     * @throws LedgerException  If an account already exists with the given
+     *                          'accountId'.
      */
     public Account createAccount(String accountId) throws LedgerException {
         // Check if there is already an account 'accountId'
-        if ( this.accountList.containsKey(accountId) ) {
+        if ( this.accountList.contains(accountId) ) {
             throw new LedgerException(
                 "create account",
                 "The account '" + accountId + "' already exists."
@@ -95,7 +111,7 @@ public class Ledger {
         Account newAccount = new Account(accountId);
 
         // Update Ledger and Block lists with new account
-        this.accountList.put(accountId, newAccount);
+        this.accountList.add(accountId);
         this.currentBlock.addAccount(newAccount);
 
         return newAccount;
@@ -113,38 +129,128 @@ public class Ledger {
      * @return
      */
     public String processTransaction(Transaction transaction) throws LedgerException {
-//        System.out.println("LEDGER: " + transaction.toString());
 
         if ( transaction.validate() ) {
-//            System.out.println("LEDGER: valid transaction. transferring funds");
-            transaction.payer.withdraw(transaction.amount);
+
+            transaction.payer.withdraw(transaction.amount + transaction.fee);
             transaction.receiver.deposit(transaction.amount);
-            this.accountList.get("master").deposit(transaction.fee);
+
+            int index = this.accountList.indexOf("master");
+
+            Account master = this.currentBlock.getAccount("master");
+            master.deposit(transaction.fee);
+
+//            this.accountList.get(index).deposit(transaction.fee);
         } else {
             throw new LedgerException("process transaction", "Invalid transaction.");
         }
 
 
         int numberOfTransactions = this.currentBlock.addValidTransaction(transaction);
+//        System.out.println("NUM TRANSACTIONS: " + numberOfTransactions);
 
         // When transaction limit reached, commit block and create new one
         if (numberOfTransactions == TRANSACTIONS_PER_BLOCK) {
+//            System.out.println("Time to duplicate block");
+            ByteArrayOutputStream bos = null;
+
+            try {
+                // Create byte array output stream and use it to create object output stream
+                bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+                oos.writeObject(this.currentBlock);		// serialize
+                oos.flush();
+
+//                System.out.println("SERIALIZE COMPLETE");
+
+
+            } catch (IOException e) {
+//                System.out.println("serialize io");
+//                System.out.println(e);
+            }
+
+            Block clone = null;
+
+            try {
+                // toByteArray creates & returns a copy of stream’s byte array
+                byte[] bytes = bos.toByteArray();
+
+                // Create byte array input stream and use it to create object input stream
+                ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+
+                ObjectInputStream ois = new ObjectInputStream(bis);
+                clone = (Block) ois.readObject();		// deserialize & typecast
+
+
+            } catch (IOException e) {
+//                System.out.println("deserialize io");
+            } catch (ClassNotFoundException e) {
+//                System.out.println("deserialize class not found");
+            }
+
+
+
+//             System.out.println("\n\nCLONE");
+//            System.out.println(clone);
+
+//            Block oldBlock = this.currentBlock;
+//            ByteArrayOutputStream b = serializeObject(this.currentBlock);
+//            Block oldBlock = (Block) deserializeObject(b);
+//            Block oldBlock = (Block) serializeObject(this.currentBlock, Block);
+
             this.blockMap.put((this.blockMap.size() + 1), this.currentBlock);
-            Block oldBlock = this.currentBlock;
-            this.currentBlock = new Block((this.blockMap.size() + 1), oldBlock);
+            this.currentBlock = clone;
+            this.currentBlock.clearTransactions();
+
+//            this.currentBlock = new Block((this.blockMap.size() + 1), clone);
         }
 
         return transaction.getTransactionId();
     }
 
+    private ByteArrayOutputStream serializeObject(Object object) {
+        System.out.println("IN SERIALIZE, object is " + object);
+
+
+
+
+        return null;
+    }
+
+    private Object deserializeObject(ByteArrayOutputStream b) {
+        Object object2 = null;
+        try {
+            ByteArrayInputStream bais = new ByteArrayInputStream(b.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+
+            object2 = ois.readObject();
+
+            ois.close();
+            bais.close();
+
+
+        } catch (IOException e) {
+            System.out.println("deserialize io");
+        } catch (ClassNotFoundException e) {
+            System.out.println("deserialize class not found");
+        }
+        return object2;
+    }
+
     /**
+     * Internal Ledger Service method to obtain the most up-to-date Account
+     * object. This differs from behavior in public methods getAccountBalance()
+     * and getAccountBalances() which return information from the last completed
+     * block.
      *
-     * @param accountId
-     * @return
+     * @param accountId         The account to retrieve.
+     * @return                  Account with address matching 'accountId'.
+     * @throws LedgerException  If the account does not exist.
      */
     public Account getAccount(String accountId) throws LedgerException {
-        Account account = this.accountList.get(accountId);
-
+//        Account account = this.accountList.get(accountId);
+        Account account = this.currentBlock.getAccount(accountId);
         if (account == null) {
             throw new LedgerException(
                 "get account",
@@ -160,75 +266,107 @@ public class Ledger {
      * the most recent completed block. If the Account does not exist, throw a
      * LedgerException.
      *
-     * @param address
-     * @return
+     * @param address           Address of the account to lookup.
+     * @return                  Current balance of the account, in the last
+     *                          committed block.
+     * @throws LedgerException  If no blocks have been committed yet, or th
+     *                          account does not exist.
      */
     public int getAccountBalance(String address) throws LedgerException {
-        Account account;
         Block lastBlock;
-
+        Account account;
         int blockNumber = blockMap.size();
-        System.out.println("blockMap.size() is " + blockNumber);
 
+        // If getBlock() returns null, no blocks have been committed to lookup account in
         if ( (lastBlock = getBlock(blockNumber)) == null) {
             throw new LedgerException("get account balance", "No blocks have been commited yet.");
         }
-//        System.out.println("block.toString() is " + lastBlock.toString());
 
+        // If the account does not exist, throw an Exception
         if ( (account = lastBlock.getAccount(address)) == null ) {
             throw new LedgerException("get account balance", "Account does not exist.");
         }
 
-//        System.out.println("account.toString() is " + account.toString());
         return account.getBalance();
     }
 
     /**
      *
      * @return
+     * @throws LedgerException  If no blocks have been committed yet.
      */
-    public Map<String, Account> getAccountBalances() throws LedgerException {
-//        Map<String, Integer> test = new LinkedHashMap<String, Integer>();
-//        return test;
-        if (this.blockMap.size() == 0) {
+    public Map<String, Integer> getAccountBalances() throws LedgerException {
+        int blockNumber = this.blockMap.size();
+
+        if (blockNumber == 0) {
             throw new LedgerException("get account balances", "No blocks have been committed yet.");
         }
-        return this.accountList;
+
+//        Block lastBlock = getBlock(blockNumber);
+        Map<String, Account> accountMap = getBlock(blockNumber).getBalanceMap();
+        Map<String, Integer> accountBalancesMap = new HashMap<String, Integer>();
+
+        // Iterate through accounts to retrieve their current balances.
+        for (Map.Entry<String, Account> entry : accountMap.entrySet() ) {
+            accountBalancesMap.put(entry.getKey(), entry.getValue().getBalance());
+        }
+
+        return accountBalancesMap;
+    }
+
+    public Iterator<Map.Entry<Integer, Block>> listBlocks () {
+        return this.blockMap.entrySet().iterator();
     }
 
     /**
-     *
-     * @param blockNumber
-     * @return Block on success, otherwise null.
+     * Retrieve a Block committed to the blockchain specified by 'blockNumber'.
+     * @param   blockNumber The Block to look for.
+     * @return              Block on success, otherwise null.
      */
     public Block getBlock(int blockNumber) {
         return this.blockMap.get(blockNumber);
     }
 
     /**
-     * Return the Transaction for the given transactionId.
+     * Return the Transaction for the given transactionId. Checks all commited
+     * Blocks.
      *
      * @param transactionId Transaction to search for.
      * @return Transaction, if it exists. Otherwise, null.
      */
     public Transaction getTransaction(String transactionId) throws LedgerException {
-//        System.out.println("LEDGER: in getTransaction()");
-        for( Map.Entry<Integer, Block> entry: this.blockMap.entrySet() ) {
-            Block block = entry.getValue();
-//            System.out.println("checking block - " + block);
-            Transaction transaction = block.getTransaction(transactionId);
+
+
+        Iterator<Map.Entry<Integer, Block>> blocks = listBlocks();
+
+        // Check committed Blocks
+        while( blocks.hasNext() ) {
+            Map.Entry<Integer, Block> entry = blocks.next();
+            Transaction transaction = entry.getValue().getTransaction(transactionId);
+
             if (transaction != null) {
                 return transaction;
             }
         }
 
-        Transaction transaction = this.currentBlock.getTransaction(transactionId);
-        if (transaction != null) {
-            return transaction;
-        }
+        throw new LedgerException("get transaction", "Transaction " + transactionId + " does not exist.");
 
-//        System.out.println("LEDGER: NO TRANSACTION FOUND.");
-        return null;
+//        for( Map.Entry<Integer, Block> entry: this.blockMap.entrySet() ) {
+//            Block block = entry.getValue();
+
+//            Transaction transaction = block.getTransaction(transactionId);
+//            if (transaction != null) {
+//                return transaction;
+//            }
+//        }
+
+        // Check currently in-progress block -- NOT SUPPOSED TO BE ALLOWED!!
+//        Transaction transaction = this.currentBlock.getTransaction(transactionId);
+//        if (transaction != null) {
+//            return transaction;
+//        }
+
+//        return null;
     }
 
     public void validate() {
