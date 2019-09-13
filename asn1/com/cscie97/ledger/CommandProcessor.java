@@ -191,76 +191,41 @@ public class CommandProcessor {
     /**
      * Process a new transaction.
      *
+     * @TODO Need more argument error checking.
+     *
      * @param args Command line arguments.
      */
     private void processTransaction(List<String> args) throws CommandProcessorException {
-        String id = null;
-        String payload;
+        String id = args.get(0);
+        String payload = args.get(6);
+        int amount = Integer.parseInt(args.get(2));
+        int fee = Integer.parseInt(args.get(4));
         Account payer = null;
         Account receiver = null;
 
         // If validation == true, ID is already in use. Throw exception.
-        if (this.ledger.validateTransactionId(args.get(0))) {
+        if ( this.ledger.validateTransactionId(id) ) {
             throw new CommandProcessorException("process transaction", "Transaction ID already used.");
-        }
-
-        // Check payer account
-//        if ( this.ledger.validateAccountId(args.get(8)) ) {
-//
-//        }
-//
-//        // Check receiver account
-//        if ( this.ledger.validateAccountId(args.get(10)) ) {
-//
-//        }
-
-        // Check if transaction already exists
-        try {
-            Transaction transaction = this.ledger.getTransaction(args.get(0));
-
-            // If the transaction is null, or doesn't exist, allowed to make a new one
-//            if (this.ledger.getTransaction(args.get(0)) == null) {
-//                id = args.get(0);
-//            } else {
-//                throw new LedgerException("process transaction", "Transaction already exists.");
-//            }
-//
-//            payer = this.ledger.getAccount(args.get(8));
-//            receiver = this.ledger.getAccount(args.get(10));
-        } catch (LedgerException e) {
-//            System.err.println("HELLO: " + e);
-
         }
 
         // retrieve accounts
         try {
-            id = args.get(0);
             payer = this.ledger.getAccount(args.get(8));
             receiver = this.ledger.getAccount(args.get(10));
-            //            System.err.println(e.toString());
-            //            return;
-
         } catch (LedgerException ex) {
             System.err.println(ex);
             return;
         }
 
         // Create the transaction
-        Transaction newTransaction = new Transaction(
-                id,                             // id
-                Integer.parseInt(args.get(2)),  // amount
-                Integer.parseInt(args.get(4)),  // fee
-                args.get(6),                    // payload
-                payer,                          // payer Account
-                receiver                        // receiver's Account
-        );
+        Transaction newTransaction = new Transaction(id, amount, fee, payload, payer, receiver);
 
         // Try to process it, adding to in-progress Block
         try {
             String transactionStatus = this.ledger.processTransaction(newTransaction);
             System.out.println("Processed transaction #" + transactionStatus);
         } catch (LedgerException e) {
-            System.err.println(e.toString());
+            System.err.println(e);
         }
 
         return;
