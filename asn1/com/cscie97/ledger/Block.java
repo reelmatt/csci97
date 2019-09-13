@@ -9,23 +9,43 @@ import java.util.ArrayList;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import java.io.Serializable;
 /**
  * Block - Aggregates groups of transactions in the blockchain.
  *
+ * Transactions are added to blocks in the order that they are received. Prior
+ * to adding a transaction to a block, the transaction must be validated.
+ * The block contains an account balance map that reflects the balance of all
+ * accounts after all the transactions within the block have been applied. The
+ * block contains the hash of the previous block and the hash of itself.
+ *
  * @author Matthew Thomas
  */
-public class Block {
-    // Properties
+public class Block implements Serializable {
+    /** A sequentially incrementing block number assigned to the block. */
     private Integer blockNumber;
+
+    /** The hash of the previous block in the blockchain. */
     public String previousHash;
+
+    /** The hash of the current block, based on all properties and associations. */
     public String hash;
 
-    // Associations
+    /** An ordered list of Transactions that are included in the current block. */
     private List<Transaction> transactionList;
+
+    /** Full set of accounts managed by the Ledger. */
     private Map<String, Account> accountBalanceMap;
+
+    /** References the preceding Block in the blockchain. */
     private Block previousBlock;
 
-
+    /**
+     * Block Constructor
+     *
+     * @param number        Block number (ID)
+     * @param previousBlock Contents of previousBlock (for hashing)
+     */
     public Block (int number, Block previousBlock) {
         this.blockNumber = number;
         this.previousHash = (previousBlock != null) ? previousBlock.previousHash : null;
@@ -39,28 +59,47 @@ public class Block {
         }
 
         this.previousBlock = previousBlock;
-        //
-//        Account master = new Account("master");
-//
-//        this.accountBalanceMap.put("master", master);
     }
 
+    /**
+     * @return
+     */
     public Map<String, Account> getBalanceMap() {
         return this.accountBalanceMap;
     }
 
+    /**
+     * @param account The account to add to the current balance map.
+     */
     public void addAccount(Account account) {
-//        System.out.println("BLOCK: addAccount()" + account.getId());
-        this.accountBalanceMap.put(account.getId(), account);
+        this.accountBalanceMap.put(account.getAddress(), account);
         return;
     }
 
+    /**
+     * Setter
+     */
+    public void clearTransactions() {
+        this.transactionList = new ArrayList<Transaction>();
+        this.blockNumber++;
+    }
+
+    /**
+     * Getter
+     * @param address
+     * @return
+     */
     public Account getAccount(String address) {
 //        System.out.println("BLOCK: get account " + address);
 //        System.out.println("Map size() is " + this.accountBalanceMap.size());
         return this.accountBalanceMap.get(address);
     }
 
+    /**
+     * Setter
+     * @param transaction
+     * @return
+     */
     public int addValidTransaction(Transaction transaction) {
         // Add valid transaction to list
         this.transactionList.add(transaction);
@@ -89,26 +128,37 @@ public class Block {
         return null;
     }
 
+    /**
+     * Display
+     * @return
+     */
     public String toString() {
-        String block = "---------------------------\n";
-        block +=       "Block #" + this.blockNumber + "\n";
-        block +=       "previousHash: " + this.previousHash + "\n";
-        block +=       "hash: " + this.hash + "\n";
-        block +=       "---------------------------\n";
+        String separator = "+-------------------------------------\n";
+        String block = separator;
+        block += String.format("| Block #%d\n", this.blockNumber);
+        block += String.format("| previousHash: %s\n", this.previousHash);
+        block += String.format("| hash: %s\n", this.hash);
+        block += separator;
 
         for (Transaction transaction : transactionList) {
-            block += "Transaction #" + transaction.getTransactionId() + "\n";
+            block += String.format("| %s\n", transaction);
         }
+
+        block += separator;
 
         for( Map.Entry<String, Account> entry: this.accountBalanceMap.entrySet() ) {
-            block += "Account " + entry.getKey() + " balance: " + entry.getValue().getBalance() + "\n";
+            block += String.format("| %s\n", entry.getValue());
         }
 
-        block +=       "---------------------------\n";
+        block += separator;
         return block;
-//        return "Block " + this.blockNumber + " has a hash of " + this.hash;
     }
 
+    /**
+     * Computer hash of block.
+     *
+     * @return
+     */
     // with help from StackOverflow
     // https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
     // https://www.baeldung.com/sha-256-hashing-java
