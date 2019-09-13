@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * CommandProcessor - Utility class to feed Ledger a set of operations.
  *
@@ -31,7 +34,6 @@ public class CommandProcessor {
 
         List<String> args = parseCommand(commandLine);
 
-//        System.out.println("\targs IN COMMAND: " + args.toString());
         String command = args.remove(0);
         switch (command.toLowerCase()) {
             case "create-ledger":
@@ -51,7 +53,7 @@ public class CommandProcessor {
                 processTransaction(args);
                 break;
             default:
-                System.out.println("Other command is " + command);
+                System.out.println("Unknown command: " + command);
                 break;
         }
         return;
@@ -60,20 +62,24 @@ public class CommandProcessor {
     /**
      * Process a set of commands provided within the given 'commandFile'.
      *
-     * @param file
-     * @throws CommandProcessorException
+     * @param   file
+     * @throws  CommandProcessorException   Error conditions.
      */
     public void processCommandFile(String commandFile) throws CommandProcessorException {
+        // Keep track of current line, and line number, in file
         String currentLine = "";
         Integer currentLineNumber = 0;
 
         try {
+            // Open file 'commandFile'
             FileReader testScript = new FileReader(commandFile);
             BufferedReader reader = new BufferedReader(testScript);
 
+            // Read each line
             while ( (currentLine = reader.readLine()) != null ) {
                 currentLineNumber++;
 
+                // Skip blank lines, or comments (indicated by '#')
                 if (currentLine.length() > 0 && currentLine.charAt(0) != '#') {
                      processCommand(currentLine);
                 } else {
@@ -91,14 +97,20 @@ public class CommandProcessor {
             System.err.println(e);
             throw new CommandProcessorException(currentLine, "IO exception", currentLineNumber);
         } catch (CommandProcessorException e) {
-            System.err.println(e.toString());
+            System.err.println(e);
         }
     }
 
-    private static List<String> parseCommand(String command) {
+    /**
+     * Parses command line by whitespace, keeping quoted arguments intact.
+     *
+     * @param   commandLine     The command line to parse.
+     * @return                  List of arguments, split by whitespace.
+     */
+    private static List<String> parseCommand(String commandLine) {
         List<String> matchList = new ArrayList<String>();
         Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"");
-        Matcher regexMatcher = regex.matcher(command);
+        Matcher regexMatcher = regex.matcher(commandLine);
 
         while (regexMatcher.find()) {
             if (regexMatcher.group(1) != null) {
@@ -112,12 +124,17 @@ public class CommandProcessor {
         return matchList;
     }
 
+
+    /**
+     * Create a new account with the given account id.
+     * @param args Command line arguments.
+     */
     private void createAccount(List<String> args) {
 
         if (this.ledger != null) {
             try {
                 Account account = this.ledger.createAccount(args.get(0));
-                System.out.println("Created account '" + account.getId() + "'.");
+                System.out.println("Created account '" + account.getAddress() + "'.");
             } catch (LedgerException e) {
                 System.err.println(e.toString());
             }
@@ -125,6 +142,10 @@ public class CommandProcessor {
         return;
     }
 
+    /**
+     * Create a new ledger with the given name, description, and seed value.
+     * @param args Command line arguments.
+     */
     private void createLedger(List<String> args) {
         try {
             this.ledger = new Ledger(args.get(0), args.get(1), args.get(2));
@@ -136,23 +157,46 @@ public class CommandProcessor {
         return;
     }
 
+    /**
+     * Process a new transaction.
+     *
+     * @param args Command line arguments.
+     */
     private void processTransaction(List<String> args) {
         String id = null;
         String payload;
-        Account payer, receiver;
+        Account payer = null;
+        Account receiver = null;
 
+
+        // Check if transaction already exists
         try {
-            // If the transaction is null, or doesn't exist, allowed to make a new one
-            if (this.ledger.getTransaction(args.get(0)) == null) {
-                id = args.get(0);
-            } else {
-                throw new LedgerException("process transaction", "Transaction already exists.");
-            }
+            Transaction transaction = this.ledger.getTransaction(args.get(0));
 
+            // If the transaction is null, or doesn't exist, allowed to make a new one
+//            if (this.ledger.getTransaction(args.get(0)) == null) {
+//                id = args.get(0);
+//            } else {
+//                throw new LedgerException("process transaction", "Transaction already exists.");
+//            }
+//
+//            payer = this.ledger.getAccount(args.get(8));
+//            receiver = this.ledger.getAccount(args.get(10));
+        } catch (LedgerException e) {
+            System.err.println("HELLO: " + e);
+
+        }
+
+        // retrieve accounts
+        try {
+            id = args.get(0);
             payer = this.ledger.getAccount(args.get(8));
             receiver = this.ledger.getAccount(args.get(10));
-        } catch (LedgerException e) {
-            System.err.println(e.toString());
+            //            System.err.println(e.toString());
+            //            return;
+
+        } catch (LedgerException ex) {
+            System.err.println(ex);
             return;
         }
 
@@ -178,11 +222,21 @@ public class CommandProcessor {
         return;
     }
 
+    /**
+     * Output account balances.
+     *
+     * Handles output of individual accounts, specified by an accountId. For
+     * 'get-account-balances' command, it outputs all account balances for the
+     * most recent completed block.
+     *
+     * @param args Command line arguments.
+     */
     private void getAccountBalance(List<String> args) {
         try {
             // No arguments, get all balances
             if (args.size() == 0) {
-                this.ledger.getAccountBalances();
+                Map<String, Integer> balances = this.ledger.getAccountBalances();
+                System.out.println("Retrieve account balances for " + balances.size() + " accounts.");
             } else {
                 System.out.println(args.get(0) + " has an account balance of " + this.ledger.getAccountBalance(args.get(0)));
             }
@@ -193,6 +247,12 @@ public class CommandProcessor {
         return;
     }
 
+    /**
+     * Output the details for the given block number.
+     *
+     * @param   args                        Command line arguments.
+     * @throws  CommandProcessorException   Block does not exist.
+     */
     private void getBlock(List<String> args) throws CommandProcessorException {
         Block block;
 
@@ -209,6 +269,12 @@ public class CommandProcessor {
         return;
     }
 
+    /**
+     * Output the details of the given transaction id.
+     *
+     * @param   args                        Command line arguments.
+     * @throws  CommandProcessorException   Transaction not found in the Ledger.
+     */
     private void getTransaction(List<String> args) throws CommandProcessorException {
         Transaction transaction;
 
@@ -224,6 +290,9 @@ public class CommandProcessor {
 
     }
 
+    /**
+     * Validate the current state of the block chain.
+     */
     private void validate() {
 
     }
