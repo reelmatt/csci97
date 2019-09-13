@@ -62,6 +62,10 @@ public class Transaction implements Serializable {
     }
 
     /**
+     * Validate the transaction.
+     *
+     * Checks that the payer's account has enough of a balance to cover the
+     * amount and the fee, and that the fee meets the minimum.
      *
      * @return True, if valid transaction. Otherwise, false.
      */
@@ -70,8 +74,10 @@ public class Transaction implements Serializable {
 
         if (payer.getBalance() < withdrawal) {
             // Payer does not have enough funds
+            // throw new LedgerException() ??
         } else if (this.fee < MIN_FEE) {
             // The fee is less than the minimum
+            // throw new LedgerException() ??
         } else {
             // It is a valid transaction
             return true;

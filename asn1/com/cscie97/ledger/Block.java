@@ -90,8 +90,6 @@ public class Block implements Serializable {
      * @return
      */
     public Account getAccount(String address) {
-//        System.out.println("BLOCK: get account " + address);
-//        System.out.println("Map size() is " + this.accountBalanceMap.size());
         return this.accountBalanceMap.get(address);
     }
 
@@ -100,7 +98,7 @@ public class Block implements Serializable {
      * @param transaction
      * @return
      */
-    public int addValidTransaction(Transaction transaction) {
+    public int addTransaction(Transaction transaction) {
         // Add valid transaction to list
         this.transactionList.add(transaction);
 
@@ -155,13 +153,16 @@ public class Block implements Serializable {
     }
 
     /**
-     * Computer hash of block.
+     * Compute hash of block.
+     *
+     * Citations:
+     * with help from StackOverflow
+     * https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
+     * https://www.baeldung.com/sha-256-hashing-java
      *
      * @return
      */
-    // with help from StackOverflow
-    // https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
-    // https://www.baeldung.com/sha-256-hashing-java
+
     private String computeHash() {
         MessageDigest digest = null;
 

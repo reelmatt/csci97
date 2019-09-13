@@ -71,7 +71,7 @@ public class Ledger {
         this.seed = seed;
 
         // Initialize internal trackers
-//        this.accountList = new HashMap<String, Account>();
+        // this.accountList = new HashMap<String, Account>();
         this.accountList = new ArrayList<String>();
         this.blockMap = new LinkedHashMap<Integer, Block>();
 
@@ -146,7 +146,7 @@ public class Ledger {
         }
 
 
-        int numberOfTransactions = this.currentBlock.addValidTransaction(transaction);
+        int numberOfTransactions = this.currentBlock.addTransaction(transaction);
 //        System.out.println("NUM TRANSACTIONS: " + numberOfTransactions);
 
         // When transaction limit reached, commit block and create new one
@@ -291,19 +291,23 @@ public class Ledger {
     }
 
     /**
-     *
-     * @return
+     * @return                  The account balance map for the most recent
+     *                          completed block.
      * @throws LedgerException  If no blocks have been committed yet.
      */
     public Map<String, Integer> getAccountBalances() throws LedgerException {
+        // Retrieval occurs from last committed block.
         int blockNumber = this.blockMap.size();
 
+        // If no blocks, throw exception
         if (blockNumber == 0) {
             throw new LedgerException("get account balances", "No blocks have been committed yet.");
         }
 
-//        Block lastBlock = getBlock(blockNumber);
+        // Get accountBalanceMap from the last committed block
         Map<String, Account> accountMap = getBlock(blockNumber).getBalanceMap();
+
+        // Create new map to store values
         Map<String, Integer> accountBalancesMap = new HashMap<String, Integer>();
 
         // Iterate through accounts to retrieve their current balances.
@@ -314,6 +318,9 @@ public class Ledger {
         return accountBalancesMap;
     }
 
+    /**
+     * @return Iterator to get values from blockMap
+     */
     public Iterator<Map.Entry<Integer, Block>> listBlocks () {
         return this.blockMap.entrySet().iterator();
     }
@@ -335,7 +342,34 @@ public class Ledger {
      * @return Transaction, if it exists. Otherwise, null.
      */
     public Transaction getTransaction(String transactionId) throws LedgerException {
+        Iterator<Map.Entry<Integer, Block>> blocks = listBlocks();
 
+        // Check committed Blocks
+        while( blocks.hasNext() ) {
+            Map.Entry<Integer, Block> entry = blocks.next();
+            Transaction transaction = entry.getValue().getTransaction(transactionId);
+
+            // Transaction was found
+            if (transaction != null) {
+                return transaction;
+            }
+        }
+
+        throw new LedgerException("get transaction", "Transaction " + transactionId + " does not exist.");
+    }
+
+    /**
+     * Validate a given transaction id.
+     *
+     * Goes through all committed blocks and the block currently being added to.
+     * If a transaction matching the id is found, return true (invalid ID - it is
+     * already in use). If no transaction matches, return false (valid ID - it has
+     * not been used yet).
+     *
+     * @param transactionId
+     * @return
+     */
+    public Boolean validateTransactionId(String transactionId) {
 
         Iterator<Map.Entry<Integer, Block>> blocks = listBlocks();
 
@@ -345,34 +379,33 @@ public class Ledger {
             Transaction transaction = entry.getValue().getTransaction(transactionId);
 
             if (transaction != null) {
-                return transaction;
+                return true;
+                // return transaction;
             }
         }
 
-        throw new LedgerException("get transaction", "Transaction " + transactionId + " does not exist.");
+//        throw new LedgerException("get transaction", "Transaction " + transactionId + " does not exist.");
 
-//        for( Map.Entry<Integer, Block> entry: this.blockMap.entrySet() ) {
-//            Block block = entry.getValue();
 
-//            Transaction transaction = block.getTransaction(transactionId);
-//            if (transaction != null) {
-//                return transaction;
-//            }
-//        }
+        // Check currently in-progress block -- NOT SUPPOSED TO BE ALLOWED!?!?
+        Transaction transaction = this.currentBlock.getTransaction(transactionId);
+        if (transaction != null) {
+            return true;
+            // return transaction;
+        }
 
-        // Check currently in-progress block -- NOT SUPPOSED TO BE ALLOWED!!
-//        Transaction transaction = this.currentBlock.getTransaction(transactionId);
-//        if (transaction != null) {
-//            return transaction;
-//        }
-
-//        return null;
+        // return null;
+        return false;
     }
+
 
     public void validate() {
         return;
     }
 
+    /**
+     * @return Name of Ledger.
+     */
     public String getName() {
         return this.name;
     }
@@ -380,6 +413,7 @@ public class Ledger {
     public Integer numberOfBlocks() {
         return this.blockMap.size();
     }
+
     public String toString() {
         return "Name: " + this.name + "\nDescription: " + this.description + "\nAccount: " + this.genesisBlock.getAccount("master") + "\n";
     }

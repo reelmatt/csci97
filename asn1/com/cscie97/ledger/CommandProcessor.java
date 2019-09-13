@@ -13,10 +13,7 @@ import java.util.HashMap;
 /**
  * CommandProcessor - Utility class to feed Ledger a set of operations.
  *
- * Citations:
- *
- * Regex pattern and matching found in this StackOverflow post
- * https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double?rq=1
+ * @author Matthew Thomas
  */
 public class CommandProcessor {
     /** Ledger to perform actions on. */
@@ -31,16 +28,22 @@ public class CommandProcessor {
      * @throws CommandProcessorException
      */
     public void processCommand(String commandLine) throws CommandProcessorException {
-
+        // Break command line into a list of arguments
         List<String> args = parseCommand(commandLine);
 
+        // First argument is the command to run
         String command = args.remove(0);
+
+        // Pass remaining args into helper methods
         switch (command.toLowerCase()) {
             case "create-ledger":
                 createLedger(args);
                 break;
             case "create-account":
                 createAccount(args);
+                break;
+            case "process-transaction":
+                processTransaction(args);
                 break;
             case "get-account-balance":
             case "get-account-balances":
@@ -49,13 +52,13 @@ public class CommandProcessor {
             case "get-block":
                 getBlock(args);
                 break;
-            case "process-transaction":
-                processTransaction(args);
+            case "get-transaction":
+                getTransaction(args);
                 break;
             default:
-                System.out.println("Unknown command: " + command);
-                break;
+                throw new CommandProcessorException(command, "Unknown command");
         }
+
         return;
     }
 
@@ -69,6 +72,7 @@ public class CommandProcessor {
         // Keep track of current line, and line number, in file
         String currentLine = "";
         Integer currentLineNumber = 0;
+        Boolean printBlank = true;
 
         try {
             // Open file 'commandFile'
@@ -82,8 +86,13 @@ public class CommandProcessor {
                 // Skip blank lines, or comments (indicated by '#')
                 if (currentLine.length() > 0 && currentLine.charAt(0) != '#') {
                      processCommand(currentLine);
+                     printBlank = true;
                 } else {
-                    System.out.println();
+                    // Print one blank line in stdout for group of blanks/comments
+                    if (printBlank) {
+                        System.out.println();
+                        printBlank = false;
+                    }
                 }
             }
 
@@ -99,10 +108,16 @@ public class CommandProcessor {
         } catch (CommandProcessorException e) {
             System.err.println(e);
         }
+
+        return;
     }
 
     /**
      * Parses command line by whitespace, keeping quoted arguments intact.
+     *
+     * Citations:
+     * Regex pattern and matching found in this StackOverflow post
+     * https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double?rq=1
      *
      * @param   commandLine     The command line to parse.
      * @return                  List of arguments, split by whitespace.
@@ -118,26 +133,40 @@ public class CommandProcessor {
             } else {
                 matchList.add(regexMatcher.group());
             }
-
         }
 
         return matchList;
     }
 
-
     /**
      * Create a new account with the given account id.
-     * @param args Command line arguments.
+     *
+     * Expected command line to be formatted as:
+     *      create-account <account-id>
+     *
+     * Additional arguments provided are ignored.
+     *
+     * @param   args                        Command line arguments.
+     * @throws  CommandProcessorException   If Ledger has not been initialized.
+     * @throws  IndexOutOfBoundsException   No argument provided on command line.
      */
-    private void createAccount(List<String> args) {
+    private void createAccount(List<String> args) throws CommandProcessorException {
+        // Error if no Ledger
+        if (this.ledger == null) {
+            throw new CommandProcessorException(
+                "create account",
+                "Ledger has not been initialized."
+            );
+        }
 
-        if (this.ledger != null) {
-            try {
-                Account account = this.ledger.createAccount(args.get(0));
-                System.out.println("Created account '" + account.getAddress() + "'.");
-            } catch (LedgerException e) {
-                System.err.println(e.toString());
-            }
+        // Try to create new account
+        try {
+            Account account = this.ledger.createAccount(args.get(0));
+            System.out.println("Created account '" + account.getAddress() + "'");
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException("create account", "Missing 'account-id'");
+        } catch (LedgerException e) {
+            System.err.println(e);
         }
         return;
     }
@@ -146,14 +175,16 @@ public class CommandProcessor {
      * Create a new ledger with the given name, description, and seed value.
      * @param args Command line arguments.
      */
-    private void createLedger(List<String> args) {
+    private void createLedger(List<String> args) throws CommandProcessorException {
         try {
             this.ledger = new Ledger(args.get(0), args.get(1), args.get(2));
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException("create ledger", "Missing arguments.");
         } catch (LedgerException e) {
-            System.err.println(e.toString());
+            System.err.println(e);
         }
 
-        System.out.println("Created ledger '" + args.get(0) + "'.");
+        System.out.println(String.format("Created ledger '%s'", this.ledger.getName()));
         return;
     }
 
@@ -162,12 +193,26 @@ public class CommandProcessor {
      *
      * @param args Command line arguments.
      */
-    private void processTransaction(List<String> args) {
+    private void processTransaction(List<String> args) throws CommandProcessorException {
         String id = null;
         String payload;
         Account payer = null;
         Account receiver = null;
 
+        // If validation == true, ID is already in use. Throw exception.
+        if (this.ledger.validateTransactionId(args.get(0))) {
+            throw new CommandProcessorException("process transaction", "Transaction ID already used.");
+        }
+
+        // Check payer account
+//        if ( this.ledger.validateAccountId(args.get(8)) ) {
+//
+//        }
+//
+//        // Check receiver account
+//        if ( this.ledger.validateAccountId(args.get(10)) ) {
+//
+//        }
 
         // Check if transaction already exists
         try {
@@ -183,7 +228,7 @@ public class CommandProcessor {
 //            payer = this.ledger.getAccount(args.get(8));
 //            receiver = this.ledger.getAccount(args.get(10));
         } catch (LedgerException e) {
-            System.err.println("HELLO: " + e);
+//            System.err.println("HELLO: " + e);
 
         }
 
@@ -217,7 +262,6 @@ public class CommandProcessor {
         } catch (LedgerException e) {
             System.err.println(e.toString());
         }
-
 
         return;
     }
@@ -259,13 +303,8 @@ public class CommandProcessor {
         if ( (block = this.ledger.getBlock(Integer.parseInt(args.get(0)))) == null ) {
             throw new CommandProcessorException("get block", "Block " + args.get(0) + " does not exist.");
         }
-//        try {
-//            block = this.ledger.getBlock(Integer.parseInt(args.get(0)));
-//        } catch (LedgerException e) {
-//
-//        }
+
         System.out.print(block);
-//        System.out.println("Retrieved block #" + args.get(0));
         return;
     }
 
@@ -288,6 +327,7 @@ public class CommandProcessor {
 
         }
 
+        return;
     }
 
     /**
