@@ -61,6 +61,18 @@ public class Transaction implements Serializable {
         return this.transactionId;
     }
 
+    public int getAmount() {
+        return this.amount;
+    }
+
+    public int getFee() {
+        return this.fee;
+    }
+
+    public int getMinFee() {
+        return MIN_FEE;
+    }
+
     /**
      * Validate the transaction.
      *
