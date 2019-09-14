@@ -135,6 +135,7 @@ public class Block implements Serializable {
         String block = separator;
         block += String.format("| Block #%d\n", this.blockNumber);
         block += String.format("| previousHash: %s\n", this.previousHash);
+        block += String.format("| previousBlock: %d\n", (this.previousBlock == null) ? 0 : this.previousBlock.getBlockNumber() );
         block += String.format("| hash: %s\n", this.hash);
         block += separator;
 
@@ -150,6 +151,33 @@ public class Block implements Serializable {
 
         block += separator;
         return block;
+    }
+
+    public Boolean validate() {
+        Integer totalCurrency = 0;
+        // Iterate through accounts to retrieve their current balances.
+        for (Map.Entry<String, Account> entry : this.accountBalanceMap.entrySet() ) {
+            totalCurrency += entry.getValue().getBalance();
+//            accountBalancesMap.put(entry.getKey(), entry.getValue().getBalance());
+        }
+
+        if (totalCurrency != Integer.MAX_VALUE) {
+            return false;
+        }
+        System.out.println("BLOCK: validate() - totalCurrency    = " + totalCurrency);
+        System.out.println("BLOCK: validate() - expectedCurrency = " + Integer.MAX_VALUE);
+
+
+
+        return true;
+    }
+
+    public int getBlockNumber() {
+        return this.blockNumber;
+    }
+
+    public void setPreviousBlock(Block block) {
+        this.previousBlock = block;
     }
 
     /**
