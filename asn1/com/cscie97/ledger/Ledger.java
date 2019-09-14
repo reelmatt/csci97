@@ -43,14 +43,14 @@ public class Ledger {
 
     /** List of accounts managed by the Ledger. */
 //    private Map<String, Account> accountList;
-     private List<String> accountList;
+    private List<String> accountList;
 
     /** Initial Block of the blockchain. */
     private Block genesisBlock;
     private Block currentBlock;
 
     /** A map of block numbers and the associated Blocks. */
-    public Map<Integer, Block> blockMap;
+    private Map<Integer, Block> blockMap;
 
     /**
      * Ledger Constructor
@@ -130,13 +130,18 @@ public class Ledger {
      */
     public String processTransaction(Transaction transaction) throws LedgerException {
         // Get total withdrawal amount
-        int withdrawal = transaction.getAmount() + transaction.getFee();
+        int transactionAmount = transaction.getAmount();
+        int transactionFee = transaction.getFee();
+
+        int withdrawal = transactionAmount + transactionFee;
 
         // Check transaction is valid
         if ( transaction.payer.getBalance() < withdrawal ) {
             throw new LedgerException("process transaction", "Insufficient balance.");
-        } else if ( transaction.fee < transaction.getMinFee() ) {
+        } else if ( transactionFee < transaction.getMinFee() ) {
             throw new LedgerException("process transaction", "Minimum fee not provided.");
+        } else if ( (transactionAmount + transaction.receiver.getBalance()) > Integer.MAX_VALUE ) {
+            throw new LedgerException("process transaction", "Receiver's balance would exceed maximum allowed.");
         }
 
         // Valid transaction, Transfer funds
@@ -157,13 +162,16 @@ public class Ledger {
             Block clone = (Block) deserializeObject(bos);
 
             // Add current block to the blockMap
-            this.blockMap.put((this.blockMap.size() + 1), this.currentBlock);
+            if (this.currentBlock.validate()) {
 
-            // Update currentBlock to the clone
-            this.currentBlock = clone;
+                this.blockMap.put((this.blockMap.size() + 1), this.currentBlock);
 
-            // Clear the transaction list
-            this.currentBlock.clearTransactions();
+                // Update currentBlock to the clone
+                this.currentBlock = clone;
+                this.currentBlock.setPreviousBlock(clone);
+                // Clear the transaction list
+                this.currentBlock.clearTransactions();
+            }
 
         }
 
@@ -222,7 +230,7 @@ public class Ledger {
      * @return                  Account with address matching 'accountId'.
      * @throws LedgerException  If the account does not exist.
      */
-    public Account getAccount(String accountId) throws LedgerException {
+    public Account validateAccount(String accountId) throws LedgerException {
         // Account comes from the current block
         Account account = this.currentBlock.getAccount(accountId);
 
@@ -306,8 +314,14 @@ public class Ledger {
      * @param   blockNumber The Block to look for.
      * @return              Block on success, otherwise null.
      */
-    public Block getBlock(int blockNumber) {
-        return this.blockMap.get(blockNumber);
+    public Block getBlock(int blockNumber) throws LedgerException {
+        Block block;
+
+        if ( (block = this.blockMap.get(blockNumber)) == null ) {
+            throw new LedgerException("get block", "Block " + blockNumber + " does not exist.");
+        }
+        return block;
+
     }
 
     /**
@@ -345,7 +359,7 @@ public class Ledger {
      * @param transactionId
      * @return
      */
-    public Boolean validateTransactionId(String transactionId) {
+    public String validateTransactionId(String transactionId) throws LedgerException {
 
         Iterator<Map.Entry<Integer, Block>> blocks = listBlocks();
 
@@ -355,7 +369,8 @@ public class Ledger {
             Transaction transaction = entry.getValue().getTransaction(transactionId);
 
             if (transaction != null) {
-                return true;
+                throw new LedgerException("validate transaction ID", "This transaction already exists.");
+//                return transaction.getTransactionId();
             }
         }
 
@@ -363,15 +378,26 @@ public class Ledger {
         // Check currently in-progress block -- NOT SUPPOSED TO BE ALLOWED!?!?
         Transaction transaction = this.currentBlock.getTransaction(transactionId);
         if (transaction != null) {
-            return true;
+            throw new LedgerException("validate transaction ID", "This transaction already exists.");
+            //            return transaction.getTransactionId();
         }
 
-        // return null;
-        return false;
+        return transactionId;
     }
 
 
-    public void validate() {
+    public void validate() throws LedgerException {
+        Iterator<Map.Entry<Integer, Block>> blocks = listBlocks();
+
+        while ( blocks.hasNext() ) {
+            Map.Entry<Integer, Block> entry = blocks.next();
+
+            if ( ! entry.getValue().validate() ) {
+                throw new LedgerException("validate", "Account balances do not add up.");
+            }
+
+        }
+
         return;
     }
 
@@ -387,6 +413,6 @@ public class Ledger {
     }
 
     public String toString() {
-        return "Name: " + this.name + "\nDescription: " + this.description + "\nAccount: " + this.genesisBlock.getAccount("master") + "\n";
+        return String.format("Name: %s\nDescription: %s\n", this.name, this.description);
     }
 }
