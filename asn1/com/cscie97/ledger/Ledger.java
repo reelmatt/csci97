@@ -132,15 +132,14 @@ public class Ledger {
         // Get total withdrawal amount
         int withdrawal = transaction.getAmount() + transaction.getFee();
 
-        // Validate transaction
+        // Check transaction is valid
         if ( transaction.payer.getBalance() < withdrawal ) {
             throw new LedgerException("process transaction", "Insufficient balance.");
         } else if ( transaction.fee < transaction.getMinFee() ) {
             throw new LedgerException("process transaction", "Minimum fee not provided.");
         }
 
-        // Otherwise, a valid transaction
-        // Transfer funds
+        // Valid transaction, Transfer funds
         transaction.payer.withdraw(transaction.amount + transaction.fee);
         transaction.receiver.deposit(transaction.amount);
 
@@ -153,22 +152,26 @@ public class Ledger {
         // When transaction limit reached, commit block and create new one
         if (numberOfTransactions == TRANSACTIONS_PER_BLOCK) {
 
+            // Deep copy the Block to preserve state
             ByteArrayOutputStream bos = serializeObject(this.currentBlock);
             Block clone = (Block) deserializeObject(bos);
 
-
+            // Add current block to the blockMap
             this.blockMap.put((this.blockMap.size() + 1), this.currentBlock);
+
+            // Update currentBlock to the clone
             this.currentBlock = clone;
+
+            // Clear the transaction list
             this.currentBlock.clearTransactions();
 
-//            this.currentBlock = new Block((this.blockMap.size() + 1), clone);
         }
 
         return transaction.getTransactionId();
     }
 
     private ByteArrayOutputStream serializeObject(Object object) {
-        System.out.println("IN SERIALIZE, object is " + object);
+//        System.out.println("IN SERIALIZE, object is " + object);
         ByteArrayOutputStream bos = null;
 
         try {
@@ -353,18 +356,14 @@ public class Ledger {
 
             if (transaction != null) {
                 return true;
-                // return transaction;
             }
         }
-
-//        throw new LedgerException("get transaction", "Transaction " + transactionId + " does not exist.");
 
 
         // Check currently in-progress block -- NOT SUPPOSED TO BE ALLOWED!?!?
         Transaction transaction = this.currentBlock.getTransaction(transactionId);
         if (transaction != null) {
             return true;
-            // return transaction;
         }
 
         // return null;

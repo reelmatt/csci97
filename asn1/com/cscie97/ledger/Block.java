@@ -105,7 +105,7 @@ public class Block implements Serializable {
 //        System.out.println("BLOCK: added transaction " + transaction.getTransactionId() + " to block " + this.blockNumber);
         // Check if we've reached 10 transactions for the block
         if (this.transactionList.size() == 10 ) {
-            System.out.println("BLOCK: we've reached 10 transactions");
+//            System.out.println("BLOCK: we've reached 10 transactions");
             return 10;
         }
 
