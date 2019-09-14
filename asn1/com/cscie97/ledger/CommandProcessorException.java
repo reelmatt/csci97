@@ -21,6 +21,16 @@ public class CommandProcessorException extends Exception {
         this.reason = reason;
         this.lineNumber = lineNumber;
     }
+
+    public String getCommand() {
+        return this.command;
+    }
+
+    public String getReason() {
+        return this.reason;
+    }
+
+
     public String toString() {
         String error = this.command + ": " + this.reason;
 

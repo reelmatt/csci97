@@ -10,6 +10,8 @@ import java.util.regex.Matcher;
 import java.util.Map;
 import java.util.HashMap;
 
+//import java.lang.IndexOutOfBoundsException;
+
 /**
  * CommandProcessor - Utility class to feed Ledger a set of operations.
  *
@@ -110,6 +112,7 @@ public class CommandProcessor {
             throw new CommandProcessorException(currentLine, "IO exception", currentLineNumber);
         } catch (CommandProcessorException e) {
             System.err.println(e);
+            throw new CommandProcessorException(e.getCommand(), e.getReason(), currentLineNumber);
         }
 
         return;
@@ -173,59 +176,99 @@ public class CommandProcessor {
 
     /**
      * Create a new ledger with the given name, description, and seed value.
-     * @param args Command line arguments.
+     *
+     * Expected command line to be formatted as:
+     *      create-ledger <name> description <description> seed <seed>
+     *
+     * @param   args                        Command line arguments.
+     * @throws  CommandProcessorException   If command line arguments are missing, indicated by
+     *                                      an IndexOutOfBoundsException.
      */
     private void createLedger(String command, List<String> args) throws CommandProcessorException {
+        // Look for arguments and create ledger
         try {
-            this.ledger = new Ledger(args.get(0), args.get(1), args.get(2));
+            String name = args.get(0);
+            String description = (String) getArgument("description", args);
+            String seed = (String) getArgument("seed", args);
+
+            this.ledger = new Ledger(name, description, seed);
+            System.out.println(String.format("Created ledger '%s'", this.ledger));
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.");
         } catch (LedgerException e) {
             System.err.println(e);
         }
 
-        System.out.println(String.format("Created ledger '%s'", this.ledger.getName()));
         return;
+    }
+
+    /**
+     * Looks for argument following the specified 'key' in the command line.
+     *
+     * It is assumed the appropriate argument follows the specified 'key' in the command line,
+     * and therefore is retrieved by accessing index + 1.
+     *
+     * @param   key                         The argument to look for.
+     * @param   args                        The command line to search.
+     * @return  Object                      The Object located at (index + 1) of the 'key'.
+     * @throws  IndexOutOfBoundsException   If command line arguments are missing.
+     */
+    private Object getArgument(String key, List<String> args) throws IndexOutOfBoundsException {
+        int index;
+        Object value = null;
+
+        if ((index = args.indexOf(key)) != -1) {
+            return value = args.get(index + 1);
+        }
+
+        return null;
     }
 
     /**
      * Process a new transaction.
      *
+     * Expected command line to be formatted as:
+     *      process-transaction <transaction-id>
+     *                          amount <amount>
+     *                          fee <fee>
+     *                          payload <payload>
+     *                          payer <account-address>
+     *                          receiver <account-address>
+     *
      * @TODO Need more argument error checking.
      *
      * @param args Command line arguments.
+     *
+     * @see getArgument()
      */
     private void processTransaction(String command, List<String> args) throws CommandProcessorException {
-        String id = args.get(0);
-        String payload = args.get(6);
-        int amount = Integer.parseInt(args.get(2));
-        int fee = Integer.parseInt(args.get(4));
-        Account payer = null;
-        Account receiver = null;
-
-        // If validation == true, ID is already in use. Throw exception.
-        if ( this.ledger.validateTransactionId(id) ) {
-            throw new CommandProcessorException(command, "Transaction ID already used.");
-        }
-
-        // retrieve accounts
         try {
-            payer = this.ledger.getAccount(args.get(8));
-            receiver = this.ledger.getAccount(args.get(10));
+            // Extract arguments from command line
+            String transactionId = args.get(0);
+            Integer amount = Integer.parseInt((String) getArgument("amount", args));
+            Integer fee = Integer.parseInt((String) getArgument("fee", args));
+            String payload = (String) getArgument("payload", args);
+            String payerAddress = (String) getArgument("payer", args);
+            String receiverAddress = (String) getArgument("receiver", args);
+
+            // Check transaction ID and accounts are valid
+            String id = this.ledger.validateTransactionId(transactionId);
+            Account payer = this.ledger.validateAccount(payerAddress);
+            Account receiver = this.ledger.validateAccount(receiverAddress);
+
+            // Create the transaction
+            Transaction newTransaction = new Transaction(id, amount, fee, payload, payer, receiver);
+
+            // Output transaction status
+            String transactionStatus = this.ledger.processTransaction(newTransaction);
+            System.out.println("Processed transaction #" + transactionStatus);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, e.toString());
         } catch (LedgerException ex) {
             System.err.println(ex);
             return;
-        }
-
-        // Create the transaction
-        Transaction newTransaction = new Transaction(id, amount, fee, payload, payer, receiver);
-
-        // Try to process it, adding to in-progress Block
-        try {
-            String transactionStatus = this.ledger.processTransaction(newTransaction);
-            System.out.println("Processed transaction #" + transactionStatus);
-        } catch (LedgerException e) {
-            System.err.println(e);
         }
 
         return;
@@ -241,20 +284,21 @@ public class CommandProcessor {
      * @param args Command line arguments.
      */
     private void getAccountBalance(String command, List<String> args) {
+        // Init a new map to store 1 account balance, or an entire map
         Map<String, Integer> balances = new HashMap<String, Integer>();
+
         try {
             // No arguments, get all balances
             if (args.size() == 0) {
                 balances = this.ledger.getAccountBalances();
-                System.out.println("Retrieve account balances for " + balances.size() + " accounts.");
             } else {
                 balances.put(args.get(0), this.ledger.getAccountBalance(args.get(0)));
-                System.out.println(args.get(0) + " has an account balance of " + this.ledger.getAccountBalance(args.get(0)));
             }
         } catch (LedgerException e) {
             System.err.println(e);
         }
 
+        // Output the map to stdout
         if (balances != null) {
             for (Map.Entry<String, Integer> account : balances.entrySet()) {
                 System.out.println(String.format("Account %s: current balance = %d", account.getKey(), account.getValue()));
@@ -271,13 +315,16 @@ public class CommandProcessor {
      * @throws  CommandProcessorException   Block does not exist.
      */
     private void getBlock(String command, List<String> args) throws CommandProcessorException {
-        Block block;
-
-        if ( (block = this.ledger.getBlock(Integer.parseInt(args.get(0)))) == null ) {
-            throw new CommandProcessorException(command, String.format("Block %s does not exist.", args.get(0)));
+        try {
+            Integer blockNumber = Integer.parseInt(args.get(0));
+            Block block = this.ledger.getBlock(blockNumber);
+            System.out.print(block);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments");
+        } catch (LedgerException e) {
+            throw new CommandProcessorException(command, e.getReason());
         }
 
-        System.out.print(block);
         return;
     }
 
@@ -288,17 +335,15 @@ public class CommandProcessor {
      * @throws  CommandProcessorException   Transaction not found in the Ledger.
      */
     private void getTransaction(String command, List<String> args) throws CommandProcessorException {
-        Transaction transaction;
 
         try {
-            if ( (transaction = this.ledger.getTransaction(args.get(0))) == null ) {
-                throw new CommandProcessorException(command, "Invalid transaction");
-            }
-
-            System.out.println("Retrieved transaction #" + args.get(0));
-            System.out.println(transaction);
+            String transactionId = args.get(0);
+            Transaction transaction = this.ledger.getTransaction(transactionId);
+            System.out.println("Retrieved transaction: " + transaction);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments");
         } catch (LedgerException e) {
-
+            throw new CommandProcessorException(command, e.getReason());
         }
 
         return;
@@ -308,7 +353,13 @@ public class CommandProcessor {
      * Validate the current state of the block chain.
      */
     private void validate(String command) {
+        try {
+            this.ledger.validate();
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
         System.out.println(command + " COMPLETED");
+
         return;
     }
 }
