@@ -49,7 +49,7 @@ public class Transaction implements Serializable {
         this.transactionId = id;
         this.amount = amount;
         this.fee = fee;
-        this.payload = payload;
+        this.payload = (payload.length() < 1024) ? payload : payload.substring(0, 1023);
         this.payer = payer;
         this.receiver = receiver;
     }
