@@ -18,6 +18,10 @@ public class Account implements Serializable {
     /** Balance of the account which reflects total transfers to/from. */
     private Integer balance;
 
+    /** Maximum allowed account balance. */
+    private static final int MAX_ACCOUNT_BALANCE = Integer.MAX_VALUE;
+
+
     /**
      * Account Constructor
      *
@@ -31,11 +35,27 @@ public class Account implements Serializable {
         this.address = accountId;
 
         if (accountId == "master") {
-            this.balance = Integer.MAX_VALUE;
+            this.balance = MAX_ACCOUNT_BALANCE;
         } else {
             this.balance = 0;
         }
 
+    }
+
+    /**
+     * Account Constructor
+     *
+     * Takes an existing account object, and creates a new one based on it's
+     * information.
+     *
+     * @TODO make separate variables that are final? Update getter methods to
+     * choose the correct one?
+     *
+     * @param old
+     */
+    public Account (Account old) {
+        this.address = old.getAddress();
+        this.balance = old.getBalance();
     }
 
     /**
