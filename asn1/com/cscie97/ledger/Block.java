@@ -5,9 +5,17 @@ import java.util.HashMap;
 import java.util.Base64;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+// For serialziation
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
 
 import java.io.Serializable;
 /**
@@ -40,6 +48,12 @@ public class Block implements Serializable {
     /** References the preceding Block in the blockchain. */
     private Block previousBlock;
 
+    /** Minimum allowed account balance. */
+    private static final int MIN_ACCOUNT_BALANCE = 0;
+
+    /** Maximum allowed account balance. */
+    private static final int MAX_ACCOUNT_BALANCE = Integer.MAX_VALUE;
+
     /**
      * Block Constructor
      *
@@ -48,18 +62,25 @@ public class Block implements Serializable {
      */
     public Block (int number, Block previousBlock) {
         this.blockNumber = number;
-        this.previousHash = (previousBlock != null) ? previousBlock.previousHash : null;
+        this.hash = null;
+        this.previousHash = (previousBlock != null) ? previousBlock.getHash() : null;
+        this.previousBlock = previousBlock;
+
 
         this.transactionList = new ArrayList<Transaction>();
+        this.accountBalanceMap = new HashMap<String, Account>();
 
+        // Deep copy the accountBalanceMap if a previousBlock exists
+        // https://www.baeldung.com/java-deep-copy
         if (previousBlock != null) {
-            this.accountBalanceMap = previousBlock.getBalanceMap();
-        } else {
-            this.accountBalanceMap = new HashMap<String, Account>();
+            for ( Map.Entry<String, Account> entry : previousBlock.getBalanceMap().entrySet() ) {
+                Account old = entry.getValue();
+                Account newAccount = new Account(old);
+                accountBalanceMap.put(entry.getKey(), newAccount);
+            }
         }
-
-        this.previousBlock = previousBlock;
     }
+
 
     /**
      * @return
@@ -73,16 +94,8 @@ public class Block implements Serializable {
      */
     public void addAccount(Account account) {
         this.accountBalanceMap.put(account.getAddress(), account);
-        return;
     }
 
-    /**
-     * Setter
-     */
-    public void clearTransactions() {
-        this.transactionList = new ArrayList<Transaction>();
-        this.blockNumber++;
-    }
 
     /**
      * Getter
@@ -93,36 +106,43 @@ public class Block implements Serializable {
         return this.accountBalanceMap.get(address);
     }
 
+    public String getHash() {
+        return this.hash;
+    }
+
+    public String getPreviousHash() {
+        return this.previousHash;
+    }
+
+    public Block getPreviousBlock() {
+        return this.previousBlock;
+    }
+
+    public List<Transaction> getTransactionList() {
+        return this.transactionList;
+    }
+
     /**
-     * Setter
-     * @param transaction
-     * @return
+     * Add valid transaction to list.
+     *
+     * @param   transaction     Transaction to add to the running list.
+     * @return                  Current number of transactions in the block.
      */
     public int addTransaction(Transaction transaction) {
-        // Add valid transaction to list
         this.transactionList.add(transaction);
-
-//        System.out.println("BLOCK: added transaction " + transaction.getTransactionId() + " to block " + this.blockNumber);
-        // Check if we've reached 10 transactions for the block
-        if (this.transactionList.size() == 10 ) {
-//            System.out.println("BLOCK: we've reached 10 transactions");
-            return 10;
-        }
-
         return this.transactionList.size();
     }
 
+
     public Transaction getTransaction(String transactionId) {
-//        System.out.println("BLOCK: in getTransaction()");
+
         for (Transaction transaction : transactionList) {
-//            System.out.print("BLOCK: transaction = " + transaction.getTransactionId());
-//            System.out.print("\ttransactionId = " + transactionId + "\n");
             if ( transactionId.equals(transaction.getTransactionId()) ) {
-//                System.out.println("BLOCK: transaction found...");
                 return transaction;
             }
         }
-//        System.out.println("BLOCK: NO TRANSACTION FOUND.");
+
+        // no transaction found
         return null;
     }
 
@@ -135,7 +155,7 @@ public class Block implements Serializable {
         String block = separator;
         block += String.format("| Block #%d\n", this.blockNumber);
         block += String.format("| previousHash: %s\n", this.previousHash);
-        block += String.format("| previousBlock: %d\n", (this.previousBlock == null) ? 0 : this.previousBlock.getBlockNumber() );
+        block += String.format("| previousBlock: %d\n", (this.previousBlock == null) ? null : this.previousBlock.getBlockNumber() );
         block += String.format("| hash: %s\n", this.hash);
         block += separator;
 
@@ -153,31 +173,119 @@ public class Block implements Serializable {
         return block;
     }
 
+    /**
+     *
+     * @return
+     */
     public Boolean validate() {
         Integer totalCurrency = 0;
         // Iterate through accounts to retrieve their current balances.
         for (Map.Entry<String, Account> entry : this.accountBalanceMap.entrySet() ) {
+            int balance = entry.getValue().getBalance();
+
+            if (balance < MIN_ACCOUNT_BALANCE || balance > MAX_ACCOUNT_BALANCE) {
+                System.err.println("Account does not have acceptable balance.");
+                return false;
+            }
+
             totalCurrency += entry.getValue().getBalance();
-//            accountBalancesMap.put(entry.getKey(), entry.getValue().getBalance());
         }
 
-        if (totalCurrency != Integer.MAX_VALUE) {
+        if (totalCurrency != MAX_ACCOUNT_BALANCE) {
             return false;
         }
-        System.out.println("BLOCK: validate() - totalCurrency    = " + totalCurrency);
-        System.out.println("BLOCK: validate() - expectedCurrency = " + Integer.MAX_VALUE);
 
-
+        if (this.getPreviousBlock() != null && this.previousHash != computeHash(this.getPreviousBlock()) ) {
+            return false;
+        }
 
         return true;
     }
 
-    public int getBlockNumber() {
+    /**
+     * Citations:
+     * @source https://dev.to/monknomo/make-an-immutable-object---in-java-480n
+     */
+    public void commitBlock() {
+
+        this.transactionList = Collections.unmodifiableList(this.transactionList);
+
+        Map<String, Account> immutableBalanceMap = new HashMap<String, Account>();
+        immutableBalanceMap.putAll(this.accountBalanceMap);
+        this.accountBalanceMap = Collections.unmodifiableMap(immutableBalanceMap);
+
+        this.hash = computeHash(this);
+        return;
+    }
+
+
+    public Integer getBlockNumber() {
         return this.blockNumber;
     }
 
     public void setPreviousBlock(Block block) {
         this.previousBlock = block;
+    }
+
+
+    private ByteArrayOutputStream serializeObject(Object object) {
+//        System.out.println("IN SERIALIZE, object is " + object);
+        ByteArrayOutputStream bos = null;
+
+        try {
+            // Create byte array output stream and use it to create object output stream
+            bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            oos.writeObject(object);		// serialize
+            oos.flush();
+        } catch (IOException e) {
+//                System.out.println("serialize io");
+//                System.out.println(e);
+        }
+        return bos;
+    }
+
+    private Object deserializeObject(ByteArrayOutputStream b) {
+        Object clone = null;
+
+        try {
+            // toByteArray creates & returns a copy of stream’s byte array
+            byte[] bytes = b.toByteArray();
+
+            // Create byte array input stream and use it to create object input stream
+            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            clone = ois.readObject();		// deserialize & typecast
+
+
+        } catch (IOException e) {
+//                System.out.println("deserialize io");
+        } catch (ClassNotFoundException e) {
+//                System.out.println("deserialize class not found");
+        }
+
+        return clone;
+
+    }
+
+    private byte[] serializeToArray(Object object) {
+        //        System.out.println("IN SERIALIZE, object is " + object);
+        ByteArrayOutputStream bos = null;
+
+        try {
+            // Create byte array output stream and use it to create object output stream
+            bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            oos.writeObject(object);		// serialize
+            oos.flush();
+        } catch (IOException e) {
+//                System.out.println("serialize io");
+//                System.out.println(e);
+        }
+        return bos.toByteArray();
     }
 
     /**
@@ -188,11 +296,43 @@ public class Block implements Serializable {
      * https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
      * https://www.baeldung.com/sha-256-hashing-java
      *
+     * Creating a byte array:
+     * https://stackoverflow.com/questions/5368704/appending-a-byte-to-the-end-of-another-byte/5368731
      * @return
      */
 
-    private String computeHash() {
+    private String computeHash(Block blockToHash) {
         MessageDigest digest = null;
+        byte[] toHash = null;
+
+        // Deep copy the Block to preserve state
+//            ByteArrayOutputStream bos = serializeObject(this.currentBlock);
+//            Block clone = (Block) deserializeObject(bos);
+
+
+        try {
+            ByteArrayOutputStream block = new ByteArrayOutputStream();
+
+            if (blockToHash.getBlockNumber() != null ) {
+                block.write(blockToHash.getBlockNumber().byteValue());
+            }
+
+            if (blockToHash.getPreviousHash() != null) {
+                block.write(blockToHash.getPreviousHash().getBytes());
+            }
+
+            block.write(serializeToArray(blockToHash.getTransactionList()));
+            block.write(serializeToArray(blockToHash.getBalanceMap()));
+
+
+            toHash = block.toByteArray();
+
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+
+
+
 
         try {
             digest = MessageDigest.getInstance("SHA-256");
@@ -200,11 +340,13 @@ public class Block implements Serializable {
             System.out.println("Oops, NoSuchAlgorithmException caught");
         }
 
-        String properties = this.previousHash + this.hash;
-        byte[] encodedHash = digest.digest(properties.getBytes());
+        byte[] encodedHash = digest.digest(toHash);
+//        String properties = this.previousHash + this.hash;
+//        byte[] encodedHash = digest.digest(properties.getBytes());
 
         // Converting byte[] to String
         // https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
+        System.out.println("in computeHash, printing byte[] results in " + toHash);
         System.out.println("in computeHash, printing byte[] results in " + encodedHash);
         String s = Base64.getEncoder().encodeToString(encodedHash);
         System.out.println("in computeHash, saved new String () is  " + s);
