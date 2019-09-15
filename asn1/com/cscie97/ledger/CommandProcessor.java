@@ -192,7 +192,7 @@ public class CommandProcessor {
             String seed = (String) getArgument("seed", args);
 
             this.ledger = new Ledger(name, description, seed);
-            System.out.println(String.format("Created ledger '%s'", this.ledger));
+            System.out.println(String.format("Created ledger %s", this.ledger));
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.");
         } catch (LedgerException e) {

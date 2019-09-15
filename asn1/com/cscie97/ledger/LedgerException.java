@@ -8,9 +8,9 @@ public class LedgerException extends Exception {
         super();
     }
 
-    public LedgerException(String message, String reason) {
-        super(message);
-        this.action = message;
+    public LedgerException(String action, String reason) {
+        super(action);
+        this.action = action;
         this.reason = reason;
     }
 
