@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+
 // For serialziation
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -35,18 +36,16 @@ public class Ledger {
     /** Seed that is used as input to the hashing algorithm. */
     private String seed;
 
-    /** Number of Blocks that have been created. */
-    private Integer numberOfBlocks = 0;
-
     /** Number of Transactions allowed per Block. */
     private static final int TRANSACTIONS_PER_BLOCK = 10;
 
+    /** Maximum allowed account balance. */
+    private static final int MAX_ACCOUNT_BALANCE = Integer.MAX_VALUE;
+
     /** List of accounts managed by the Ledger. */
-//    private Map<String, Account> accountList;
     private List<String> accountList;
 
-    /** Initial Block of the blockchain. */
-    private Block genesisBlock;
+    /** Working block of the blockchain. */
     private Block currentBlock;
 
     /** A map of block numbers and the associated Blocks. */
@@ -71,13 +70,11 @@ public class Ledger {
         this.seed = seed;
 
         // Initialize internal trackers
-        // this.accountList = new HashMap<String, Account>();
         this.accountList = new ArrayList<String>();
         this.blockMap = new LinkedHashMap<Integer, Block>();
 
-        // Create genesisBlock and set it as the currentBlock
-        this.genesisBlock = new Block((this.blockMap.size() + 1), null);
-        this.currentBlock = this.genesisBlock;
+        // Create currentBlock (genesisBlock)
+        this.currentBlock = new Block((this.blockMap.size() + 1), null);
 
         // Try creating master account
         try {
@@ -129,27 +126,30 @@ public class Ledger {
      * @return
      */
     public String processTransaction(Transaction transaction) throws LedgerException {
-        // Get total withdrawal amount
-        int transactionAmount = transaction.getAmount();
-        int transactionFee = transaction.getFee();
+        // Convience variable for throwing exceptions
+        String action = "process transaction";
 
-        int withdrawal = transactionAmount + transactionFee;
+        // Get total transaction withdrawal
+        int amount = transaction.getAmount();
+        int fee = transaction.getFee();
+        int withdrawal = amount + fee;
 
         // Check transaction is valid
         if ( transaction.payer.getBalance() < withdrawal ) {
-            throw new LedgerException("process transaction", "Insufficient balance.");
-        } else if ( transactionFee < transaction.getMinFee() ) {
-            throw new LedgerException("process transaction", "Minimum fee not provided.");
-        } else if ( (transactionAmount + transaction.receiver.getBalance()) > Integer.MAX_VALUE ) {
-            throw new LedgerException("process transaction", "Receiver's balance would exceed maximum allowed.");
+            throw new LedgerException(action, "Insufficient balance.");
+        } else if ( fee < transaction.getMinFee() ) {
+            throw new LedgerException(action, "Minimum fee not provided.");
+        } else if ( (amount + transaction.receiver.getBalance()) > MAX_ACCOUNT_BALANCE ) {
+            throw new LedgerException(action, "Receiver's balance would exceed maximum allowed.");
         }
 
         // Valid transaction, Transfer funds
-        transaction.payer.withdraw(transaction.amount + transaction.fee);
-        transaction.receiver.deposit(transaction.amount);
+        transaction.payer.withdraw(withdrawal);
+        transaction.receiver.deposit(amount);
 
+        // Transfer transaction fee to master account
         Account master = this.currentBlock.getAccount("master");
-        master.deposit(transaction.fee);
+        master.deposit(fee);
 
         // Add completed transaction to block
         int numberOfTransactions = this.currentBlock.addTransaction(transaction);
@@ -157,67 +157,23 @@ public class Ledger {
         // When transaction limit reached, commit block and create new one
         if (numberOfTransactions == TRANSACTIONS_PER_BLOCK) {
 
-            // Deep copy the Block to preserve state
-            ByteArrayOutputStream bos = serializeObject(this.currentBlock);
-            Block clone = (Block) deserializeObject(bos);
-
-            // Add current block to the blockMap
+            // Validate current block
             if (this.currentBlock.validate()) {
+                // Make transactions and account balances immutable
+                Block completedBlock = this.currentBlock;
+                completedBlock.commitBlock();
 
-                this.blockMap.put((this.blockMap.size() + 1), this.currentBlock);
+                // Add current block to the end of the blockMap
+                this.blockMap.put((this.blockMap.size() + 1), completedBlock);
 
-                // Update currentBlock to the clone
-                this.currentBlock = clone;
-                this.currentBlock.setPreviousBlock(clone);
-                // Clear the transaction list
-                this.currentBlock.clearTransactions();
+                // Create new block with accountBalanceMap copied from completedBlock
+                this.currentBlock = new Block(this.blockMap.size() + 1, completedBlock);
+            } else {
+                throw new LedgerException(action, "Block failed to validate.");
             }
-
         }
 
         return transaction.getTransactionId();
-    }
-
-    private ByteArrayOutputStream serializeObject(Object object) {
-//        System.out.println("IN SERIALIZE, object is " + object);
-        ByteArrayOutputStream bos = null;
-
-        try {
-            // Create byte array output stream and use it to create object output stream
-            bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-
-            oos.writeObject(object);		// serialize
-            oos.flush();
-        } catch (IOException e) {
-//                System.out.println("serialize io");
-//                System.out.println(e);
-        }
-        return bos;
-    }
-
-    private Object deserializeObject(ByteArrayOutputStream b) {
-        Object clone = null;
-
-        try {
-            // toByteArray creates & returns a copy of stream’s byte array
-            byte[] bytes = b.toByteArray();
-
-            // Create byte array input stream and use it to create object input stream
-            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            clone = ois.readObject();		// deserialize & typecast
-
-
-        } catch (IOException e) {
-//                System.out.println("deserialize io");
-        } catch (ClassNotFoundException e) {
-//                System.out.println("deserialize class not found");
-        }
-
-        return clone;
-
     }
 
     /**
@@ -253,16 +209,18 @@ public class Ledger {
      * @param address           Address of the account to lookup.
      * @return                  Current balance of the account, in the last
      *                          committed block.
-     * @throws LedgerException  If no blocks have been committed yet, or th
+     * @throws LedgerException  If no blocks have been committed yet, or the
      *                          account does not exist.
      */
     public int getAccountBalance(String address) throws LedgerException {
         Block lastBlock;
         Account account;
-        int blockNumber = blockMap.size();
 
-        // If getBlock() returns null, no blocks have been committed to lookup account in
-        if ( (lastBlock = getBlock(blockNumber)) == null) {
+        // Retrieve last block
+        try {
+            lastBlock = getBlock(blockMap.size());
+        } catch (LedgerException e) {
+            // Catch exception that 'Block does not exist' and throw a more specific error
             throw new LedgerException("get account balance", "No blocks have been commited yet.");
         }
 
@@ -337,6 +295,7 @@ public class Ledger {
         // Check committed Blocks
         while( blocks.hasNext() ) {
             Map.Entry<Integer, Block> entry = blocks.next();
+
             Transaction transaction = entry.getValue().getTransaction(transactionId);
 
             // Transaction was found
