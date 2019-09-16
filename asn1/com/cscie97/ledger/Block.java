@@ -79,7 +79,10 @@ public class Block implements Serializable {
         }
     }
 
-
+    /** Returns the block's number. */
+    public Integer getBlockNumber() {
+        return this.blockNumber;
+    }
     /** Returns the account-balance map. */
     public Map<String, Account> getBalanceMap() {
         return this.accountBalanceMap;
@@ -141,10 +144,7 @@ public class Block implements Serializable {
         return null;
     }
 
-    /**
-     * Display
-     * @return
-     */
+    /** Overrides default toString() method. */
     public String toString() {
         String separator = "+-------------------------------------\n";
         String block = separator;
@@ -196,27 +196,23 @@ public class Block implements Serializable {
 
     private String validateAccountBalances() {
         Integer totalCurrency = 0;
+
         // Iterate through accounts to retrieve their current balances.
         for (Map.Entry<String, Account> entry : this.accountBalanceMap.entrySet() ) {
             int balance = entry.getValue().getBalance();
 
             if (balance < MIN_ACCOUNT_BALANCE || balance > MAX_ACCOUNT_BALANCE) {
-//                System.err.println("Account does not have acceptable balance.");
                 return "Invalid block. Account does not have acceptable balance.";
-//                return false;
             }
 
             totalCurrency += entry.getValue().getBalance();
         }
 
         if (totalCurrency != MAX_ACCOUNT_BALANCE) {
-//            System.err.println("Total currency does not equal MAX_ACCOUNT_BALANCE.");
             return "Invalid block. Total currency does not equal MAX_ACCOUNT_BALANCE.";
-            //            return false;
         }
 
         return null;
-//        return true;
     }
 
     private Boolean validateHash() {
@@ -251,16 +247,11 @@ public class Block implements Serializable {
         return;
     }
 
-
-    public Integer getBlockNumber() {
-        return this.blockNumber;
-    }
-
-    public void setPreviousBlock(Block block) {
-        this.previousBlock = block;
-    }
-
-
+    /**
+     *
+     * @param object
+     * @return
+     */
     private ByteArrayOutputStream serializeObject(Object object) {
 //        System.out.println("IN SERIALIZE, object is " + object);
         ByteArrayOutputStream bos = null;
@@ -279,7 +270,11 @@ public class Block implements Serializable {
         return bos;
     }
 
-
+    /**
+     *
+     * @param object
+     * @return
+     */
     private byte[] serializeToArray(Object object) {
         //        System.out.println("IN SERIALIZE, object is " + object);
         ByteArrayOutputStream bos = null;
@@ -310,7 +305,6 @@ public class Block implements Serializable {
      * https://stackoverflow.com/questions/5368704/appending-a-byte-to-the-end-of-another-byte/5368731
      * @return
      */
-
     private String computeHash(Block blockToHash, String seed) {
         // If no block to hash, ignore (the genesis block)
         if (blockToHash == null ) {
@@ -347,7 +341,7 @@ public class Block implements Serializable {
         try {
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("Oops, NoSuchAlgorithmException caught");
+            System.err.println(e.toString());
         }
 
         // Hash the byte-ified Block object
@@ -356,5 +350,9 @@ public class Block implements Serializable {
         // Converting byte[] to String
         // src: https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
         return Base64.getEncoder().encodeToString(encodedHash);
+    }
+
+    private String hashToString() {
+        return null;
     }
 }

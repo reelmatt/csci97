@@ -30,7 +30,7 @@ public class CommandProcessorException extends Exception {
         return this.reason;
     }
 
-
+    /** Overrides default toString() method. */
     public String toString() {
         String error = this.command + ": " + this.reason;
 

@@ -415,6 +415,7 @@ public class Ledger {
         return this.blockMap.size();
     }
 
+    /** Overrides default toString() method. */
     public String toString() {
         return String.format("Name: %s\nDescription: %s\n", this.name, this.description);
     }
