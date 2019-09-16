@@ -6,18 +6,15 @@ import java.util.Base64;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-// For serialziation
+import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 
-import java.io.Serializable;
 /**
  * Block - Aggregates groups of transactions in the blockchain.
  *
@@ -34,10 +31,10 @@ public class Block implements Serializable {
     private Integer blockNumber;
 
     /** The hash of the previous block in the blockchain. */
-    public String previousHash;
+    private String previousHash;
 
     /** The hash of the current block, based on all properties and associations. */
-    public String hash;
+    private String hash;
 
     /** An ordered list of Transactions that are included in the current block. */
     private List<Transaction> transactionList;
@@ -62,29 +59,28 @@ public class Block implements Serializable {
      */
     public Block (int number, Block previousBlock) {
         this.blockNumber = number;
-        this.hash = null;
-        this.previousHash = (previousBlock != null) ? previousBlock.getHash() : null;
         this.previousBlock = previousBlock;
 
+        this.hash = null;
+        this.previousHash = (previousBlock != null) ? previousBlock.getHash() : null;
 
+        // Create new, empty, lists
         this.transactionList = new ArrayList<Transaction>();
         this.accountBalanceMap = new HashMap<String, Account>();
 
-        // Deep copy the accountBalanceMap if a previousBlock exists
-        // https://www.baeldung.com/java-deep-copy
+        // If linking to a previous block, deep copy the accountBalanceMap
+        // src: https://www.baeldung.com/java-deep-copy
         if (previousBlock != null) {
             for ( Map.Entry<String, Account> entry : previousBlock.getBalanceMap().entrySet() ) {
-                Account old = entry.getValue();
-                Account newAccount = new Account(old);
+                Account oldAccount = entry.getValue();
+                Account newAccount = new Account(oldAccount);
                 accountBalanceMap.put(entry.getKey(), newAccount);
             }
         }
     }
 
 
-    /**
-     * @return
-     */
+    /** Returns the account-balance map. */
     public Map<String, Account> getBalanceMap() {
         return this.accountBalanceMap;
     }
@@ -96,28 +92,27 @@ public class Block implements Serializable {
         this.accountBalanceMap.put(account.getAddress(), account);
     }
 
-
-    /**
-     * Getter
-     * @param address
-     * @return
-     */
+    /** Returns the account matching 'address'. */
     public Account getAccount(String address) {
         return this.accountBalanceMap.get(address);
     }
 
+    /** Returns the hash of this block. */
     public String getHash() {
         return this.hash;
     }
 
+    /** Returns the hash of the previous block. */
     public String getPreviousHash() {
         return this.previousHash;
     }
 
+    /** Returns the previous block. */
     public Block getPreviousBlock() {
         return this.previousBlock;
     }
 
+    /** Returns the list of transactions. */
     public List<Transaction> getTransactionList() {
         return this.transactionList;
     }
@@ -177,26 +172,64 @@ public class Block implements Serializable {
      *
      * @return
      */
-    public Boolean validate() {
+    public String validate() {
+        if ( ! validateTransactions() ) {
+            return "Invalid block. The block does not contain exactly 10 transactions.";
+        }
+
+        String accountBalanceStatus;
+        if ( (accountBalanceStatus = validateAccountBalances()) != null ) {
+            return accountBalanceStatus;
+        }
+
+        if ( ! validateHash() ) {
+            return "Invalid block. Hashes do not match.";
+        }
+
+
+        return null;
+    }
+
+    private Boolean validateTransactions() {
+        return transactionList.size() == 10;
+    }
+
+    private String validateAccountBalances() {
         Integer totalCurrency = 0;
         // Iterate through accounts to retrieve their current balances.
         for (Map.Entry<String, Account> entry : this.accountBalanceMap.entrySet() ) {
             int balance = entry.getValue().getBalance();
 
             if (balance < MIN_ACCOUNT_BALANCE || balance > MAX_ACCOUNT_BALANCE) {
-                System.err.println("Account does not have acceptable balance.");
-                return false;
+//                System.err.println("Account does not have acceptable balance.");
+                return "Invalid block. Account does not have acceptable balance.";
+//                return false;
             }
 
             totalCurrency += entry.getValue().getBalance();
         }
 
         if (totalCurrency != MAX_ACCOUNT_BALANCE) {
-            return false;
+//            System.err.println("Total currency does not equal MAX_ACCOUNT_BALANCE.");
+            return "Invalid block. Total currency does not equal MAX_ACCOUNT_BALANCE.";
+            //            return false;
         }
 
-        if (this.getPreviousBlock() != null && this.previousHash != computeHash(this.getPreviousBlock()) ) {
-            return false;
+        return null;
+//        return true;
+    }
+
+    private Boolean validateHash() {
+        if (this.previousBlock != null) {
+            String checkHash = computeHash(this.previousBlock);
+
+            System.out.println("previousHash: " + this.previousHash);
+            System.out.println("   checkHash: " + checkHash);
+
+
+            if (! checkHash.equals(this.previousHash)) {
+                return false;
+            }
         }
 
         return true;
@@ -206,7 +239,7 @@ public class Block implements Serializable {
      * Citations:
      * @source https://dev.to/monknomo/make-an-immutable-object---in-java-480n
      */
-    public void commitBlock() {
+    public void commitBlock(String seed) {
 
         this.transactionList = Collections.unmodifiableList(this.transactionList);
 
@@ -214,7 +247,7 @@ public class Block implements Serializable {
         immutableBalanceMap.putAll(this.accountBalanceMap);
         this.accountBalanceMap = Collections.unmodifiableMap(immutableBalanceMap);
 
-        this.hash = computeHash(this);
+        this.hash = computeHash(this, seed);
         return;
     }
 
@@ -246,29 +279,6 @@ public class Block implements Serializable {
         return bos;
     }
 
-    private Object deserializeObject(ByteArrayOutputStream b) {
-        Object clone = null;
-
-        try {
-            // toByteArray creates & returns a copy of stream’s byte array
-            byte[] bytes = b.toByteArray();
-
-            // Create byte array input stream and use it to create object input stream
-            ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-
-            ObjectInputStream ois = new ObjectInputStream(bis);
-            clone = ois.readObject();		// deserialize & typecast
-
-
-        } catch (IOException e) {
-//                System.out.println("deserialize io");
-        } catch (ClassNotFoundException e) {
-//                System.out.println("deserialize class not found");
-        }
-
-        return clone;
-
-    }
 
     private byte[] serializeToArray(Object object) {
         //        System.out.println("IN SERIALIZE, object is " + object);
@@ -301,18 +311,19 @@ public class Block implements Serializable {
      * @return
      */
 
-    private String computeHash(Block blockToHash) {
-        MessageDigest digest = null;
-        byte[] toHash = null;
+    private String computeHash(Block blockToHash, String seed) {
+        // If no block to hash, ignore (the genesis block)
+        if (blockToHash == null ) {
+            return null;
+        }
 
-        // Deep copy the Block to preserve state
-//            ByteArrayOutputStream bos = serializeObject(this.currentBlock);
-//            Block clone = (Block) deserializeObject(bos);
-
-
+        // Convert Block into a byte[]
+        ByteArrayOutputStream block = new ByteArrayOutputStream();
         try {
-            ByteArrayOutputStream block = new ByteArrayOutputStream();
+            // Convert Ledger seed value
+            block.write(seed.getBytes());
 
+            // Convert Block properties
             if (blockToHash.getBlockNumber() != null ) {
                 block.write(blockToHash.getBlockNumber().byteValue());
             }
@@ -321,35 +332,29 @@ public class Block implements Serializable {
                 block.write(blockToHash.getPreviousHash().getBytes());
             }
 
+            // Convert Block associations
             block.write(serializeToArray(blockToHash.getTransactionList()));
             block.write(serializeToArray(blockToHash.getBalanceMap()));
-
-
-            toHash = block.toByteArray();
-
         } catch (IOException e) {
             System.out.println(e);
         }
 
 
+        byte [] toHash = block.toByteArray();
 
-
+        // Initialize a SHA-256 hasher
+        MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Oops, NoSuchAlgorithmException caught");
         }
 
+        // Hash the byte-ified Block object
         byte[] encodedHash = digest.digest(toHash);
-//        String properties = this.previousHash + this.hash;
-//        byte[] encodedHash = digest.digest(properties.getBytes());
 
         // Converting byte[] to String
-        // https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
-        System.out.println("in computeHash, printing byte[] results in " + toHash);
-        System.out.println("in computeHash, printing byte[] results in " + encodedHash);
-        String s = Base64.getEncoder().encodeToString(encodedHash);
-        System.out.println("in computeHash, saved new String () is  " + s);
-        return s;
+        // src: https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
+        return Base64.getEncoder().encodeToString(encodedHash);
     }
 }
