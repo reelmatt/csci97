@@ -6,11 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
-
 import java.util.Map;
 import java.util.HashMap;
-
-//import java.lang.IndexOutOfBoundsException;
 
 /**
  * CommandProcessor - Utility class to feed Ledger a set of operations.
@@ -75,44 +72,46 @@ public class CommandProcessor {
      */
     public void processCommandFile(String commandFile) throws CommandProcessorException {
         // Keep track of current line, and line number, in file
+        BufferedReader reader;
         String currentLine = "";
         Integer currentLineNumber = 0;
         Boolean printBlank = true;
 
+        // Open file 'commandFile'
         try {
-            // Open file 'commandFile'
-            FileReader testScript = new FileReader(commandFile);
-            BufferedReader reader = new BufferedReader(testScript);
+            reader = new BufferedReader(new FileReader(commandFile));
+        } catch (FileNotFoundException e) {
+            throw new CommandProcessorException(currentLine, e.toString(), currentLineNumber);
+        }
 
-            // Read each line
+        // Read file
+        try {
             while ( (currentLine = reader.readLine()) != null ) {
                 currentLineNumber++;
 
                 // Skip blank lines, or comments (indicated by '#')
-                if (currentLine.length() > 0 && currentLine.charAt(0) != '#') {
-                     processCommand(currentLine);
-                     printBlank = true;
-                } else {
+                if (currentLine.length() <= 0) {
                     // Print one blank line in stdout for group of blanks/comments
                     if (printBlank) {
                         System.out.println();
                         printBlank = false;
                     }
+                } else if (currentLine.charAt(0) == '#') {
+                    System.out.println(currentLine);
+                } else if (currentLine.length() > 0) {
+                    try {
+                        processCommand(currentLine);
+                        printBlank = true;
+                    } catch (CommandProcessorException e) {
+                        System.err.println(e);
+//                        throw new CommandProcessorException(e.getCommand(), e.getReason(), currentLineNumber);
+                    }
                 }
             }
-
             reader.close();
-        } catch (FileNotFoundException e) {
-            System.err.println("file not found");
-            System.err.println(e);
-            throw new CommandProcessorException(currentLine, "file not found", currentLineNumber);
+
         } catch (IOException e) {
-            System.err.println("oops, IO exception");
-            System.err.println(e);
-            throw new CommandProcessorException(currentLine, "IO exception", currentLineNumber);
-        } catch (CommandProcessorException e) {
-            System.err.println(e);
-            throw new CommandProcessorException(e.getCommand(), e.getReason(), currentLineNumber);
+            throw new CommandProcessorException(currentLine, e.toString(), currentLineNumber);
         }
 
         return;
@@ -185,6 +184,10 @@ public class CommandProcessor {
      *                                      an IndexOutOfBoundsException.
      */
     private void createLedger(String command, List<String> args) throws CommandProcessorException {
+        if (this.ledger != null) {
+            throw new CommandProcessorException(command, "A Ledger has already been initialized.");
+        }
+
         // Look for arguments and create ledger
         try {
             String name = args.get(0);
@@ -266,8 +269,8 @@ public class CommandProcessor {
             throw new CommandProcessorException(command, "Missing arguments.");
         } catch (NumberFormatException e) {
             throw new CommandProcessorException(command, e.toString());
-        } catch (LedgerException ex) {
-            System.err.println(ex);
+        } catch (LedgerException e) {
+            System.err.println(e);
             return;
         }
 
@@ -358,7 +361,8 @@ public class CommandProcessor {
         } catch (LedgerException e) {
             System.err.println(e);
         }
-        System.out.println(command + " COMPLETED");
+
+        System.out.println("Blockchain successfully validated.");
 
         return;
     }
