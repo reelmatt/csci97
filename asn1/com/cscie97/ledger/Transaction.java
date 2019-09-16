@@ -3,7 +3,7 @@ package com.cscie97.ledger;
 import java.io.Serializable;
 
 /**
- * Transaction - An individual Transaction within the Ledger Service.
+ * An individual Transaction within the Ledger Service.
  *
  * A transaction contains an id, an amount, a fee, a payload, and
  * references a payer and a receiver account. The transaction ammount is
@@ -18,10 +18,10 @@ public class Transaction implements Serializable {
     private String transactionId;
 
     /** Amount to be deducted from payer's account and added to the receiver's. */
-    public int amount;
+    private int amount;
 
     /** Fee to be taken from the payer and added to the master account. */
-    public int fee;
+    private int fee;
 
     /** The minimum allowed fee for any transaction. */
     private static final Integer MIN_FEE = 10;
@@ -30,18 +30,23 @@ public class Transaction implements Serializable {
     private String payload;
 
     /** Account who is issuing the transaction. */
-    public Account payer;
+    private Account payer;
 
     /** Account to whom the amount of the transaction is deposited. */
-    public Account receiver;
+    private Account receiver;
 
     /**
      * Transaction Constructor
      *
+     * A transaction consists of six parameters that specify a unique identifier,
+     * the amount and fee to be charged, the accounts to withdraw and deposit from,
+     * as well as a payload, or arbitrary message. After a transaction is created,
+     * it is processed by the Ledger which validates the exchange in currency.
+     *
      * @param id        Unique identifier.
      * @param amount    Amount to be transferred.
      * @param fee       Fee to be charged and transferred to 'master' account.
-     * @param payload   Arbitrary message for the transaction.
+     * @param payload   Arbitrary message for the transaction (limited to 1024 characters).
      * @param payer     Account to deduct funds from.
      * @param receiver  Account to deposit the amount in.
      */
@@ -54,53 +59,37 @@ public class Transaction implements Serializable {
         this.receiver = receiver;
     }
 
-    /**
-     * @return The Transaction id, its unique identifier.
-     */
+    /** Returns the Transaction's unique identifier. */
     public String getTransactionId() {
         return this.transactionId;
     }
 
+    /** Returns the amount of the transaction. */
     public int getAmount() {
         return this.amount;
     }
 
+    /** Returns the fee associated with the transaction. */
     public int getFee() {
         return this.fee;
     }
 
+    /** Returns the minimum fee allowed by all transactions. */
     public int getMinFee() {
         return MIN_FEE;
     }
 
-    /**
-     * Validate the transaction.
-     *
-     * Checks that the payer's account has enough of a balance to cover the
-     * amount and the fee, and that the fee meets the minimum.
-     *
-     * @return True, if valid transaction. Otherwise, false.
-     */
-    public Boolean validate() {
-        int withdrawal = this.amount + this.fee;
-
-        if (payer.getBalance() < withdrawal) {
-            // Payer does not have enough funds
-            // throw new LedgerException() ??
-        } else if (this.fee < MIN_FEE) {
-            // The fee is less than the minimum
-            // throw new LedgerException() ??
-        } else {
-            // It is a valid transaction
-            return true;
-        }
-
-        return false;
+    /** Returns the Account associated with the payer. */
+    public Account getPayer() {
+        return this.payer;
     }
 
-    /**
-     * @return Overrides default toString() method.
-     */
+    /** Returns the Account associated with the receiver. */
+    public Account getReceiver() {
+        return this.receiver;
+    }
+
+    /** Overrides default toString() method. */
     public String toString() {
         return String.format("Transaction %s: %s (%d units from %s to %s; %d unit fee)",
                 this.transactionId, this.payload, this.amount,
