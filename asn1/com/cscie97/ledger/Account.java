@@ -33,6 +33,7 @@ public class Account implements Serializable {
     public Account (String accountId) {
         this.address = accountId;
 
+        // 'master' account gets all currency, otherwise init to 0
         if (accountId == "master") {
             this.balance = MAX_ACCOUNT_BALANCE;
         } else {

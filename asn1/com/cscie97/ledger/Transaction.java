@@ -18,13 +18,10 @@ public class Transaction implements Serializable {
     private String transactionId;
 
     /** Amount to be deducted from payer's account and added to the receiver's. */
-    private int amount;
+    private Integer amount;
 
     /** Fee to be taken from the payer and added to the master account. */
-    private int fee;
-
-    /** The minimum allowed fee for any transaction. */
-    private static final Integer MIN_FEE = 10;
+    private Integer fee;
 
     /** An arbitrary string that may be up to 1024 characters. */
     private String payload;
@@ -72,11 +69,6 @@ public class Transaction implements Serializable {
     /** Returns the fee associated with the transaction. */
     public int getFee() {
         return this.fee;
-    }
-
-    /** Returns the minimum fee allowed by all transactions. */
-    public int getMinFee() {
-        return MIN_FEE;
     }
 
     /** Returns the Account associated with the payer. */

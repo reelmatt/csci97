@@ -1,15 +1,13 @@
 package com.cscie97.ledger.test;
 
-import java.io.*;
-import com.cscie97.ledger.*;
+import com.cscie97.ledger.CommandProcessor;
+import com.cscie97.ledger.CommandProcessorException;
 
 /**
- * TestDriver - Main program to run test scripts for Ledger Service.
+ * Main program to run test scripts for Ledger Service.
  *
  * Accepts a single command line argument, which is a command file. The
  * TestDriver then processes the commands using the CommandProcessor class.
- *
- *
  *
  * @author Matthew Thomas
  * @see CommandProcessor.java
@@ -18,7 +16,7 @@ import com.cscie97.ledger.*;
  */
 public class TestDriver {
     public static void main(String[] args) {
-        // Accepts only one command line argument (command file)
+        // Require only one command line argument (command file)
         if (args.length == 0 || args.length > 1) {
             System.err.println("usage: java -cp . com.cscie97.ledger.test.TestDriver <command file>");
             return;

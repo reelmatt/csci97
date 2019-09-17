@@ -26,7 +26,7 @@ public class CommandProcessor {
      * @param commandLine
      * @throws CommandProcessorException
      */
-    public void processCommand(String commandLine) throws CommandProcessorException {
+    public void processCommand(String commandLine, Integer lineNumber) throws CommandProcessorException {
         // Break command line into a list of arguments
         List<String> args = parseCommand(commandLine);
 
@@ -36,29 +36,31 @@ public class CommandProcessor {
         // Pass remaining args into helper methods
         switch (command.toLowerCase()) {
             case "create-ledger":
-                createLedger(command, args);
+                createLedger(command, args, lineNumber);
                 break;
             case "create-account":
-                createAccount(command, args);
+                createAccount(command, args, lineNumber);
                 break;
             case "process-transaction":
-                processTransaction(command, args);
+                processTransaction(command, args, lineNumber);
                 break;
             case "get-account-balance":
+                getAccountBalance(command, args, lineNumber);
+                break;
             case "get-account-balances":
-                getAccountBalance(command, args);
+                getAccountBalances(command, args, lineNumber);
                 break;
             case "get-block":
-                getBlock(command, args);
+                getBlock(command, args, lineNumber);
                 break;
             case "get-transaction":
-                getTransaction(command, args);
+                getTransaction(command, args, lineNumber);
                 break;
             case "validate":
                 validate(command);
                 break;
             default:
-                throw new CommandProcessorException(command, "Unknown command");
+                throw new CommandProcessorException(command, "Unknown command", lineNumber);
         }
 
         return;
@@ -100,11 +102,11 @@ public class CommandProcessor {
                     System.out.println(currentLine);
                 } else if (currentLine.length() > 0) {
                     try {
-                        processCommand(currentLine);
+                        processCommand(currentLine, currentLineNumber);
                         printBlank = true;
                     } catch (CommandProcessorException e) {
-                        System.err.println(e);
-//                        throw new CommandProcessorException(e.getCommand(), e.getReason(), currentLineNumber);
+                        // catch individual command exceptions to continue reading file
+                        System.err.println(e + "\n");
                     }
                 }
             }
@@ -121,8 +123,8 @@ public class CommandProcessor {
      * Parses command line by whitespace, keeping quoted arguments intact.
      *
      * Citations:
-     * Regex pattern and matching found in this StackOverflow post
-     * https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double?rq=1
+     * Regex pattern and matching
+     * src: https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double?rq=1
      *
      * @param   commandLine     The command line to parse.
      * @return                  List of arguments, split by whitespace.
@@ -155,21 +157,26 @@ public class CommandProcessor {
      * @throws  CommandProcessorException   If Ledger has not been initialized.
      * @throws  IndexOutOfBoundsException   No argument provided on command line.
      */
-    private void createAccount(String command, List<String> args) throws CommandProcessorException {
+    private void createAccount(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         // Error if no Ledger
         if (this.ledger == null) {
-            throw new CommandProcessorException(command, "Ledger has not been initialized.");
+            throw new CommandProcessorException(
+                command,
+                "Ledger has not been initialized.",
+                lineNumber
+            );
         }
 
-        // Try to create new account
+        // Create account, id == arg[0]
         try {
             Account account = this.ledger.createAccount(args.get(0));
             System.out.println("Created account '" + account.getAddress() + "'");
         } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing 'account-id'");
+            throw new CommandProcessorException(command, "Missing 'account-id'", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
+
         return;
     }
 
@@ -183,9 +190,14 @@ public class CommandProcessor {
      * @throws  CommandProcessorException   If command line arguments are missing, indicated by
      *                                      an IndexOutOfBoundsException.
      */
-    private void createLedger(String command, List<String> args) throws CommandProcessorException {
+    private void createLedger(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        // Error if Ledger already exists
         if (this.ledger != null) {
-            throw new CommandProcessorException(command, "A Ledger has already been initialized.");
+            throw new CommandProcessorException(
+                command,
+                "A Ledger has already been initialized.",
+                lineNumber
+            );
         }
 
         // Look for arguments and create ledger
@@ -197,7 +209,7 @@ public class CommandProcessor {
             this.ledger = new Ledger(name, description, seed);
             System.out.println(String.format("Created ledger %s", this.ledger));
         } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing arguments.");
+            throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
@@ -221,10 +233,10 @@ public class CommandProcessor {
         Object value = null;
 
         if ((index = args.indexOf(key)) != -1) {
-            return value = args.get(index + 1);
+            value = args.get(index + 1);
         }
 
-        return null;
+        return value;
     }
 
     /**
@@ -244,34 +256,31 @@ public class CommandProcessor {
      *
      * @see getArgument()
      */
-    private void processTransaction(String command, List<String> args) throws CommandProcessorException {
+    private void processTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
             // Extract arguments from command line
-            String transactionId = args.get(0);
+            String id = args.get(0);
             Integer amount = Integer.parseInt((String) getArgument("amount", args));
             Integer fee = Integer.parseInt((String) getArgument("fee", args));
             String payload = (String) getArgument("payload", args);
             String payerAddress = (String) getArgument("payer", args);
             String receiverAddress = (String) getArgument("receiver", args);
 
-            // Check transaction ID and accounts are valid
-            String id = this.ledger.validateTransactionId(transactionId);
-            Account payer = this.ledger.validateAccount(payerAddress);
-            Account receiver = this.ledger.validateAccount(receiverAddress);
+            // Check accounts are valid
+            Account payer = this.ledger.getValidAccount(payerAddress);
+            Account receiver = this.ledger.getValidAccount(receiverAddress);
 
             // Create the transaction
             Transaction newTransaction = new Transaction(id, amount, fee, payload, payer, receiver);
 
             // Output transaction status
-            String transactionStatus = this.ledger.processTransaction(newTransaction);
-            System.out.println("Processed transaction #" + transactionStatus);
+            System.out.println("Processed transaction #" + this.ledger.processTransaction(newTransaction));
         } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing arguments.");
+            throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (NumberFormatException e) {
-            throw new CommandProcessorException(command, e.toString());
+            throw new CommandProcessorException(command, e.toString(), lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
-            return;
         }
 
         return;
@@ -286,29 +295,59 @@ public class CommandProcessor {
      *
      * @param args Command line arguments.
      */
-    private void getAccountBalance(String command, List<String> args) {
-        // Init a new map to store 1 account balance, or an entire map
+    private void getAccountBalance(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        // Init a new map to store account balance
         Map<String, Integer> balances = new HashMap<String, Integer>();
 
+        // Get balance at arg[0]
         try {
-            // No arguments, get all balances
-            if (args.size() == 0) {
-                balances = this.ledger.getAccountBalances();
-            } else {
-                balances.put(args.get(0), this.ledger.getAccountBalance(args.get(0)));
-            }
+            balances.put(args.get(0), this.ledger.getAccountBalance(args.get(0)));
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
 
+        // Print with formatting
+        printAccountBalances(balances);
+        return;
+    }
+
+    /**
+     * Output account balances.
+     *
+     * Handles output of individual accounts, specified by an accountId. For
+     * 'get-account-balances' command, it outputs all account balances for the
+     * most recent completed block.
+     *
+     * @param args Command line arguments.
+     */
+    private void getAccountBalances(String command, List<String> args, Integer lineNumber) {
+        // Map to store existing information
+        Map<String, Integer> balances = null;
+
+        // Get all accounts and balances
+        try {
+            balances = this.ledger.getAccountBalances();
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        // Print with formatting
+        printAccountBalances(balances);
+        return;
+    }
+
+    private void printAccountBalances(Map<String, Integer> balances) {
         // Output the map to stdout
         if (balances != null) {
             for (Map.Entry<String, Integer> account : balances.entrySet()) {
-                System.out.println(String.format("Account %s: current balance = %d", account.getKey(), account.getValue()));
+                System.out.println(String.format(
+                        "Account %s: current balance = %d",
+                        account.getKey(), account.getValue()
+                ));
             }
         }
-
-        return;
     }
 
     /**
@@ -317,15 +356,17 @@ public class CommandProcessor {
      * @param   args                        Command line arguments.
      * @throws  CommandProcessorException   Block does not exist.
      */
-    private void getBlock(String command, List<String> args) throws CommandProcessorException {
+    private void getBlock(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
             Integer blockNumber = Integer.parseInt(args.get(0));
             Block block = this.ledger.getBlock(blockNumber);
             System.out.print(block);
         } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing arguments");
+            throw new CommandProcessorException(command, "Missing arguments", lineNumber);
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, args.get(0) + " is not a number.", lineNumber);
         } catch (LedgerException e) {
-            throw new CommandProcessorException(command, e.getReason());
+            throw new CommandProcessorException(command, e.getReason(), lineNumber);
         }
 
         return;
@@ -337,16 +378,15 @@ public class CommandProcessor {
      * @param   args                        Command line arguments.
      * @throws  CommandProcessorException   Transaction not found in the Ledger.
      */
-    private void getTransaction(String command, List<String> args) throws CommandProcessorException {
-
+    private void getTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
             String transactionId = args.get(0);
             Transaction transaction = this.ledger.getTransaction(transactionId);
             System.out.println("Retrieved transaction: " + transaction);
         } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing arguments");
+            throw new CommandProcessorException(command, "Missing arguments", lineNumber);
         } catch (LedgerException e) {
-            throw new CommandProcessorException(command, e.getReason());
+            throw new CommandProcessorException(command, e.getReason(), lineNumber);
         }
 
         return;
@@ -363,7 +403,6 @@ public class CommandProcessor {
         }
 
         System.out.println("Blockchain successfully validated.");
-
         return;
     }
 }

@@ -1,20 +1,27 @@
 package com.cscie97.ledger;
 
+/**
+ * Returns from CommandProcessor methods in response to error conditions.
+ *
+ * Captures the command that was attempted and the reason for failure. In the
+ * case where commands are read from a file, the line number of the command
+ * should be inlcuded in the exception.
+ *
+ * @author Matthew Thomas
+ */
 public class CommandProcessorException extends Exception {
     private String command;
     private String reason;
     private int lineNumber = -1;
 
-    public CommandProcessorException() {
-        super();
-    }
-
+    /** Constructor for an individual command exception. */
     public CommandProcessorException(String command, String reason) {
         super(command);
         this.command = command;
         this.reason = reason;
     }
 
+    /** Constructor for a command exception read from a file. */
     public CommandProcessorException(String command, String reason, int lineNumber) {
         super(command);
         this.command = command;
@@ -32,11 +39,10 @@ public class CommandProcessorException extends Exception {
 
     /** Overrides default toString() method. */
     public String toString() {
-        String error = this.command + ": " + this.reason;
+        String error = String.format("%s: %s", this.command, this.reason);
 
         if (this.lineNumber != -1) {
-            String line = " (line " + this.lineNumber + ").";
-            error += line;
+            error += String.format(" (line %d).", this.lineNumber);
         }
         return error;
     }
