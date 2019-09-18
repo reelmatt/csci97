@@ -1,6 +1,9 @@
 package com.cscie97.ledger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +74,6 @@ public class CommandProcessor {
                 }
             }
             reader.close();
-
         } catch (IOException e) {
             throw new CommandProcessorException(currentLine, e.toString(), currentLineNumber);
         }
@@ -116,7 +118,7 @@ public class CommandProcessor {
                 getAccountBalance(command, args, lineNumber);
                 break;
             case "get-account-balances":
-                getAccountBalances();
+                getAccountBalances(command, lineNumber);
                 break;
             case "get-block":
                 getBlock(command, args, lineNumber);
@@ -125,7 +127,7 @@ public class CommandProcessor {
                 getTransaction(command, args, lineNumber);
                 break;
             case "validate":
-                validate();
+                validate(command, lineNumber);
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command", lineNumber);
@@ -182,14 +184,16 @@ public class CommandProcessor {
     /**
      * Looks for argument following the specified 'key' in the command line.
      *
-     * It is assumed the appropriate argument follows the specified 'key' in the command line,
-     * and therefore is retrieved by accessing index + 1.
+     * It is assumed the appropriate argument follows the specified 'key' in
+     * the command line and therefore is retrieved by accessing index + 1.
      *
      * @param   key                         The argument to look for.
      * @param   args                        The command line to search.
-     * @return  Object                      The Object located at (index + 1) of the 'key'.
-     * @throws  IndexOutOfBoundsException   If the 'key' is not in the list of arguments, or
-     *                                      if it does not contain a corresponding 'value'.
+     * @return  Object                      The Object located at (index + 1)
+     *                                      of the 'key'.
+     * @throws  IndexOutOfBoundsException   If the 'key' is not in the list of
+     *                                      arguments, or if it does not contain
+     *                                      a corresponding 'value'.
      */
     private Object getArgument(String key, List<String> args) throws IndexOutOfBoundsException {
         int index;
@@ -202,45 +206,6 @@ public class CommandProcessor {
         }
 
         return value;
-    }
-
-    /**
-     * Create a new account with the given account id.
-     *
-     * Expected command line to be formatted as:
-     *      create-account <account-id>
-     *
-     * Additional arguments provided are ignored. A Ledger needs to have been
-     * initialized to run this method.
-     *
-     * @param   command                     The name of the command to be run
-     *                                      (used to format Exception).
-     * @param   args                        Command line arguments.
-     * @param   lineNumber                  Current line number in the file.
-     * @throws  CommandProcessorException   If Ledger has not been initialized.
-     * @throws  IndexOutOfBoundsException   No argument provided on command line.
-     */
-    private void createAccount(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
-        // Error if no Ledger
-        if (this.ledger == null) {
-            throw new CommandProcessorException(
-                command,
-                "Ledger has not been initialized.",
-                lineNumber
-            );
-        }
-
-        // Create account, id == arg[0]
-        try {
-            Account account = this.ledger.createAccount(args.get(0));
-            System.out.println("Created account '" + account.getAddress() + "'");
-        } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing 'account-id'", lineNumber);
-        } catch (LedgerException e) {
-            System.err.println(e);
-        }
-
-        return;
     }
 
     /**
@@ -274,13 +239,48 @@ public class CommandProcessor {
 
             // Initialize the Ledger with values
             this.ledger = new Ledger(name, description, seed);
+            System.out.println(String.format("Created ledger '%s'", this.ledger));
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
 
-        System.out.println(String.format("Created ledger '%s'", this.ledger));
+        return;
+    }
+
+    /**
+     * Create a new account with the given account id.
+     *
+     * Expected command line to be formatted as:
+     *      create-account <account-id>
+     *
+     * Additional arguments provided are ignored. A Ledger needs to have been
+     * initialized to run this method.
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
+     */
+    private void createAccount(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        // Create account, id == arg[0]
+        try {
+            Account account = this.ledger.createAccount(args.get(0));
+            System.out.println("Created account '" + account.getAddress() + "'");
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing 'account-id'", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
         return;
     }
 
@@ -308,9 +308,12 @@ public class CommandProcessor {
      * @param   lineNumber                  Current line number in the file.
      * @throws  CommandProcessorException   If command line arguments are missing,
      *                                      indicated by an IndexOutOfBoundsException.
-     *                                      If an argument is suppose to be an Integer,
-     *                                      but no number is provided, a
-     *                                      NumberFormatException will be thrown.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException. If an argument
+     *                                      is suppose to be an Integer, but no
+     *                                      number is provided, a NumberFormatException
+     *                                      will be thrown.
      */
     private void processTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
@@ -336,6 +339,8 @@ public class CommandProcessor {
             throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (NumberFormatException e) {
             throw new CommandProcessorException(command, e.toString(), lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
@@ -359,6 +364,9 @@ public class CommandProcessor {
      * @param   lineNumber                  Current line number in the file.
      * @throws  CommandProcessorException   If command line arguments are missing,
      *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
      */
     private void getAccountBalance(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         // Init a new map to store account balance
@@ -370,6 +378,8 @@ public class CommandProcessor {
             balances.put(accountId, this.ledger.getAccountBalance(accountId));
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
@@ -392,16 +402,22 @@ public class CommandProcessor {
      *
      * @param   command                     The name of the command to be run
      *                                      (used to format Exception).
-     * @param   args                        Command line arguments.
      * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
      */
-    private void getAccountBalances() {
+    private void getAccountBalances(String command, Integer lineNumber) throws CommandProcessorException {
         // Map to store existing information
         Map<String, Integer> balances = null;
 
         // Get all accounts and balances
         try {
             balances = this.ledger.getAccountBalances();
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
@@ -435,11 +451,19 @@ public class CommandProcessor {
     /**
      * Output the details for the given block number.
      *
+     * Expected command line to be formatted as:
+     *      get-block <block-number>
+     *
      * @param   command                     The name of the command to be run
      *                                      (used to format Exception).
      * @param   args                        Command line arguments.
      * @param   lineNumber                  Current line number in the file.
-     * @throws  CommandProcessorException   Block does not exist.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException. If a Block does
+     *                                      not exist.
      */
     private void getBlock(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
@@ -450,6 +474,8 @@ public class CommandProcessor {
             throw new CommandProcessorException(command, "Missing arguments", lineNumber);
         } catch (NumberFormatException e) {
             throw new CommandProcessorException(command, args.get(0) + " is not a number.", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
@@ -460,11 +486,19 @@ public class CommandProcessor {
     /**
      * Output the details of the given transaction id.
      *
+     * Expected command line to be formatted as:
+     *      get-transaction <transaction-id>
+     *
      * @param   command                     The name of the command to be run
      *                                      (used to format Exception).
      * @param   args                        Command line arguments.
      * @param   lineNumber                  Current line number in the file.
-     * @throws  CommandProcessorException   Transaction not found in the Ledger.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException. If a Transaction
+     *                                      is not found in the Ledger.
      */
     private void getTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
@@ -473,6 +507,8 @@ public class CommandProcessor {
             System.out.println(transaction);
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
         } catch (LedgerException e) {
             throw new CommandProcessorException(command, e.getReason(), lineNumber);
         }
@@ -485,11 +521,23 @@ public class CommandProcessor {
      * be printed to stdout. On LedgerException (i.e. blockchain is _not_ valid),
      * the Exception will be printed to stderr.
      *
+     * Expected command line to be formatted as:
+     *      validate
+     *
      * @see Ledger#validate
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
      */
-    private void validate() {
+    private void validate(String command, Integer lineNumber) throws CommandProcessorException {
         try {
             this.ledger.validate();
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }

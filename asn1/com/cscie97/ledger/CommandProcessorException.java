@@ -41,6 +41,7 @@ public class CommandProcessorException extends Exception {
     public String toString() {
         String error = String.format("%s: %s", this.command, this.reason);
 
+        // If there's a line number, include it in the output
         if (this.lineNumber != -1) {
             error += String.format(" (line %d).", this.lineNumber);
         }

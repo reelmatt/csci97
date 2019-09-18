@@ -11,6 +11,7 @@ public class LedgerException extends Exception {
     private String action;
     private String reason;
 
+    /** Constructor for an individual command exception. */
     public LedgerException(String action, String reason) {
         super(action);
         this.action = action;
@@ -20,6 +21,8 @@ public class LedgerException extends Exception {
     public String getReason() {
         return this.reason;
     }
+
+    /** Overrides default toString() method. */
     public String toString() {
         return this.action + ": " + this.reason;
     }

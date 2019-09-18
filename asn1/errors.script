@@ -4,6 +4,9 @@ foobar
 # expect 'Unknown command' exception
 foobar baz
 
+# expect error, no Ledger created yet
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer mary receiver bob
+
 # expect 'Missing argument' exception
 create-ledger
 
@@ -61,6 +64,8 @@ process-transaction 9 amount 10 fee 10 payload "fund account" payer mary receive
 process-transaction 10 amount 10 fee 10 payload "fund account" payer mary receiver bob
 
 # output block 1
+# note: transaction 2 ends at "Ut enim" instead of "est laborum". Payload successfully
+#       restricted to 1024 chars
 get-block 1
 
 # expect error since no block 2 has been committed
@@ -75,14 +80,9 @@ get-block -1
 # successfully output transaction 3
 get-transaction 3
 
-get-transaction 1024
+
+# expect error, since account 'jack' does not exist
+get-account-balance jack
 
 # should pass validation
 validate
-
-
-
-
-
-
-process-transaction 2 amount 10 fee 10 payload "fund account" payer mary receiver jack

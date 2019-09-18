@@ -3,8 +3,6 @@ package com.cscie97.ledger;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -99,9 +97,9 @@ public class Ledger {
      * method differs from behavior in others like getAccountBalance() and
      * getTransaction() which return information from the last completed block.
      *
-     * @param   accountId           The account to retrieve.
-     * @return                      Account with address matching 'accountId'.
-     *                              null, if no account exists.
+     * @param   accountId   The account to retrieve.
+     * @return              Account with address matching 'accountId'. null, if
+     *                      no account exists.
      */
     public Account getExistingAccount(String accountId) {
         return this.currentBlock.getAccount(accountId);
@@ -298,13 +296,12 @@ public class Ledger {
     /**
      * Validates the current state of the blockchain.
      *
-     * For each block that has been committed, check:
-     *      1) the hash of the previous hash,
-     *      2) ensure that account balances total the maximum value, and
-     *      3) that each block has exactly 10 transactions.
+     * Iterates through all blocks currently committed to the chain in the
+     * blockMap and validates each one.
      *
-     * @throws LedgerException  If the current state of the blockchain is
-     *                          invalid, failing one of the three tests listed.
+     * @see validateBlock
+     *
+     * @throws LedgerException  If the current state of the blockchain is invalid.
      */
     public void validate() throws LedgerException {
         Iterator<Map.Entry<Integer, Block>> blocks = listBlocks();

@@ -2,27 +2,26 @@ package com.cscie97.ledger;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Base64;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Base64;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.ByteArrayInputStream;
 
 /**
  * Block - Aggregates groups of transactions in the blockchain.
  *
  * Transactions are added to blocks in the order that they are received. Prior
  * to adding a transaction to a block, the transaction must be validated.
- * The block contains an account balance map that reflects the balance of all
- * accounts after all the transactions within the block have been applied. The
- * block contains the hash of the previous block and the hash of itself.
+ * Invalid transactions are discarded. The block contains an account balance map
+ * that reflects the balance of all accounts after all the transactions within
+ * the block have been applied. The block contains the hash of the previous
+ * block and the hash of itself.
  *
  * @author Matthew Thomas
  */
@@ -39,7 +38,7 @@ public class Block implements Serializable {
     /** An ordered list of Transactions that are included in the current block. */
     private List<Transaction> transactionList;
 
-    /** Full set of accounts managed by the Ledger. */
+    /** Full set of accounts. */
     private Map<String, Account> accountBalanceMap;
 
     /** References the preceding Block in the blockchain. */
@@ -357,14 +356,27 @@ public class Block implements Serializable {
 
     /** Overrides default toString() method. */
     public String toString() {
+        String block;
         String separator = "+-----------------------------------------------\n";
 
         // Print Block header with properities
-        String block = separator;
-        block += String.format("| Block #%d\n", this.blockNumber);
-        block += String.format("|  previousHash: %s\n", this.previousHash);
-        block += String.format("| previousBlock: %d\n", (this.previousBlock == null) ? null : this.previousBlock.getBlockNumber() );
-        block += String.format("|          hash: %s\n", this.hash);
+        block = separator;
+        block += String.format(
+                     "| Block #%d\n",
+                     this.blockNumber
+                 );
+        block += String.format(
+                     "|  previousHash: %s\n",
+                     this.previousHash
+                 );
+        block += String.format(
+                     "| previousBlock: %d\n",
+                     (this.previousBlock == null) ? null : this.previousBlock.getBlockNumber()
+                 );
+        block += String.format(
+                     "|          hash: %s\n",
+                     this.hash
+                 );
         block += separator;
 
         // Print transaction list
