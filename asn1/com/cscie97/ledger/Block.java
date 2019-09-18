@@ -45,9 +45,6 @@ public class Block implements Serializable {
     /** References the preceding Block in the blockchain. */
     private Block previousBlock;
 
-    /** Minimum allowed account balance. */
-    private static final int MIN_ACCOUNT_BALANCE = 0;
-
     /** Maximum allowed account balance. */
     private static final int MAX_ACCOUNT_BALANCE = Integer.MAX_VALUE;
 
@@ -57,8 +54,16 @@ public class Block implements Serializable {
     /**
      * Block Constructor
      *
+     * Sequentially numbered blocks, aggregates transaction and account
+     * information. A Block also contains a reference to the previous block in
+     * the chain (except for the first block). When a Block is committed to the
+     * chain, a hash is generated using all properties and associations and the
+     * SHA-256 algorithm.
+     *
      * @param number        Block number (ID)
-     * @param previousBlock Contents of previousBlock (for hashing)
+     * @param previousBlock The previousBlock in the chain. Contains copy of
+     *                      accounts and balances, and the Object is used to
+     *                      check the previousHash.
      */
     public Block (int number, Block previousBlock) {
         this.blockNumber = number;
@@ -108,7 +113,7 @@ public class Block implements Serializable {
     }
 
     /**
-     * Returns the account matching 'address'.
+     * Returns the Account matching 'address'.
      *
      * @param address The account to lookup in the map.
      */
@@ -116,7 +121,11 @@ public class Block implements Serializable {
         return this.accountBalanceMap.get(address);
     }
 
-    /** @param account The account to add to the current balance map. */
+    /**
+     * Creates a new entry in the accountBalanceMap.
+     *
+     * @param account The account to add to the current balance map.
+     */
     public void addAccount(Account account) {
         this.accountBalanceMap.put(account.getAddress(), account);
     }
@@ -170,13 +179,13 @@ public class Block implements Serializable {
             totalCurrency += entry.getValue().getBalance();
         }
 
-        // True (valide) when total currency adds up to MAX_ACCOUNT_BALANCE
+        // True (valid) when total currency adds up to MAX_ACCOUNT_BALANCE
         return totalCurrency == MAX_ACCOUNT_BALANCE;
 
     }
 
     /**
-     * Validates the previous block's hash equals the stored value of said hash.
+     * Validates that the previous block's hash equals the stored value of said hash.
      *
      * @param   seed    The Ledger's seed value, used as input to the hash.
      * @return          True, if the hashes match. Otherwise, false.
@@ -217,39 +226,70 @@ public class Block implements Serializable {
     }
 
     /**
+     * Compute hash of block.
      *
-     * @param object
-     * @return
+     * For all non-null Blocks, serialize the Block (including its properties
+     * and associations, excluding the block's own hash) and the Ledger seed
+     * as a salt. The output is then hashed, using SHA-256 and converted to a
+     * String.
+     *
+     * @param   blockToHash Block object to hash.
+     * @param   seed        Ledger's seed value to use as input to hash.
+     * @return              Hash of block, converted to a String.
      */
-    private byte[] serializeToArray(Object object) {
-
-        ByteArrayOutputStream bos = null;
-
-        try {
-            // Create byte array output stream and use it to create object output stream
-            bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(bos);
-
-            // serialize
-            oos.writeObject(object);
-            oos.flush();
-        } catch (IOException e) {
-            System.err.println(e);
+    private String computeHash(Block blockToHash, String seed) {
+        // If no block to hash, ignore (the genesis block)
+        if (blockToHash == null ) {
+            return null;
         }
-        return bos.toByteArray();
+
+        // Convert Block to a byte[], to hash with SHA-256
+        byte[] toHash = blockToBytes(blockToHash, seed);
+
+        // Convert hash to String
+        return hashToString(toHash);
     }
 
+    /**
+     * Generate a hash and convert to a String. Use SHA-256.
+     *
+     * Citations:
+     * src: https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
+     * src: https://www.baeldung.com/sha-256-hashing-java
+     *
+     * @param   toHash  The byte array to hash.
+     * @return          String representation of hash.
+     */
+    private String hashToString(byte[] toHash) {
+        // Initialize a SHA-256 hasher
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println(e.toString());
+        }
+
+        // Hash the byte-ified Block object
+        byte[] encodedHash = digest.digest(toHash);
+
+        // Converting byte[] to String
+        // src: https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
+        return Base64.getEncoder().encodeToString(encodedHash);
+    }
 
     /**
      * Serialize a Block.
      *
-     * To be included in the byte[]:
+     * Helper method to serialize the requested parts of a Block object, such
+     * that it can be hashed with SHA-256. The hash, and therefore the contents
+     * of the byte[] include the following:
      *      1) Ledger's seed value,
      *      2) blockNumber,
      *      3) previousHash,
      *      4) transactionList,
      *      5) accountBalanceMap,
      *
+     * Citations:
      * Creating a byte array:
      * src: https://stackoverflow.com/questions/5368704/appending-a-byte-to-the-end-of-another-byte/5368731
      *
@@ -277,7 +317,6 @@ public class Block implements Serializable {
             // Convert Block associations
             block.write(serializeToArray( blockToHash.getTransactionList() ));
             block.write(serializeToArray( blockToHash.getBalanceMap() ));
-
         } catch (IOException e) {
             System.err.println(e);
         }
@@ -285,52 +324,36 @@ public class Block implements Serializable {
         // Convert to byte[]
         return block.toByteArray();
     }
-    /**
-     * Compute hash of block.
-     *
-     * @param   blockToHash Block object to hash.
-     * @param   seed        Ledger's seed value to use as input to hash.
-     * @return              Hash of block, converted to a String.
-     */
-    private String computeHash(Block blockToHash, String seed) {
-        // If no block to hash, ignore (the genesis block)
-        if (blockToHash == null ) {
-            return null;
-        }
-
-        // Convert Block to a byte[], to hash with SHA-256
-        byte[] toHash = blockToBytes(blockToHash, seed);
-
-        // Convert hash to String
-        return hashToString(toHash);
-    }
 
     /**
-     * Generate a hash and convert to a String. Use SHA-256.
+     * Serialize an Object into an array of bytes.
      *
-     * src: https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
-     * src: https://www.baeldung.com/sha-256-hashing-java
+     * This helper method converts an Object which implements Serializable into
+     * a byte[]. This is called by blockToBytes() to convert a Block's
+     * transaction list and account balance map such that they can be hashed.
      *
-     * @param   toHash  The byte array to hash.
-     * @return          String representation of hash.
+     * @see blockToBytes
+     *
+     * @param   object  The Object to convert to bytes.
+     * @return          The resulting byte[].
      */
-    private String hashToString(byte[] toHash) {
-        // Initialize a SHA-256 hasher
-        MessageDigest digest = null;
+    private byte[] serializeToArray(Object object) {
+        ByteArrayOutputStream bos = null;
+
         try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(e.toString());
+            // Create byte array output stream to use with the object output stream
+            bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+
+            // Serialize 'object'
+            oos.writeObject(object);
+            oos.flush();
+        } catch (IOException e) {
+            System.err.println(e);
         }
 
-        // Hash the byte-ified Block object
-        byte[] encodedHash = digest.digest(toHash);
-
-        // Converting byte[] to String
-        // src: https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
-        return Base64.getEncoder().encodeToString(encodedHash);
+        return bos.toByteArray();
     }
-
 
     /** Overrides default toString() method. */
     public String toString() {

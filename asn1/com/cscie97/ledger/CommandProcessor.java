@@ -12,6 +12,12 @@ import java.util.HashMap;
 /**
  * CommandProcessor - Utility class to feed Ledger a set of operations.
  *
+ * This class is used by the TestDriver to open a file containing a set of
+ * commands. It then processes each command, outputting a formatted response,
+ * or the error message from the caught Exception. It contains several helper
+ * methods to process a command for each publically-accessible API of the Ledger
+ * Service.
+ *
  * @author Matthew Thomas
  */
 public class CommandProcessor {
@@ -19,12 +25,74 @@ public class CommandProcessor {
     private Ledger ledger = null;
 
     /**
+     * Process a set of commands provided within the given 'commandFile'.
+     *
+     * Creates a buffer to read the specified command file line-by-line. All
+     * input lines will also be output to stdout, including comments and blank
+     * lines, as suggested in post @67 on Piazza. Any non-comment or non-blank
+     * line will be sent to processCommand() where it will be parsed into
+     * arguments and checked against a list of public API methods provided by
+     * the Ledger.
+     *
+     * @param   commandFile                 Name of the file to open/process.
+     * @throws  CommandProcessorException   When FileNotFound or IO exceptions
+     *                                      come up, or if processCommand does
+     *                                      not recognize the command line.
+     */
+    public void processCommandFile(String commandFile) throws CommandProcessorException {
+        // Keep track of current line and line number
+        String currentLine = "";
+        Integer currentLineNumber = 0;
+
+        // Open file 'commandFile' into a buffer
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(commandFile));
+        } catch (FileNotFoundException e) {
+            throw new CommandProcessorException("open file", e.toString(), currentLineNumber);
+        }
+
+        // Read file
+        try {
+            while ( (currentLine = reader.readLine()) != null ) {
+                currentLineNumber++;
+
+                // Print the input line to stdout - see Piazza post @67
+                System.out.println(currentLine);
+
+                // Skip blank lines, or comments (indicated by a starting '#')
+                if (currentLine.length() > 0 && currentLine.charAt(0) != '#') {
+                    try {
+                        processCommand(currentLine, currentLineNumber);
+                    } catch (CommandProcessorException e) {
+                        // catch individual command exceptions to continue reading file
+                        System.err.println(e);
+                    }
+                }
+            }
+            reader.close();
+
+        } catch (IOException e) {
+            throw new CommandProcessorException(currentLine, e.toString(), currentLineNumber);
+        }
+
+        return;
+    }
+
+    /**
      * Process a single command.
      *
-     * Output of the command is formatted and displayed to stdout.
+     * Output of the command is formatted and displayed to stdout. Any
+     * LedgerExceptions are caught with their contents output to stderr.
+     * Problems with the commands written from the file, missing arguments, or
+     * others, will throw a CommandProcessorException.
      *
-     * @param commandLine
-     * @throws CommandProcessorException
+     * @param   commandLine                 The current command line from the
+     *                                      input file.
+     * @param   lineNumber                  The current line number in the file.
+     * @throws  CommandProcessorException   If there is a problem reading or
+     *                                      processing the command line received
+     *                                      from the input file.
      */
     public void processCommand(String commandLine, Integer lineNumber) throws CommandProcessorException {
         // Break command line into a list of arguments
@@ -48,7 +116,7 @@ public class CommandProcessor {
                 getAccountBalance(command, args, lineNumber);
                 break;
             case "get-account-balances":
-                getAccountBalances(command, args, lineNumber);
+                getAccountBalances();
                 break;
             case "get-block":
                 getBlock(command, args, lineNumber);
@@ -57,7 +125,7 @@ public class CommandProcessor {
                 getTransaction(command, args, lineNumber);
                 break;
             case "validate":
-                validate(command);
+                validate();
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command", lineNumber);
@@ -67,82 +135,73 @@ public class CommandProcessor {
     }
 
     /**
-     * Process a set of commands provided within the given 'commandFile'.
-     *
-     * @param   file
-     * @throws  CommandProcessorException   Error conditions.
-     */
-    public void processCommandFile(String commandFile) throws CommandProcessorException {
-        // Keep track of current line, and line number, in file
-        BufferedReader reader;
-        String currentLine = "";
-        Integer currentLineNumber = 0;
-        Boolean printBlank = true;
-
-        // Open file 'commandFile'
-        try {
-            reader = new BufferedReader(new FileReader(commandFile));
-        } catch (FileNotFoundException e) {
-            throw new CommandProcessorException(currentLine, e.toString(), currentLineNumber);
-        }
-
-        // Read file
-        try {
-            while ( (currentLine = reader.readLine()) != null ) {
-                currentLineNumber++;
-
-                // Skip blank lines, or comments (indicated by '#')
-                if (currentLine.length() <= 0) {
-                    // Print one blank line in stdout for group of blanks/comments
-                    if (printBlank) {
-                        System.out.println();
-                        printBlank = false;
-                    }
-                } else if (currentLine.charAt(0) == '#') {
-                    System.out.println(currentLine);
-                } else if (currentLine.length() > 0) {
-                    try {
-                        processCommand(currentLine, currentLineNumber);
-                        printBlank = true;
-                    } catch (CommandProcessorException e) {
-                        // catch individual command exceptions to continue reading file
-                        System.err.println(e + "\n");
-                    }
-                }
-            }
-            reader.close();
-
-        } catch (IOException e) {
-            throw new CommandProcessorException(currentLine, e.toString(), currentLineNumber);
-        }
-
-        return;
-    }
-
-    /**
      * Parses command line by whitespace, keeping quoted arguments intact.
      *
-     * Citations:
-     * Regex pattern and matching
-     * src: https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double?rq=1
+     * As noted by the top answer on StackOverflow (cited below), the copied
+     * regex expression looks for
+     *      1) Sequences of characters that aren't spaces or quotes
+     *      2) And sequences of characters that begin and end with a quote
+     *         (for both single (') and double (") quotes).
+     *
+     * This code (and regex expression) are copied from the example at the URL
+     * below. All credit to Jan Goyvaerts and Alan Moore.
+     * src: https://stackoverflow.com/a/366532
+     *
+     * My understanding of the regular expression is as follows:
+     *      "[^\\s\"']+     Looks for a string of non-whitespace and non-quote
+     *                      characters. The group will stop when any one of those
+     *                      is found.
+     *      \"([^\"]*)\"    Will look for a double quote ("), followed by any
+     *                      number of non-double-quote chars, ending the grouping
+     *                      when a double quote is found.
+     *      '([^']*)'"      Will look for a single quote ('), followed by any
+     *                      number of non-single-quote chars, ending the grouping
+     *                      when a single quote is found.
      *
      * @param   commandLine     The command line to parse.
      * @return                  List of arguments, split by whitespace.
      */
     private static List<String> parseCommand(String commandLine) {
         List<String> matchList = new ArrayList<String>();
-        Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"");
+        Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
         Matcher regexMatcher = regex.matcher(commandLine);
 
         while (regexMatcher.find()) {
             if (regexMatcher.group(1) != null) {
-                matchList.add(regexMatcher.group(1));
+                matchList.add(regexMatcher.group(1));   // double-quoted string
+            } else if (regexMatcher.group(2) != null) {
+                matchList.add(regexMatcher.group(2));   // single-quoted string
             } else {
-                matchList.add(regexMatcher.group());
+                matchList.add(regexMatcher.group());    // unquoted word
             }
         }
 
         return matchList;
+    }
+
+    /**
+     * Looks for argument following the specified 'key' in the command line.
+     *
+     * It is assumed the appropriate argument follows the specified 'key' in the command line,
+     * and therefore is retrieved by accessing index + 1.
+     *
+     * @param   key                         The argument to look for.
+     * @param   args                        The command line to search.
+     * @return  Object                      The Object located at (index + 1) of the 'key'.
+     * @throws  IndexOutOfBoundsException   If the 'key' is not in the list of arguments, or
+     *                                      if it does not contain a corresponding 'value'.
+     */
+    private Object getArgument(String key, List<String> args) throws IndexOutOfBoundsException {
+        int index;
+        Object value = null;
+
+        if ((index = args.indexOf(key)) != -1) {
+            value = args.get(index + 1);
+        } else {
+            throw new IndexOutOfBoundsException();
+        }
+
+        return value;
     }
 
     /**
@@ -151,9 +210,13 @@ public class CommandProcessor {
      * Expected command line to be formatted as:
      *      create-account <account-id>
      *
-     * Additional arguments provided are ignored.
+     * Additional arguments provided are ignored. A Ledger needs to have been
+     * initialized to run this method.
      *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
      * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
      * @throws  CommandProcessorException   If Ledger has not been initialized.
      * @throws  IndexOutOfBoundsException   No argument provided on command line.
      */
@@ -186,9 +249,12 @@ public class CommandProcessor {
      * Expected command line to be formatted as:
      *      create-ledger <name> description <description> seed <seed>
      *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
      * @param   args                        Command line arguments.
-     * @throws  CommandProcessorException   If command line arguments are missing, indicated by
-     *                                      an IndexOutOfBoundsException.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
      */
     private void createLedger(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         // Error if Ledger already exists
@@ -200,43 +266,22 @@ public class CommandProcessor {
             );
         }
 
-        // Look for arguments and create ledger
         try {
+            // Look for arguments
             String name = args.get(0);
             String description = (String) getArgument("description", args);
             String seed = (String) getArgument("seed", args);
 
+            // Initialize the Ledger with values
             this.ledger = new Ledger(name, description, seed);
-            System.out.println(String.format("Created ledger %s", this.ledger));
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (LedgerException e) {
             System.err.println(e);
         }
 
+        System.out.println(String.format("Created ledger '%s'", this.ledger));
         return;
-    }
-
-    /**
-     * Looks for argument following the specified 'key' in the command line.
-     *
-     * It is assumed the appropriate argument follows the specified 'key' in the command line,
-     * and therefore is retrieved by accessing index + 1.
-     *
-     * @param   key                         The argument to look for.
-     * @param   args                        The command line to search.
-     * @return  Object                      The Object located at (index + 1) of the 'key'.
-     * @throws  IndexOutOfBoundsException   If command line arguments are missing.
-     */
-    private Object getArgument(String key, List<String> args) throws IndexOutOfBoundsException {
-        int index;
-        Object value = null;
-
-        if ((index = args.indexOf(key)) != -1) {
-            value = args.get(index + 1);
-        }
-
-        return value;
     }
 
     /**
@@ -250,11 +295,22 @@ public class CommandProcessor {
      *                          payer <account-address>
      *                          receiver <account-address>
      *
-     * @TODO Need more argument error checking.
-     *
-     * @param args Command line arguments.
+     * Extract the required arguments from the command line, retrieve the
+     * Accounts from the Ledger, and construct a new Transaction to submit to
+     * the Ledger to process. If the Transaction fails to process, a
+     * LedgerException is thrown and output to stderr.
      *
      * @see getArgument()
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If an argument is suppose to be an Integer,
+     *                                      but no number is provided, a
+     *                                      NumberFormatException will be thrown.
      */
     private void processTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
@@ -267,14 +323,15 @@ public class CommandProcessor {
             String receiverAddress = (String) getArgument("receiver", args);
 
             // Check accounts are valid
-            Account payer = this.ledger.getValidAccount(payerAddress);
-            Account receiver = this.ledger.getValidAccount(receiverAddress);
+            Account payer = this.ledger.getExistingAccount(payerAddress);
+            Account receiver = this.ledger.getExistingAccount(receiverAddress);
 
             // Create the transaction
             Transaction newTransaction = new Transaction(id, amount, fee, payload, payer, receiver);
 
             // Output transaction status
-            System.out.println("Processed transaction #" + this.ledger.processTransaction(newTransaction));
+            String result = this.ledger.processTransaction(newTransaction);
+            System.out.println("Processed transaction #" + result);
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (NumberFormatException e) {
@@ -289,19 +346,28 @@ public class CommandProcessor {
     /**
      * Output account balances.
      *
-     * Handles output of individual accounts, specified by an accountId. For
-     * 'get-account-balances' command, it outputs all account balances for the
-     * most recent completed block.
+     * Expected command line to be formatted as:
+     *      get-account-balance <account-id>
      *
-     * @param args Command line arguments.
+     * Handles output of individual accounts, specified by an accountId.
+     *
+     * @see printAccountBalances
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
      */
     private void getAccountBalance(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         // Init a new map to store account balance
         Map<String, Integer> balances = new HashMap<String, Integer>();
 
-        // Get balance at arg[0]
         try {
-            balances.put(args.get(0), this.ledger.getAccountBalance(args.get(0)));
+            // Account ID located at arg[0]
+            String accountId = args.get(0);
+            balances.put(accountId, this.ledger.getAccountBalance(accountId));
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
         } catch (LedgerException e) {
@@ -316,13 +382,20 @@ public class CommandProcessor {
     /**
      * Output account balances.
      *
-     * Handles output of individual accounts, specified by an accountId. For
-     * 'get-account-balances' command, it outputs all account balances for the
+     * Expected command line to be formatted as:
+     *      get-account-balances
+     *
+     * Handles output of all accounts, located in the accountBalanceMap of the
      * most recent completed block.
      *
-     * @param args Command line arguments.
+     * @see printAccountBalances
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
      */
-    private void getAccountBalances(String command, List<String> args, Integer lineNumber) {
+    private void getAccountBalances() {
         // Map to store existing information
         Map<String, Integer> balances = null;
 
@@ -338,9 +411,18 @@ public class CommandProcessor {
         return;
     }
 
+    /**
+     * Formats the accountBalanceMap for printing to stdout.
+     *
+     * For each entry listed in the account balance map, the account address
+     * and current balance is extracted, formatted, and output to stdout.
+     *
+     * @param balances  The account balance map to iterate and format.
+     */
     private void printAccountBalances(Map<String, Integer> balances) {
-        // Output the map to stdout
+        // Skip printing if no balances
         if (balances != null) {
+            // Get address and balance for each account entry
             for (Map.Entry<String, Integer> account : balances.entrySet()) {
                 System.out.println(String.format(
                         "Account %s: current balance = %d",
@@ -353,7 +435,10 @@ public class CommandProcessor {
     /**
      * Output the details for the given block number.
      *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
      * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
      * @throws  CommandProcessorException   Block does not exist.
      */
     private void getBlock(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
@@ -366,7 +451,7 @@ public class CommandProcessor {
         } catch (NumberFormatException e) {
             throw new CommandProcessorException(command, args.get(0) + " is not a number.", lineNumber);
         } catch (LedgerException e) {
-            throw new CommandProcessorException(command, e.getReason(), lineNumber);
+            System.err.println(e);
         }
 
         return;
@@ -375,14 +460,17 @@ public class CommandProcessor {
     /**
      * Output the details of the given transaction id.
      *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
      * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
      * @throws  CommandProcessorException   Transaction not found in the Ledger.
      */
     private void getTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         try {
             String transactionId = args.get(0);
             Transaction transaction = this.ledger.getTransaction(transactionId);
-            System.out.println("Retrieved transaction: " + transaction);
+            System.out.println(transaction);
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments", lineNumber);
         } catch (LedgerException e) {
@@ -393,9 +481,13 @@ public class CommandProcessor {
     }
 
     /**
-     * Validate the current state of the block chain.
+     * Validate the current state of the block chain. On success, message will
+     * be printed to stdout. On LedgerException (i.e. blockchain is _not_ valid),
+     * the Exception will be printed to stderr.
+     *
+     * @see Ledger#validate
      */
-    private void validate(String command) {
+    private void validate() {
         try {
             this.ledger.validate();
         } catch (LedgerException e) {

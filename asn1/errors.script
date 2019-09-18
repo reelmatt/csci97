@@ -1,17 +1,25 @@
 # expect 'Unknown command' exception
 foobar
+
+# expect 'Unknown command' exception
 foobar baz
 
 # expect 'Missing argument' exception
 create-ledger
 
-# create-ledger <name> description <description> seed <seed>
+# expect 'Missing argument' exception (missing 'seed')
+create-ledger errors description "test errors ledger"
+
+# Successfully create a ledger
+Create-ledger errors description "test errors ledger" seed "oxford"
+
+# expect error if you try to create another ledger
 Create-ledger errors description "test errors ledger" seed "oxford"
 
 # expect 'Missing argument' exception
 create-account
 
-# create-account <account-id>
+# Successfully create accounts 'mary' and 'bob'
 create-account mary
 create-account bob
 
@@ -29,18 +37,52 @@ process-transaction 1 amount 1000 fee 10 payload "fund account" payer master rec
 
 # expect error since 'mary' has insufficient balance
 process-transaction 1 amount 1000 fee 10 payload "fund account" payer mary receiver bob
-process-transaction 1 amount 1000 fee 10 payload "fund account" payer mary receiver master
 
-# expect error since amount would exceed max
+# expect error since withdrawal amount would exceed total currency
 process-transaction 1 amount 2147483647 fee 10 payload "fund account" payer master receiver mary
-process-transaction 2 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 3 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 4 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 5 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 6 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 7 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 8 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 9 amount 10 fee 10 payload "fund account" payer mary receiver jack
-process-transaction 10 amount 10 fee 10 payload "fund account" payer mary receiver jack
 
+# expect error since minimum fee not met
+process-transaction 1 amount 2147483647 fee 0 payload "fund account" payer master receiver mary
+
+# successfully fund account
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer master receiver mary
+
+# will process transaction, but trim payload to 1024 characters when accessed
+process-transaction 2 amount 100 fee 10 payload "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." payer master receiver mary
+
+# create 8 other transactions
+process-transaction 3 amount 10 fee 10 payload "fund account" payer mary receiver bob
+process-transaction 4 amount 10 fee 10 payload "fund account" payer mary receiver bob
+process-transaction 5 amount 10 fee 10 payload "fund account" payer mary receiver bob
+process-transaction 6 amount 10 fee 10 payload "fund account" payer mary receiver bob
+process-transaction 7 amount 10 fee 10 payload "fund account" payer mary receiver bob
+process-transaction 8 amount 10 fee 10 payload "fund account" payer mary receiver bob
+process-transaction 9 amount 10 fee 10 payload "fund account" payer mary receiver bob
+process-transaction 10 amount 10 fee 10 payload "fund account" payer mary receiver bob
+
+# output block 1
 get-block 1
+
+# expect error since no block 2 has been committed
+get-block 2
+
+# expect error since no block 0 exists
+get-block 0
+
+# expect error since no block -1 exists
+get-block -1
+
+# successfully output transaction 3
+get-transaction 3
+
+get-transaction 1024
+
+# should pass validation
+validate
+
+
+
+
+
+
+process-transaction 2 amount 10 fee 10 payload "fund account" payer mary receiver jack

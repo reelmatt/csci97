@@ -29,16 +29,16 @@ public class Ledger {
     private String seed;
 
     /** Number of Transactions allowed per Block. */
-    private static final int TRANSACTIONS_PER_BLOCK = 10;
+    private static final Integer TRANSACTIONS_PER_BLOCK = 10;
 
     /** The minimum allowed fee for any transaction. */
     private static final Integer MIN_FEE = 10;
 
-    /** Maximum allowed account balance. */
-    private static final int MAX_ACCOUNT_BALANCE = Integer.MAX_VALUE;
+    /** Minimum allowed account balance. */
+    private static final Integer MIN_ACCOUNT_BALANCE = 0;
 
-    /** List of accounts managed by the Ledger. */
-    private List<String> accountList;
+    /** Maximum allowed account balance. */
+    private static final Integer MAX_ACCOUNT_BALANCE = Integer.MAX_VALUE;
 
     /** Working block of the blockchain. */
     private Block currentBlock;
@@ -50,8 +50,15 @@ public class Ledger {
      * Ledger Constructor
      *
      * Sets the name, description, and seed for the blockchain using provided
-     * input. Initializes the first block (known as the genesis block), the
-     * master account, and initializes the master account balance.
+     * input. Initializes the first working block, the master account, and
+     * initializes the master account balance.
+     *
+     * The design document includes creating a 'genesisBlock' that is the start
+     * of the blockchain. In this implementation, there is no special
+     * 'genesisBlock'. Rather, there is the blockchain -- stored in blockMap --
+     * and a 'currentBlock' which keeps track of not-yet-commited transactions
+     * and new accounts. The genesisBlock is therefore just the first block in
+     * the blockMap, and can be accessed using getBlock(1).
      *
      * @param   name                Name of ledger.
      * @param   description         Ledger description.
@@ -66,11 +73,10 @@ public class Ledger {
         this.description = description;
         this.seed = seed;
 
-        // Initialize internal trackers
-        this.accountList = new ArrayList<String>();
+        // Initialize blockchain map
         this.blockMap = new LinkedHashMap<Integer, Block>();
 
-        // Create currentBlock (genesisBlock)
+        // Create current working block (blockNumber of 1, aka the genesis block)
         this.currentBlock = new Block((this.blockMap.size() + 1), null);
 
         // Try creating master account
@@ -87,29 +93,18 @@ public class Ledger {
     }
 
     /**
-     * Retrieves an Account to add to a new Transaction.
+     * Retrieves an existing account.
      *
-     * Check the current block and retrieve the account stored in its
-     * accountBalanceMap, if one exists. This differs from behavior in
-     * getAccountBalance() and getAccountBalances() methods, which return
-     * information from the last completed block.
+     * Checks the most up-to-date list in the in-progress 'currentBlock'. This
+     * method differs from behavior in others like getAccountBalance() and
+     * getTransaction() which return information from the last completed block.
      *
      * @param   accountId           The account to retrieve.
      * @return                      Account with address matching 'accountId'.
-     * @throws  LedgerException     If the account does not exist.
+     *                              null, if no account exists.
      */
-    public Account getValidAccount(String accountId) throws LedgerException {
-        Account account = this.currentBlock.getAccount(accountId);
-
-        // The account does not exist in the current block
-        if (account == null) {
-            throw new LedgerException(
-                    "get account",
-                    "The account '" + accountId + "' does not exist."
-            );
-        }
-
-        return account;
+    public Account getExistingAccount(String accountId) {
+        return this.currentBlock.getAccount(accountId);
     }
 
     /** Returns Iterator of all entries in the block map. */
@@ -120,10 +115,11 @@ public class Ledger {
     /**
      * Create a new account.
      *
-     * Checks requested 'accountId' is unique. If so, the 'accountId' is assigned
-     * as the 'address' of the account, a unique identifier. The balance of the
-     * account is set to 0. If it is the master account, the balance is set to
-     * MAX_ACCOUNT_BALANCE, which is equal to Integer.MAX_VALUE.
+     * Checks requested 'accountId' is unique. If no existing account with
+     * 'accountId' exists, the 'accountId' is assigned as the 'address' of the
+     * account, a unique identifier. The balance of the account is set to 0.
+     * If it is the 'master' account, the balance is set to MAX_ACCOUNT_BALANCE,
+     * which is equal to Integer.MAX_VALUE.
      *
      * @param   accountId        Address of the account to create.
      * @return                   The account created by the Ledger.
@@ -132,20 +128,18 @@ public class Ledger {
      */
     public Account createAccount(String accountId) throws LedgerException {
         // Check uniqueness of 'accountId'
-        if ( this.accountList.contains(accountId) ) {
+        if (getExistingAccount(accountId) != null) {
             throw new LedgerException(
                 "create account",
-                "The account '" + accountId + "' already exists."
+                String.format("The account '%s' already exists.", accountId)
             );
         }
 
         // The accountId is unique, so create new account
         Account newAccount = new Account(accountId);
 
-        // Update Ledger and Block lists with new account
-        this.accountList.add(accountId);
+        // Update currentBlock with new account
         this.currentBlock.addAccount(newAccount);
-
         return newAccount;
     }
 
@@ -157,15 +151,13 @@ public class Ledger {
      * Return the assigned transactionId. If the transaction is not valid, throw
      * a LedgerException.
      *
-     *
      * @param   transaction     The Transaction, containing all info, to process.
-     * @return
+     * @return                  The transactionId of the valid Transaction.
      * @throws  LedgerException If the validateTransaction() throws the Exception.
      *                          If a block reaches 10 transactions, but block
      *                          validation fails.
      */
     public String processTransaction(Transaction transaction) throws LedgerException {
-
         // throws LedgerException on invalid transaction
         validateTransaction(transaction);
 
@@ -292,7 +284,6 @@ public class Ledger {
         // Check committed Blocks
         while( blocks.hasNext() ) {
             Block block = blocks.next().getValue();
-
             Transaction transaction = block.getTransaction(transactionId);
 
             // Transaction was found
@@ -330,28 +321,37 @@ public class Ledger {
      * Validates the current state of the blockchain.
      *
      * For each block that has been committed, check:
-     *      1) the hash of the previous hash,
-     *      2) ensure that account balances total the maximum value, and
-     *      3) that each block has exactly 10 transactions.
+     *      1) That each block has exactly 10 transactions.
+     *      2) Ensure that account balances total the maximum value.
+     *      3) The previousHash matches the recomputed hash of the previousBlock.
      *
      * @throws LedgerException  If the current state of the blockchain is
      *                          invalid, failing one of the three tests listed.
      */
     private void validateBlock(Block block) throws LedgerException {
-
+        // Check correct number of transactions
         if ( ! block.validateTransactions() ) {
-            throw new LedgerException("validate", "Invalid block. The block does not contain exactly 10 transactions.");
+            throw new LedgerException(
+                "validate",
+                "Invalid block. The block does not contain exactly 10 transactions."
+            );
         }
 
+        // Check account balances/total
         if ( ! block.validateAccountBalances() ) {
-            throw new LedgerException("validate", "Invalid block. Total currency does not equal MAX_ACCOUNT_BALANCE.");
+            throw new LedgerException(
+                "validate",
+                "Invalid block. Total currency does not equal MAX_ACCOUNT_BALANCE."
+            );
         }
 
+        // Check that the hashses match
         if ( ! block.validateHash(this.seed) ) {
-            throw new LedgerException("validate", "Invalid block. Hashes do not match.");
+            throw new LedgerException(
+                "validate",
+                "Invalid block. Hashes do not match."
+            );
         }
-
-        System.out.print("valid block.\n");
     }
 
     /**
@@ -369,6 +369,19 @@ public class Ledger {
      * @throws LedgerException
      */
     private void validateTransaction(Transaction transaction) throws LedgerException {
+        // Convenience variable for throwing exceptions
+        String action = "process transaction";
+
+        // Get Accounts related to the transaction
+        Account payer = transaction.getPayer();
+        Account receiver = transaction.getReceiver();
+        Account master = this.currentBlock.getAccount("master");
+
+        // Check accounts are linked to valid/exisiting accounts
+        if ( payer == null || receiver == null || master == null ) {
+            throw new LedgerException(action, "Transaction is not linked to valid account(s).");
+        }
+
         // Check for transaction id uniqueness
         validateTransactionId(transaction.getTransactionId());
 
@@ -377,38 +390,29 @@ public class Ledger {
         int fee = transaction.getFee();
         int withdrawal = amount + fee;
 
-        // Get Accounts related to the transaction
-        Account payer = transaction.getPayer();
-        Account receiver = transaction.getReceiver();
-        Account master = this.currentBlock.getAccount("master");
-
-        // Convenience variable for throwing exceptions
-        String action = "process transaction";
-
-//        System.out.println(payer);
-//        System.out.println("\t\twithdrawal: " + withdrawal);
-
-        // Check transaction is valid
-        if (withdrawal < 0) {
+        /*
+         * Check the transaction is valid.
+         *
+         * Withdrawal, and receiver's ending balance must be _greater than_ the
+         * MIN_ACCOUNT_BALANCE and _less than_ the MAX_ACCOUNT_BALANCE. The number
+         * must be checked against both ends of the range in cases where an amount
+         * would exceed MAX_ACCOUNT_BALANCE (i.e. Integer.MAX_VALUE), which will
+         * wrap around to a value < 0.
+         */
+        if (withdrawal < MIN_ACCOUNT_BALANCE || withdrawal > MAX_ACCOUNT_BALANCE) {
             throw new LedgerException(action, "Withdrawal exceeds total available currency.");
         } else if ( payer.getBalance() < withdrawal ) {
-            throw new LedgerException(action, "Insufficient balance.");
+            throw new LedgerException(action, "Payer has an insufficient balance.");
         } else if ( fee < MIN_FEE ) {
-            throw new LedgerException(action, "Minimum fee not provided.");
-        } else if ( (amount + receiver.getBalance()) < 0 || (amount + receiver.getBalance()) > MAX_ACCOUNT_BALANCE) {
+            throw new LedgerException(action, "The transaction does not meet the minimum fee requried.");
+        } else if ( (amount + receiver.getBalance()) < MIN_ACCOUNT_BALANCE || (amount + receiver.getBalance()) > MAX_ACCOUNT_BALANCE) {
             throw new LedgerException(action, "Receiver's balance would exceed maximum allowed.");
         }
 
         // Valid transaction, Transfer funds
         payer.withdraw(withdrawal);
-//        System.out.println(payer);
-
         receiver.deposit(amount);
-//        System.out.println(receiver);
-
         master.deposit(fee);
-//        System.out.println(master);
-
     }
 
     /**
@@ -425,7 +429,10 @@ public class Ledger {
      */
     private void validateTransactionId(String transactionId) throws LedgerException {
         // Create the Exception
-        LedgerException e = new LedgerException("validate transaction ID", "This transaction already exists.");
+        LedgerException e = new LedgerException(
+            "validate transaction ID",
+            "This transaction already exists."
+        );
 
         // Check committed Blocks
         Iterator<Map.Entry<Integer, Block>> blocks = listBlocks();
@@ -447,6 +454,6 @@ public class Ledger {
 
     /** Overrides default toString() method. */
     public String toString() {
-        return "Ledger: " + this.name;
+        return this.name;
     }
 }

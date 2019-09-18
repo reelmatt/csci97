@@ -44,6 +44,6 @@ public class CommandProcessorException extends Exception {
         if (this.lineNumber != -1) {
             error += String.format(" (line %d).", this.lineNumber);
         }
-        return error;
+        return error + "\n";
     }
 }
