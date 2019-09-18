@@ -1,0 +1,264 @@
+# ledger2.script
+
+Create-ledger test description "test 2 ledger" seed "manchester"
+Created ledger 'test'
+
+create-account mary
+Created account 'mary'
+create-account bob
+Created account 'bob'
+create-account bill
+Created account 'bill'
+create-account susan
+Created account 'susan'
+create-account jack
+Created account 'jack'
+
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer master receiver mary
+Processed transaction #1
+process-transaction 2 amount 1000 fee 10 payload "fund account" payer master receiver bob
+Processed transaction #2
+process-transaction 3 amount 1000 fee 10 payload "fund account" payer master receiver bill
+Processed transaction #3
+process-transaction 4 amount 1000 fee 10 payload "fund account" payer master receiver susan
+Processed transaction #4
+process-transaction 5 amount 1000 fee 10 payload "fund account" payer master receiver mary
+Processed transaction #5
+process-transaction 6 amount 1000 fee 10 payload "fund account" payer master receiver bob
+Processed transaction #6
+process-transaction 7 amount 1000 fee 10 payload "fund account" payer master receiver bill
+Processed transaction #7
+process-transaction 8 amount 1000 fee 10 payload "fund account" payer master receiver susan
+Processed transaction #8
+process-transaction 9 amount 1000 fee 10 payload "fund account" payer master receiver mary
+Processed transaction #9
+process-transaction 10 amount 1000 fee 10 payload "fund account" payer master receiver bob
+Processed transaction #10
+
+
+# expect balance of 3000 for mary
+get-account-balance mary
+Account mary: current balance = 3000
+# expect balance of 3000 for bob
+get-account-balance bob
+Account bob: current balance = 3000
+# expect balance of 2000 for bill
+get-account-balance bill
+Account bill: current balance = 2000
+# expect balance of 2000 for susan
+get-account-balance susan
+Account susan: current balance = 2000
+# expect balance of 0 for jack
+get-account-balance jack
+Account jack: current balance = 0
+
+
+
+# show the details of block #1
+get-block 1
++-----------------------------------------------
+| Block #1
+|  previousHash: null
+| previousBlock: null
+|          hash: HVF3J6ii6P9EYq4ZcQ1agxHeEgsXJOsZlZXyMuvp+Z8=
++-----------------------------------------------
+| Transaction 1: fund account (1000 units from master to mary; 10 unit fee)
+| Transaction 2: fund account (1000 units from master to bob; 10 unit fee)
+| Transaction 3: fund account (1000 units from master to bill; 10 unit fee)
+| Transaction 4: fund account (1000 units from master to susan; 10 unit fee)
+| Transaction 5: fund account (1000 units from master to mary; 10 unit fee)
+| Transaction 6: fund account (1000 units from master to bob; 10 unit fee)
+| Transaction 7: fund account (1000 units from master to bill; 10 unit fee)
+| Transaction 8: fund account (1000 units from master to susan; 10 unit fee)
+| Transaction 9: fund account (1000 units from master to mary; 10 unit fee)
+| Transaction 10: fund account (1000 units from master to bob; 10 unit fee)
++-----------------------------------------------
+| Account bob: current balance = 3000
+| Account susan: current balance = 2000
+| Account mary: current balance = 3000
+| Account bill: current balance = 2000
+| Account jack: current balance = 0
+| Account master: current balance = 2147473647
++-----------------------------------------------
+
+#show the details of transaction 10
+get-transaction 10
+Transaction 10: fund account (1000 units from master to bob; 10 unit fee)
+
+
+process-transaction 11 amount 200 fee 10 payload "september rent" payer susan receiver jack
+Processed transaction #11
+
+
+# expect balance of 2000 for susan
+get-account-balance susan
+Account susan: current balance = 2000
+# expect balance of 0 for jack
+get-account-balance jack
+Account jack: current balance = 0
+
+
+
+
+process-transaction 12 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #12
+process-transaction 13 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #13
+process-transaction 14 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #14
+process-transaction 15 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #15
+process-transaction 16 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #16
+process-transaction 17 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #17
+process-transaction 18 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #18
+process-transaction 19 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #19
+process-transaction 20 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #20
+
+
+# expect balance of 200 for jack
+get-account-balance jack
+Account jack: current balance = 200
+
+
+# expect balance of 2000 - 200 - 10 => 1790
+get-account-balance susan
+Account susan: current balance = 1790
+
+
+# expect balance of 3000 + 180 => 3180
+get-account-balance mary
+Account mary: current balance = 3180
+
+
+# expect balance of 3000 - 180 - 90 => 2730
+get-account-balance bob
+Account bob: current balance = 2730
+
+
+# show all account balances for master, mary, bob, bill, susan, and jack
+get-account-balances
+Account bob: current balance = 2730
+Account susan: current balance = 1790
+Account mary: current balance = 3180
+Account bill: current balance = 2000
+Account jack: current balance = 200
+Account master: current balance = 2147473747
+
+
+
+process-transaction 21 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #21
+process-transaction 22 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #22
+process-transaction 23 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #23
+process-transaction 24 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #24
+process-transaction 25 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #25
+process-transaction 26 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #26
+process-transaction 27 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #27
+process-transaction 28 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #28
+process-transaction 29 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #29
+process-transaction 30 amount 20 fee 10 payload "uber" payer bob receiver mary
+Processed transaction #30
+
+# show the details of block #1
+get-block 1
++-----------------------------------------------
+| Block #1
+|  previousHash: null
+| previousBlock: null
+|          hash: HVF3J6ii6P9EYq4ZcQ1agxHeEgsXJOsZlZXyMuvp+Z8=
++-----------------------------------------------
+| Transaction 1: fund account (1000 units from master to mary; 10 unit fee)
+| Transaction 2: fund account (1000 units from master to bob; 10 unit fee)
+| Transaction 3: fund account (1000 units from master to bill; 10 unit fee)
+| Transaction 4: fund account (1000 units from master to susan; 10 unit fee)
+| Transaction 5: fund account (1000 units from master to mary; 10 unit fee)
+| Transaction 6: fund account (1000 units from master to bob; 10 unit fee)
+| Transaction 7: fund account (1000 units from master to bill; 10 unit fee)
+| Transaction 8: fund account (1000 units from master to susan; 10 unit fee)
+| Transaction 9: fund account (1000 units from master to mary; 10 unit fee)
+| Transaction 10: fund account (1000 units from master to bob; 10 unit fee)
++-----------------------------------------------
+| Account bob: current balance = 3000
+| Account susan: current balance = 2000
+| Account mary: current balance = 3000
+| Account bill: current balance = 2000
+| Account jack: current balance = 0
+| Account master: current balance = 2147473647
++-----------------------------------------------
+get-block 2
++-----------------------------------------------
+| Block #2
+|  previousHash: HVF3J6ii6P9EYq4ZcQ1agxHeEgsXJOsZlZXyMuvp+Z8=
+| previousBlock: 1
+|          hash: LYgi192+LltWNvXVbtzzoSlMZRpOnHJETwrBCdDPJ9o=
++-----------------------------------------------
+| Transaction 11: september rent (200 units from susan to jack; 10 unit fee)
+| Transaction 12: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 13: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 14: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 15: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 16: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 17: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 18: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 19: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 20: uber (20 units from bob to mary; 10 unit fee)
++-----------------------------------------------
+| Account bob: current balance = 2730
+| Account susan: current balance = 1790
+| Account mary: current balance = 3180
+| Account bill: current balance = 2000
+| Account jack: current balance = 200
+| Account master: current balance = 2147473747
++-----------------------------------------------
+get-block 3
++-----------------------------------------------
+| Block #3
+|  previousHash: LYgi192+LltWNvXVbtzzoSlMZRpOnHJETwrBCdDPJ9o=
+| previousBlock: 2
+|          hash: LWRwlwxPJ/T//tfTAhbu+BTzaJ4UV6K7kzdc/mJg8ko=
++-----------------------------------------------
+| Transaction 21: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 22: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 23: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 24: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 25: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 26: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 27: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 28: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 29: uber (20 units from bob to mary; 10 unit fee)
+| Transaction 30: uber (20 units from bob to mary; 10 unit fee)
++-----------------------------------------------
+| Account bob: current balance = 2430
+| Account susan: current balance = 1790
+| Account mary: current balance = 3380
+| Account bill: current balance = 2000
+| Account jack: current balance = 200
+| Account master: current balance = 2147473847
++-----------------------------------------------
+
+# this transaction should fail since it exceeds the account balance for “bob”.
+process-transaction 21 amount 5000 fee 10 payload "food" payer bob receiver mary
+validate transaction ID: This transaction already exists.
+
+
+# this transaction should fail since the minimum fee is not provided
+process-transaction 22 amount 20 fee 5 payload "food" payer bob receiver mary
+validate transaction ID: This transaction already exists.
+
+
+# validate the state of the blockchain
+Validate
+Blockchain successfully validated.

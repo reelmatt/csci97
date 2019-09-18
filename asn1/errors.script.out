@@ -1,0 +1,151 @@
+# expect 'Unknown command' exception
+foobar
+foobar: Unknown command (line 2).
+
+
+# expect 'Unknown command' exception
+foobar baz
+foobar: Unknown command (line 5).
+
+
+# expect error, no Ledger created yet
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer mary receiver bob
+process-transaction: A Ledger has not been initialized. (line 8).
+
+
+# expect 'Missing argument' exception
+create-ledger
+create-ledger: Missing arguments. (line 11).
+
+
+# expect 'Missing argument' exception (missing 'seed')
+create-ledger errors description "test errors ledger"
+create-ledger: Missing arguments. (line 14).
+
+
+# Successfully create a ledger
+Create-ledger errors description "test errors ledger" seed "oxford"
+Created ledger 'errors'
+
+# expect error if you try to create another ledger
+Create-ledger errors description "test errors ledger" seed "oxford"
+Create-ledger: A Ledger has already been initialized. (line 20).
+
+
+# expect 'Missing argument' exception
+create-account
+create-account: Missing 'account-id' (line 23).
+
+
+# Successfully create accounts 'mary' and 'bob'
+create-account mary
+Created account 'mary'
+create-account bob
+Created account 'bob'
+
+# will successfully create 'bill', ignoring 'foobar' argument
+create-account bill foobar
+Created account 'bill'
+
+# expect error since 'mary' already has an account
+create-account mary
+create account: The account 'mary' already exists.
+
+# expect error since no transactions made yet
+get-transaction 1
+get-transaction: Transaction 1 does not exist. (line 36).
+
+
+# expect error since 'jack' account does not exist
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer master receiver jack
+process transaction: Transaction is not linked to valid account(s).
+
+# expect error since 'mary' has insufficient balance
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer mary receiver bob
+process transaction: Payer has an insufficient balance.
+
+# expect error since withdrawal amount would exceed total currency
+process-transaction 1 amount 2147483647 fee 10 payload "fund account" payer master receiver mary
+process transaction: Withdrawal exceeds total available currency.
+
+# expect error since minimum fee not met
+process-transaction 1 amount 2147483647 fee 0 payload "fund account" payer master receiver mary
+process transaction: The transaction does not meet the minimum fee requried.
+
+# successfully fund account
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer master receiver mary
+Processed transaction #1
+
+# will process transaction, but trim payload to 1024 characters when accessed
+process-transaction 2 amount 100 fee 10 payload "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum." payer master receiver mary
+Processed transaction #2
+
+# create 8 other transactions
+process-transaction 3 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #3
+process-transaction 4 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #4
+process-transaction 5 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #5
+process-transaction 6 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #6
+process-transaction 7 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #7
+process-transaction 8 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #8
+process-transaction 9 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #9
+process-transaction 10 amount 10 fee 10 payload "fund account" payer mary receiver bob
+Processed transaction #10
+
+# output block 1
+# note: transaction 2 ends at "Ut enim" instead of "est laborum". Payload successfully
+#       restricted to 1024 chars
+get-block 1
++-----------------------------------------------
+| Block #1
+|  previousHash: null
+| previousBlock: null
+|          hash: k6U5Jg3PvMyVn6RvIlBaciWFAg7L8LdZuoFb5iIxIS8=
++-----------------------------------------------
+| Transaction 1: fund account (1000 units from master to mary; 10 unit fee)
+| Transaction 2: Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim (100 units from master to mary; 10 unit fee)
+| Transaction 3: fund account (10 units from mary to bob; 10 unit fee)
+| Transaction 4: fund account (10 units from mary to bob; 10 unit fee)
+| Transaction 5: fund account (10 units from mary to bob; 10 unit fee)
+| Transaction 6: fund account (10 units from mary to bob; 10 unit fee)
+| Transaction 7: fund account (10 units from mary to bob; 10 unit fee)
+| Transaction 8: fund account (10 units from mary to bob; 10 unit fee)
+| Transaction 9: fund account (10 units from mary to bob; 10 unit fee)
+| Transaction 10: fund account (10 units from mary to bob; 10 unit fee)
++-----------------------------------------------
+| Account mary: current balance = 940
+| Account bill: current balance = 0
+| Account bob: current balance = 80
+| Account master: current balance = 2147482627
++-----------------------------------------------
+
+# expect error since no block 2 has been committed
+get-block 2
+get block: Block 2 does not exist.
+
+# expect error since no block 0 exists
+get-block 0
+get block: Block 0 does not exist.
+
+# expect error since no block -1 exists
+get-block -1
+get block: Block -1 does not exist.
+
+# successfully output transaction 3
+get-transaction 3
+Transaction 3: fund account (10 units from mary to bob; 10 unit fee)
+
+
+# expect error, since account 'jack' does not exist
+get-account-balance jack
+get account balance: Account does not exist.
+
+# should pass validation
+validate
+Blockchain successfully validated.
