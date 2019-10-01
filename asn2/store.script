@@ -1,0 +1,13 @@
+# define store <identifier> name <name> address <address>
+define store 1 name "My Store" address "123 Anywhere Lane"
+define store 2 name "My Store" address "456 Drury Lane"
+define store 1 name "My Store" address "123 Anywhere Lane"
+
+define
+# show store <identifier>
+show store 1
+show store 2
+
+# define aisle <store_id>:<aisle_number> name <name> description <description> location (floor | store_room)
+define aisle 1:1 name Produce description "Fresh fruits and veggies." location floor
+
