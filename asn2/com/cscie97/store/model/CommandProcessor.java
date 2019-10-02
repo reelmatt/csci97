@@ -99,16 +99,62 @@ public class CommandProcessor {
      *                                      from the input file.
      */
     public void processCommand(String commandLine, Integer lineNumber) throws CommandProcessorException {
+        if (this.storeModelService == null) {
+            throw new CommandProcessorException("command", "StoreModelService has not been initialized.", lineNumber);
+        }
+
         // Break command line into a list of arguments
         List<String> args = parseCommand(commandLine);
 
-        // First argument is the command to run
-        String command = args.remove(0);
+        // Key syntax variables
+        String command = null;
+        String object = null;
+        String id = null;
+
+        try {
+            // First argument is the command to run
+            command = args.remove(0);
+
+            // Second argument is the object (Store, Aisle, etc.)
+            object = args.remove(0);
+
+            // Third argument is the identifier (storeId, aisleId, etc.)
+            id = args.remove(0);
+
+        } catch (IndexOutOfBoundsException e) {
+            System.err.println("OOPS. Not sure what you want to " + command);
+        }
+
+        if (command == null || object == null || id == null) {
+            throw new CommandProcessorException(command, "Unknown command", lineNumber);
+        }
 
         // Pass remaining args into helper methods
-        switch (command.toLowerCase()) {
-            case "define":
-                define(command, args);
+        switch (object.toLowerCase()) {
+            case "store":
+                store(command, object, id, args);
+                break;
+            case "aisle":
+                aisle(command, object, id, args);
+                break;
+            case "shelf":
+//                shelf();
+                break;
+            case "inventory":
+                break;
+            case "product":
+                break;
+            case "customer":
+                break;
+            case "device":
+                break;
+            case "basket":
+                break;
+            case "basket_item":
+                break;
+            case "event":
+                break;
+            case "command":
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command", lineNumber);
@@ -189,35 +235,76 @@ public class CommandProcessor {
         return value;
     }
 
-    private void define(String command, List<String> args) {
-        String elementToDefine = null;
 
-        try {
-            elementToDefine = args.remove(0);
-            System.out.println("Defining a new " + elementToDefine);
-        } catch (IndexOutOfBoundsException e) {
-            System.err.println("OOPS. Not sure what you want to " + command);
-        }
-
-        if (elementToDefine == null) {
-            return;
-        }
-
-        switch(elementToDefine) {
-            case "store":
-                defineStore(args);
+    private void store(String command, String object, String id, List<String> args) throws CommandProcessorException {
+        switch(command) {
+            case "define":
+                defineStore(command, id, args);
+                break;
+            case "show":
+                Store store = this.storeModelService.getStore(id);
+                System.out.println("Store == " + store);
                 break;
             default:
                 System.err.println("OOPS. Not sure what you want to " + command);
+        }
+    }
+
+    private void aisle(String command, String object, String id, List<String> args) throws CommandProcessorException {
+        try {
+            switch(command) {
+                case "define":
+                    defineAisle(command, id, args);
+                    break;
+                case "show":
+                    // Iterate through accounts to retrieve their current balances.
+                    for (Map.Entry<Integer, Aisle> entry : this.storeModelService.getAisle(id).entrySet()) {
+//                        accountBalancesMap.put(entry.getKey(), entry.getValue().getBalance());
+                        System.out.println("aisle == " + entry.getValue());
+                    }
+
+
+                    break;
+                default:
+                    System.err.println("OOPS. Not sure what you want to " + command);
+            }
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+        return;
+    }
+
+
+
+    private void defineStore(String command, String id, List<String> args) throws CommandProcessorException {
+        try {
+            String name = (String) getArgument("name", args);
+            String address = (String) getArgument("address", args);
+            this.storeModelService.defineStore(id, name, address);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, e.toString());
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
         }
 
         return;
     }
 
-    private void defineStore(List<String> args) {
-        Store newStore = new Store(Integer.parseInt(args.get(0)), args.get(2), args.get(4));
+    private void defineAisle(String command, String id, List<String> args) throws CommandProcessorException {
+        try {
+            String name = (String) getArgument("name", args);
+            String description = (String) getArgument("description", args);
+            String location = (String) getArgument("location", args);
 
-        System.out.println("Created new store " + newStore);
-        storeModelService.defineStore(newStore);
+            this.storeModelService.defineAisle(id, name, description, location);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
     }
+
 }

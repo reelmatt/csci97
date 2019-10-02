@@ -16,11 +16,32 @@ public class Aisle {
         this.number = aisleId;
         this.name = name;
         this.description = description;
-        this.location = Location.FLOOR;
+        this.location = checkLocation(location);
         this.shelfList = new ArrayList<Shelf>();
     }
 
+    private Location checkLocation(String location) {
+        if (location.equals("floor")) {
+            return Location.FLOOR;
+        } else {
+            return Location.STOCK_ROOM;
+        }
+    }
+
+    public Integer getNumber() {
+        return this.number;
+    }
+    public String getLocation() {
+        return this.location.toString();
+    }
+
     public String toString() {
-        return "Aisle #" + this.number + " -- " + this.name;
+        return String.format("Aisle #%d [%s] -- %s (%s)",
+                this.number,
+                this.location,
+                this.name,
+                this.description
+        );
+
     }
 }
