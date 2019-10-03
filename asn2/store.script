@@ -16,3 +16,8 @@ define aisle 1:2 name Dairy description "Milk, eggs, butter, and more." location
 show aisle 1:1
 show aisle 1:2
 show aisle 1
+
+
+# define shelf <store_id>:<aisle_number>:<shelf_id> name <name> level (high | medium | low) description <description> [temperature (frozen | refrigerated | ambient | warm | hot)]
+define shelf 1:2:1 name "Milk" level medium description "Skim and whole milk" temperature "refrigerated"
+define shelf 1:2:1 name "Milk" level high description "1 and 2% milk" temperature "refrigerated"
