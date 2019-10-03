@@ -1,16 +1,17 @@
 package com.cscie97.store.model;
 
-public class Inventory {
-    private Integer id;
+public class Inventory extends ProductAssociation {
+    private String id;
     private Integer capacity;
     private Integer count;
     private Product product;
 
-    public Inventory (Integer id, Integer capacity, Integer count, Product product) {
+    public Inventory (String id, Integer capacity, Integer count, Product product) {
+        super(count, product);
         this.id = id;
         this.capacity = capacity;
-        this.count = count;
-        this.product = product;
+//        this.count = count;
+//        this.product = product;
     }
 
     public String toString() {

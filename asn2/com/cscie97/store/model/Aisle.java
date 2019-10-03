@@ -2,6 +2,7 @@ package com.cscie97.store.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 public class Aisle {
     private enum Location {FLOOR, STOCK_ROOM};
@@ -33,6 +34,28 @@ public class Aisle {
     }
     public String getLocation() {
         return this.location.toString();
+    }
+
+    public List<Shelf> getShelves() {
+        return this.shelfList;
+    }
+
+    public Shelf getShelf(String id){
+        Iterator<Shelf> shelves = this.shelfList.iterator();
+
+
+        while(shelves.hasNext()) {
+            Shelf shelf = shelves.next();
+            if(shelf.getId() == id) {
+                return shelf;
+            }
+        }
+
+        return null;
+    }
+
+    public void addShelf(Shelf shelf) {
+        this.shelfList.add(shelf);
     }
 
     public String toString() {

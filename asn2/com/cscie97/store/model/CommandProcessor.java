@@ -122,11 +122,7 @@ public class CommandProcessor {
             id = args.remove(0);
 
         } catch (IndexOutOfBoundsException e) {
-            System.err.println("OOPS. Not sure what you want to " + command);
-        }
-
-        if (command == null || object == null || id == null) {
-            throw new CommandProcessorException(command, "Unknown command", lineNumber);
+            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
         }
 
         // Pass remaining args into helper methods
@@ -138,7 +134,7 @@ public class CommandProcessor {
                 aisle(command, object, id, args);
                 break;
             case "shelf":
-//                shelf();
+                shelf(command, object, id, args);
                 break;
             case "inventory":
                 break;
@@ -237,16 +233,19 @@ public class CommandProcessor {
 
 
     private void store(String command, String object, String id, List<String> args) throws CommandProcessorException {
-        switch(command) {
-            case "define":
-                defineStore(command, id, args);
-                break;
-            case "show":
-                Store store = this.storeModelService.getStore(id);
-                System.out.println("Store == " + store);
-                break;
-            default:
-                System.err.println("OOPS. Not sure what you want to " + command);
+        try {
+            switch(command) {
+                case "define":
+                    defineStore(command, id, args);
+                    break;
+                case "show":
+                    this.storeModelService.showStore(id);
+                    break;
+                default:
+                    throw new CommandProcessorException(command + " " + object, "Unknown command.");
+            }
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
         }
     }
 
@@ -257,16 +256,10 @@ public class CommandProcessor {
                     defineAisle(command, id, args);
                     break;
                 case "show":
-                    // Iterate through accounts to retrieve their current balances.
-                    for (Map.Entry<Integer, Aisle> entry : this.storeModelService.getAisle(id).entrySet()) {
-//                        accountBalancesMap.put(entry.getKey(), entry.getValue().getBalance());
-                        System.out.println("aisle == " + entry.getValue());
-                    }
-
-
+                    this.storeModelService.showAisle(id);
                     break;
                 default:
-                    System.err.println("OOPS. Not sure what you want to " + command);
+                    throw new CommandProcessorException(command + " " + object, "Unknown command.");
             }
         } catch (StoreModelServiceException e) {
             System.err.println(e);
@@ -274,7 +267,23 @@ public class CommandProcessor {
         return;
     }
 
-
+    private void shelf(String command, String object, String id, List<String> args) throws CommandProcessorException {
+        try {
+            switch(command) {
+                case "define":
+                    defineShelf(command, id, args);
+                    break;
+                case "show":
+                    this.storeModelService.showShelf(id);
+                    break;
+                default:
+                    throw new CommandProcessorException(command + " " + object, "Unknown command.");
+            }
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+        return;
+    }
 
     private void defineStore(String command, String id, List<String> args) throws CommandProcessorException {
         try {
@@ -307,4 +316,66 @@ public class CommandProcessor {
 
     }
 
+    private void defineShelf(String command, String id, List<String> args) throws CommandProcessorException {
+        System.out.println("SHELF:");
+        try {
+            String name = (String) getArgument("name", args);
+            String description = (String) getArgument("description", args);
+            String level = (String) getArgument("level", args);
+            String temperature = (String) getArgument("temperature", args);
+
+            this.storeModelService.defineShelf(id, name, level, description, temperature);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    private void defineInventory(String command, String id, List<String> args) throws CommandProcessorException {
+        try {
+            String location = (String) getArgument("location", args);
+            String capacity = (String) getArgument("capacity", args);
+            String count = (String) getArgument("count", args);
+            String productId = (String) getArgument("product", args);
+
+            this.storeModelService.defineInventory(id, location, Integer.parseInt(capacity), Integer.parseInt(count), productId);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, "Argument is not a valid Integer.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    private void defineProduct(String command, String id, List<String> args) throws CommandProcessorException {
+        try {
+            String name = (String) getArgument("name", args);
+            String description = (String) getArgument("description", args);
+            String size = (String) getArgument("size", args);
+            String category = (String) getArgument("category", args);
+            String unitPrice = (String) getArgument("unitPrice", args);
+            String temperature = (String) getArgument("temperature", args);
+
+            this.storeModelService.defineProduct(
+                    id,
+                    name,
+                    description,
+                    Integer.parseInt(size),
+                    category,
+                    Integer.parseInt(unitPrice),
+                    temperature
+            );
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, "Argument is not a valid Integer.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
 }
