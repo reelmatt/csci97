@@ -126,34 +126,43 @@ public class CommandProcessor {
         }
 
         // Pass remaining args into helper methods
-        switch (object.toLowerCase()) {
-            case "store":
-                store(command, object, id, args);
-                break;
-            case "aisle":
-                aisle(command, object, id, args);
-                break;
-            case "shelf":
-                shelf(command, object, id, args);
-                break;
-            case "inventory":
-                break;
-            case "product":
-                break;
-            case "customer":
-                break;
-            case "device":
-                break;
-            case "basket":
-                break;
-            case "basket_item":
-                break;
-            case "event":
-                break;
-            case "command":
-                break;
-            default:
-                throw new CommandProcessorException(command, "Unknown command", lineNumber);
+        try {
+            switch (object.toLowerCase()) {
+                case "store":
+                    store(command, object, id, args);
+                    break;
+                case "aisle":
+                    aisle(command, object, id, args);
+                    break;
+                case "shelf":
+                    shelf(command, object, id, args);
+                    break;
+                case "inventory":
+                    inventory(command, object, id, args);
+                    break;
+                case "product":
+    //                product(command, object, id, args);
+                    break;
+                case "customer":
+    //                customer(command, object, id, args);
+                    break;
+                case "device":
+                    device(command, object, id, args);
+                    break;
+                case "basket":
+                    break;
+                case "basket_item":
+                    break;
+                case "event":
+                    break;
+                case "command":
+                    break;
+                default:
+                    throw new CommandProcessorException(command, "Unknown command", lineNumber);
+            }
+
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
         }
 
 //        return;
@@ -232,56 +241,79 @@ public class CommandProcessor {
     }
 
 
-    private void store(String command, String object, String id, List<String> args) throws CommandProcessorException {
-        try {
-            switch(command) {
-                case "define":
-                    defineStore(command, id, args);
-                    break;
-                case "show":
-                    this.storeModelService.showStore(id);
-                    break;
-                default:
-                    throw new CommandProcessorException(command + " " + object, "Unknown command.");
-            }
-        } catch (StoreModelServiceException e) {
-            System.err.println(e);
+    private void store(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
+        switch(command) {
+            case "define":
+                defineStore(command, id, args);
+                break;
+            case "show":
+                this.storeModelService.showStore(id);
+                break;
+            default:
+                throw new CommandProcessorException(command + " " + object, "Unknown command.");
         }
     }
 
-    private void aisle(String command, String object, String id, List<String> args) throws CommandProcessorException {
-        try {
-            switch(command) {
-                case "define":
-                    defineAisle(command, id, args);
-                    break;
-                case "show":
-                    this.storeModelService.showAisle(id);
-                    break;
-                default:
-                    throw new CommandProcessorException(command + " " + object, "Unknown command.");
-            }
-        } catch (StoreModelServiceException e) {
-            System.err.println(e);
+    private void aisle(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
+
+        switch(command) {
+            case "define":
+                defineAisle(command, id, args);
+                break;
+            case "show":
+                this.storeModelService.showAisle(id);
+                break;
+            default:
+                throw new CommandProcessorException(command + " " + object, "Unknown command.");
+        }
+
+        return;
+    }
+
+    private void shelf(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
+
+        switch(command) {
+            case "define":
+                defineShelf(command, id, args);
+                break;
+            case "show":
+                this.storeModelService.showShelf(id);
+                break;
+            default:
+                throw new CommandProcessorException(command + " " + object, "Unknown command.");
         }
         return;
     }
 
-    private void shelf(String command, String object, String id, List<String> args) throws CommandProcessorException {
-        try {
-            switch(command) {
-                case "define":
-                    defineShelf(command, id, args);
-                    break;
-                case "show":
-                    this.storeModelService.showShelf(id);
-                    break;
-                default:
-                    throw new CommandProcessorException(command + " " + object, "Unknown command.");
-            }
-        } catch (StoreModelServiceException e) {
-            System.err.println(e);
+    private void inventory(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
+
+        switch(command) {
+            case "define":
+                defineInventory(command, id, args);
+                break;
+            case "show":
+                this.storeModelService.showInventory(id);
+                break;
+            default:
+                throw new CommandProcessorException(command + " " + object, "Unknown command.");
         }
+
+        return;
+    }
+
+    private void device(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
+
+        switch(command) {
+            case "define":
+                defineDevice(command, id, args);
+                break;
+            case "show":
+                this.storeModelService.showDevice(id);
+                break;
+            default:
+                throw new CommandProcessorException(command + " " + object, "Unknown command.");
+        }
+
         return;
     }
 
@@ -341,6 +373,23 @@ public class CommandProcessor {
             String productId = (String) getArgument("product", args);
 
             this.storeModelService.defineInventory(id, location, Integer.parseInt(capacity), Integer.parseInt(count), productId);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, "Argument is not a valid Integer.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    private void defineDevice(String command, String id, List<String> args) throws CommandProcessorException {
+        try {
+            String name = (String) getArgument("name", args);
+            String type = (String) getArgument("type", args);
+            String location = (String) getArgument("location", args);
+
+            this.storeModelService.defineDevice(id, name, type, location);
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.");
         } catch (NumberFormatException e) {

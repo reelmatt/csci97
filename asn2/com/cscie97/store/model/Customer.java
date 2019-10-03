@@ -1,10 +1,9 @@
 package com.cscie97.store.model;
 
 public class Customer {
-    private enum CustomerType {REGISTERED, GUEST};
     private enum Age {CHILD, ADULT};
 
-    private Integer id;
+    private String id;
     private String lastName;
     private String firstName;
     private CustomerType type;
@@ -12,8 +11,9 @@ public class Customer {
     private String accountAddress;
     private String lastSeen;
     private Age ageGroup;
+    private Aisle location;
 
-    public Customer (Integer id, String first, String last, String type, String email, String account) {
+    public Customer (String id, String first, String last, String type, String email, String account) {
         this.id = id;
         this.firstName = first;
         this.lastName = last;
@@ -21,6 +21,7 @@ public class Customer {
         this.email = email;
         this.accountAddress = account;
         this.ageGroup = Age.ADULT;
+        this.location = null;
 
     }
 
@@ -38,6 +39,10 @@ public class Customer {
 
     public void removeItem() {
 
+    }
+
+    public void setLocation(Aisle aisle) {
+        this.location = aisle;
     }
 
     public String customerName() {

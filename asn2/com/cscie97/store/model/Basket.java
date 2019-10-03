@@ -6,11 +6,11 @@ import java.util.List;
 public class Basket {
     private Integer id;
 
-    private List<Product> productList;
+    private List<ProductAssociation> productList;
 
     public Basket (Integer id) {
         this.id = id;
-        this.productList = new ArrayList<Product>();
+        this.productList = new ArrayList<ProductAssociation>();
     }
 
     public String toString() {
