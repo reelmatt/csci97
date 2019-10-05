@@ -110,6 +110,7 @@ public class CommandProcessor {
         String command = null;
         String object = null;
         String id = null;
+        String token = "auth";
 
         try {
             // First argument is the command to run
@@ -127,36 +128,16 @@ public class CommandProcessor {
 
         // Pass remaining args into helper methods
         try {
-            switch (object.toLowerCase()) {
-                case "store":
-                    store(command, object, id, args);
+            switch (command.toLowerCase()) {
+                case "define":
+                    define(token, command, object, id, args);
                     break;
-                case "aisle":
-                    aisle(command, object, id, args);
+                case "show":
+                    show(token, command, object, id, args);
                     break;
-                case "shelf":
-                    shelf(command, object, id, args);
-                    break;
-                case "inventory":
-                    inventory(command, object, id, args);
-                    break;
-                case "product":
-    //                product(command, object, id, args);
-                    break;
-                case "customer":
-    //                customer(command, object, id, args);
-                    break;
-                case "device":
-                    device(command, object, id, args);
-                    break;
-                case "basket":
-                    break;
-                case "basket_item":
-                    break;
-                case "event":
-                    break;
-                case "command":
-                    break;
+
+
+
                 default:
                     throw new CommandProcessorException(command, "Unknown command", lineNumber);
             }
@@ -227,9 +208,9 @@ public class CommandProcessor {
      *                                      arguments, or if it does not contain
      *                                      a corresponding 'value'.
      */
-    private Object getArgument(String key, List<String> args) throws IndexOutOfBoundsException {
+    private String getArgument(String key, List<String> args) throws IndexOutOfBoundsException {
         int index;
-        Object value = null;
+        String value = null;
 
         if ((index = args.indexOf(key)) != -1) {
             value = args.get(index + 1);
@@ -241,105 +222,131 @@ public class CommandProcessor {
     }
 
 
-    private void store(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
-        switch(command) {
-            case "define":
-                defineStore(command, id, args);
-                break;
-            case "show":
-                this.storeModelService.showStore(id);
-                break;
-            default:
-                throw new CommandProcessorException(command + " " + object, "Unknown command.");
-        }
-    }
 
-    private void aisle(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
+    private void define(String token,
+                        String command,
+                        String object,
+                        String id,
+                        List<String> args)
+            throws CommandProcessorException, StoreModelServiceException {
 
-        switch(command) {
-            case "define":
-                defineAisle(command, id, args);
+        switch (object.toLowerCase()) {
+            case "store":
+                defineStore(token, command, id, args);
                 break;
-            case "show":
-                this.storeModelService.showAisle(id);
+            case "aisle":
+                defineAisle(token, command, id, args);
                 break;
-            default:
-                throw new CommandProcessorException(command + " " + object, "Unknown command.");
-        }
-
-        return;
-    }
-
-    private void shelf(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
-
-        switch(command) {
-            case "define":
-                defineShelf(command, id, args);
+            case "shelf":
+                defineShelf(token, command, id, args);
                 break;
-            case "show":
-                this.storeModelService.showShelf(id);
+            case "inventory":
+                defineInventory(token, command, id, args);
+                break;
+            case "product":
+                defineProduct(token, command, id, args);
+                break;
+            case "customer":
+                defineCustomer(token, command, id, args);
+                break;
+            case "device":
+                defineDevice(token, command, id, args);
                 break;
             default:
-                throw new CommandProcessorException(command + " " + object, "Unknown command.");
+                throw new CommandProcessorException(command, "Unknown command");
         }
-        return;
+
     }
 
-    private void inventory(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
+    private void show(String token,
+                      String command,
+                      String object,
+                      String id,
+                      List<String> args)
+            throws CommandProcessorException, StoreModelServiceException {
 
-        switch(command) {
-            case "define":
-                defineInventory(command, id, args);
+        String[] ids = parseLocationIdentifier(id);
+
+        // Causes problems for Product and Customer, rethink placement
+        Store store = this.storeModelService.getStore(token, ids[0]);
+
+        switch (object.toLowerCase()) {
+            case "store":
+                System.out.println(store);
                 break;
-            case "show":
-                this.storeModelService.showInventory(id);
+            case "aisle":
+                if (ids.length > 1) {
+                    Aisle aisle = store.getAisle(Integer.parseInt(ids[1]));
+                } else {
+                    store.getAisleList().forEach((k, aisle) -> System.out.println(aisle));
+                }
+                break;
+            case "shelf":
+
+                if (ids.length == 0) {
+                    System.out.println(store);
+                } else if (ids.length == 1) {
+                    Aisle aisle = store.getAisle(Integer.parseInt(ids[1]));
+                    System.out.println(aisle);
+
+                } else {
+                    System.out.println(this.storeModelService.getShelf(token, id));
+                }
+
+                break;
+            case "inventory":
+                System.out.println(this.storeModelService.getInventory("auth", id));
+                break;
+            case "product":
+                System.out.println("WHATtttt???");
+                System.out.println(this.storeModelService.getProduct("auth", id));
+                break;
+            case "customer":
+                System.out.println(this.storeModelService.getCustomer("auth", id));
+                break;
+            case "device":
+                System.out.println(this.storeModelService.getDevice("auth", id));
                 break;
             default:
-                throw new CommandProcessorException(command + " " + object, "Unknown command.");
+                throw new CommandProcessorException(command, "Unknown command");
         }
 
-        return;
     }
 
-    private void device(String command, String object, String id, List<String> args) throws CommandProcessorException, StoreModelServiceException {
-
-        switch(command) {
-            case "define":
-                defineDevice(command, id, args);
-                break;
-            case "show":
-                this.storeModelService.showDevice(id);
-                break;
-            default:
-                throw new CommandProcessorException(command + " " + object, "Unknown command.");
-        }
-
-        return;
+    private String[] parseLocationIdentifier(String location) {
+        return location.split(":");
     }
 
-    private void defineStore(String command, String id, List<String> args) throws CommandProcessorException {
+    private void defineStore(String authToken, String command, String id, List<String> args)
+            throws CommandProcessorException {
+
+        String name, address;
+
         try {
-            String name = (String) getArgument("name", args);
-            String address = (String) getArgument("address", args);
-            this.storeModelService.defineStore(id, name, address);
+            name = getArgument("name", args);
+            address = getArgument("address", args);
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.");
         } catch (NumberFormatException e) {
             throw new CommandProcessorException(command, e.toString());
+        }
+
+        try {
+            this.storeModelService.defineStore(authToken, id, name, address);
         } catch (StoreModelServiceException e) {
             System.err.println(e);
         }
-
         return;
     }
 
-    private void defineAisle(String command, String id, List<String> args) throws CommandProcessorException {
+    private void defineAisle(String authToken, String command, String id, List<String> args)
+            throws CommandProcessorException {
         try {
-            String name = (String) getArgument("name", args);
-            String description = (String) getArgument("description", args);
-            String location = (String) getArgument("location", args);
+            String name = getArgument("name", args);
+            String description = getArgument("description", args);
+            String location = getArgument("location", args);
 
-            this.storeModelService.defineAisle(id, name, description, location);
+            this.storeModelService.defineAisle(authToken, id, name, description, location);
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.");
         } catch (StoreModelServiceException e) {
@@ -348,48 +355,40 @@ public class CommandProcessor {
 
     }
 
-    private void defineShelf(String command, String id, List<String> args) throws CommandProcessorException {
-        System.out.println("SHELF:");
-        try {
-            String name = (String) getArgument("name", args);
-            String description = (String) getArgument("description", args);
-            String level = (String) getArgument("level", args);
-            String temperature = (String) getArgument("temperature", args);
+    private void defineShelf(String authToken, String command, String id, List<String> args)
+            throws CommandProcessorException {
 
-            this.storeModelService.defineShelf(id, name, level, description, temperature);
+
+        try {
+            String name = getArgument("name", args);
+            String description = getArgument("description", args);
+            String level = getArgument("level", args);
+            String temperature = getArgument("temperature", args);
+            this.storeModelService.defineShelf(authToken, id, name, level, description, temperature);
         } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing arguments.");
+            throw new CommandProcessorException(command, "Missing arguments." + e);
         } catch (StoreModelServiceException e) {
             System.err.println(e);
         }
 
     }
 
-    private void defineInventory(String command, String id, List<String> args) throws CommandProcessorException {
+    private void defineInventory(String authToken, String command, String id, List<String> args)
+            throws CommandProcessorException {
         try {
-            String location = (String) getArgument("location", args);
-            String capacity = (String) getArgument("capacity", args);
-            String count = (String) getArgument("count", args);
-            String productId = (String) getArgument("product", args);
+            String location = getArgument("location", args);
+            String capacity = getArgument("capacity", args);
+            String count = getArgument("count", args);
+            String productId = getArgument("product", args);
 
-            this.storeModelService.defineInventory(id, location, Integer.parseInt(capacity), Integer.parseInt(count), productId);
-        } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(command, "Missing arguments.");
-        } catch (NumberFormatException e) {
-            throw new CommandProcessorException(command, "Argument is not a valid Integer.");
-        } catch (StoreModelServiceException e) {
-            System.err.println(e);
-        }
-
-    }
-
-    private void defineDevice(String command, String id, List<String> args) throws CommandProcessorException {
-        try {
-            String name = (String) getArgument("name", args);
-            String type = (String) getArgument("type", args);
-            String location = (String) getArgument("location", args);
-
-            this.storeModelService.defineDevice(id, name, type, location);
+            this.storeModelService.defineInventory(
+                    authToken,
+                    id,
+                    location,
+                    Integer.parseInt(capacity),
+                    Integer.parseInt(count),
+                    productId
+            );
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.");
         } catch (NumberFormatException e) {
@@ -400,23 +399,71 @@ public class CommandProcessor {
 
     }
 
-    private void defineProduct(String command, String id, List<String> args) throws CommandProcessorException {
+    private void defineDevice(String authToken, String command, String id, List<String> args)
+            throws CommandProcessorException {
         try {
-            String name = (String) getArgument("name", args);
-            String description = (String) getArgument("description", args);
-            String size = (String) getArgument("size", args);
-            String category = (String) getArgument("category", args);
-            String unitPrice = (String) getArgument("unitPrice", args);
-            String temperature = (String) getArgument("temperature", args);
+            String name = getArgument("name", args);
+            String type = getArgument("type", args);
+            String location = getArgument("location", args);
+
+            this.storeModelService.defineDevice(authToken, id, name, type, location);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, "Argument is not a valid Integer.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    private void defineProduct(String authToken, String command, String id, List<String> args)
+            throws CommandProcessorException {
+        try {
+            String name = getArgument("name", args);
+            String description = getArgument("description", args);
+            String size = getArgument("size", args);
+            String category = getArgument("category", args);
+            String unitPrice = getArgument("unit_price", args);
+            String temperature = getArgument("temperature", args);
 
             this.storeModelService.defineProduct(
+                    authToken,
                     id,
                     name,
                     description,
                     Integer.parseInt(size),
                     category,
-                    Integer.parseInt(unitPrice),
+                    Double.parseDouble(unitPrice),
                     temperature
+            );
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, "Argument is not a valid Integer.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    private void defineCustomer(String authToken, String command, String id, List<String> args)
+            throws CommandProcessorException {
+        try {
+            String firstName = getArgument("first_name", args);
+            String lastName = getArgument("last_name", args);
+            String type = getArgument("type", args);
+            String email = getArgument("email_address", args);
+            String account = getArgument("account", args);
+
+            this.storeModelService.defineCustomer(
+                    authToken,
+                    id,
+                    firstName,
+                    lastName,
+                    type,
+                    email,
+                    account
             );
         } catch (IndexOutOfBoundsException e) {
             throw new CommandProcessorException(command, "Missing arguments.");

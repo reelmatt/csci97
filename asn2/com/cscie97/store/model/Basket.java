@@ -13,6 +13,9 @@ public class Basket {
         this.productList = new ArrayList<ProductAssociation>();
     }
 
+    public void clear() {
+        return;
+    }
     public String toString() {
         return "Basket #" + this.id;
     }

@@ -8,10 +8,10 @@ public class Product {
     private String description;
     private Integer size;
     private String category;
-    private Integer unitPrice;
+    private Double unitPrice;
     private Temperature temperature;
 
-    public Product (String id, String name, String description, Integer size, String category, Integer price, String temperature) {
+    public Product (String id, String name, String description, Integer size, String category, Double price, String temperature) {
         this.id = id;
         this.name = name;
         this.description = description;

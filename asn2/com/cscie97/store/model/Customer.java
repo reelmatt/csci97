@@ -12,6 +12,7 @@ public class Customer {
     private String lastSeen;
     private Age ageGroup;
     private Aisle location;
+    private Basket basket;
 
     public Customer (String id, String first, String last, String type, String email, String account) {
         this.id = id;
@@ -25,12 +26,16 @@ public class Customer {
 
     }
 
-    public void getBasket() {
-
+    public Basket getBasket() {
+        return this.basket;
     }
 
+    public void setBasket(Basket basket) {
+        this.basket = basket;
+    }
     public void clearBasket() {
-
+        this.basket.clear();
+        this.basket = null;
     }
 
     public void addItem() {

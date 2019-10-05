@@ -7,13 +7,33 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class Store {
+    /** Store ID */
     private String id;
+
+    /** Name of the Store */
     private String name;
+
+    /** Physical address of the Store. */
     private String address;
+
+    /** A Map of Aisles in the Store. */
     private Map<Integer, Aisle> aisleMap;
+
+    /** A Map of Devices in the Store. */
     private Map<String, Device> deviceMap;
+
+    /** A List of Customers currently in the Store. */
     private List<Customer> customerList;
 
+    /**
+     * Store Constructor
+     *
+     *
+     *
+     * @param id
+     * @param name
+     * @param address
+     */
     public Store (String id, String name, String address) {
         this.id = id;
         this.name = name;
@@ -23,20 +43,12 @@ public class Store {
         this.customerList = new ArrayList<Customer>();
     }
 
-    public void updateCustomer() {
-
+    public String getId() {
+        return this.id;
     }
 
-    public void updateInventory() {
-
-    }
-
-    public void addAisle(Aisle aisle) {
-        this.aisleMap.put(aisle.getNumber(), aisle);
-    }
-
-    public void addDevice(Device device) {
-        this.deviceMap.put(device.getId(), device);
+    public Map<Integer, Aisle> getAisleList() {
+        return this.aisleMap;
     }
 
     public Aisle getAisle(Integer number) {
@@ -47,64 +59,50 @@ public class Store {
         return this.deviceMap.get(id);
     }
 
-    public Map<Integer, Aisle> getAisleList() {
-        return this.aisleMap;
+    public Map<String, Device> getDeviceList() {
+        return this.deviceMap;
     }
 
-    public String printAisles() {
-        Iterator<Map.Entry<Integer, Aisle>> aisles = this.aisleMap.entrySet().iterator();
-
-        String output = "";
-
-
-        while( aisles.hasNext() ) {
-            Aisle aisle = aisles.next().getValue();
-            output += aisle + "|\n";
-        }
-        return output;
-
+    public void addAisle(Aisle aisle) {
+        this.aisleMap.put(aisle.getNumber(), aisle);
     }
 
-    public String printDevices() {
-        Iterator<Map.Entry<String, Device>> devices = this.deviceMap.entrySet().iterator();
-
-        String output = "";
-
-        while (devices.hasNext() ) {
-            Device device = devices.next().getValue();
-            output += device;
-        }
-
-        return output;
+    public void addDevice(Device device) {
+        this.deviceMap.put(device.getId(), device);
     }
 
-    public String getId() {
-        return this.id;
-    }
     public String toString() {
         String separator = "-----------------------\n";
         String store = separator;
+
+        // Store Info
         store += String.format("| Store %s -- %s\n", this.id, this.name);
         store += String.format("| Address: %s\n", this.address);
         store += separator;
 
+        // List of customers
         store += " Customers:\n";
         store += this.customerList;
         store += "\n" + separator;
 
-        store += String.format("| Aisles:\n|\n%s", printAisles());
-//        store += this.aisleMap;
+        // List of aisles (with shelves/inventory)
+        store += String.format("| Aisles:\n|\n");
+        for(Aisle aisle : getAisleList().values()) {
+            store += aisle + "\n";
+        }
         store += "\n" + separator;
 
+        // Inventory List
         store += " Inventory:\n";
         store += "\n" + separator;
 
-        store += String.format("| Devices:\n|\n%s", printDevices());
-//        store += " Devices:\n";
-//        store += this.deviceMap;
+        // List of Devices in the Store
+        store += String.format("| Devices:\n|\n");
+        for(Device device : getDeviceList().values()) {
+            store += device;
+        }
         store += "\n" + separator;
 
         return store;
-//        return "Store #" + this.id + " -- " + this.name;
     }
 }

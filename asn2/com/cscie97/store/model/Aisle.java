@@ -12,8 +12,8 @@ public class Aisle {
     private Location location;
     private List<Shelf> shelfList;
 
-    public Aisle (Integer aisleId, String name, String description, String location) {
-        this.number = aisleId;
+    public Aisle (Integer aisleNumber, String name, String description, String location) {
+        this.number = aisleNumber;
         this.name = name;
         this.description = description;
         this.location = Location.getType(location);
@@ -27,12 +27,16 @@ public class Aisle {
         return this.location.toString();
     }
 
-    public List<Shelf> getShelves() {
-        return this.shelfList;
+//    public List<Shelf> getShelves() {
+//        return this.shelfList;
+//    }
+
+    private Iterator<Shelf> listShelves() {
+        return this.shelfList.iterator();
     }
 
     public Shelf getShelf(String id){
-        Iterator<Shelf> shelves = this.shelfList.iterator();
+        Iterator<Shelf> shelves = listShelves();
 
         while(shelves.hasNext()) {
             Shelf shelf = shelves.next();
@@ -46,7 +50,7 @@ public class Aisle {
     }
 
     public void showShelves() {
-        Iterator<Shelf> shelves = this.shelfList.iterator();
+        Iterator<Shelf> shelves = listShelves();
 
         while(shelves.hasNext()) {
             Shelf shelf = shelves.next();
@@ -58,7 +62,7 @@ public class Aisle {
     }
 
     public String printShelves() {
-        Iterator<Shelf> shelves = this.shelfList.iterator();
+        Iterator<Shelf> shelves = listShelves();
         String output = "";
         while(shelves.hasNext()) {
             Shelf shelf = shelves.next();
@@ -70,7 +74,6 @@ public class Aisle {
     }
 
     public void addShelf(Shelf shelf) {
-        System.out.println("AISLE: added shelf.");
         this.shelfList.add(shelf);
     }
 

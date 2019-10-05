@@ -10,8 +10,6 @@ public class Inventory extends ProductAssociation {
         super(count, product);
         this.id = id;
         this.capacity = capacity;
-//        this.count = count;
-//        this.product = product;
     }
 
     public String getId() {
