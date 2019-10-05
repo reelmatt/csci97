@@ -13,12 +13,12 @@ public class Shelf {
     private Temperature temperature;
     private List<Inventory> inventoryList;
 
-    public Shelf (String id, String name, String level, String description, String temperature) {
+    public Shelf (String id, String name, Level level, String description, Temperature temperature) {
         this.id = id;
         this.name = name;
-        this.level = Level.getType(level);
+        this.level = (level == null) ? Level.HIGH : level;
         this.description = description;
-        this.temperature = Temperature.getType(temperature);
+        this.temperature = (temperature == null) ? Temperature.AMBIENT : temperature;
         this.inventoryList = new ArrayList<Inventory>();
     }
 

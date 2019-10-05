@@ -13,7 +13,7 @@ define store 3 name Walmart
 
 # define aisle <store_id>:<aisle_number> name <name> description <description> location (floor | store_room)
 define aisle 1:1 name Produce description "Fresh fruits and veggies." location floor
-define aisle 1:2 name Dairy description "Milk, eggs, butter, and more." location floor
+define aisle 1:2 name Dairy description "Milk, eggs, butter, and more." location stock_room
 define aisle 1:1 name Produce description "Fresh fruits and veggies." location floor
 
 show aisle 1:1

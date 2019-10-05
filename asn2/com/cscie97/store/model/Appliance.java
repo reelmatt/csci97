@@ -7,7 +7,7 @@ public class Appliance extends Device {
 
     private ApplianceType type;
 
-    public Appliance (String id, String name, ApplianceType type, Aisle location) {
+    public Appliance (String id, String name, Aisle location, ApplianceType type) {
         super(id, name, location);
         this.type = type;
 

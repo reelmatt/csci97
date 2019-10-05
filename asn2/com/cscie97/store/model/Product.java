@@ -1,7 +1,6 @@
 package com.cscie97.store.model;
 
 public class Product {
-    private enum Temperature {FROZEN, REFRIGERATED, AMBIENT, WARM, HOT};
 
     private String id;
     private String name;
@@ -11,14 +10,20 @@ public class Product {
     private Double unitPrice;
     private Temperature temperature;
 
-    public Product (String id, String name, String description, Integer size, String category, Double price, String temperature) {
+    public Product (String id,
+                    String name,
+                    String description,
+                    Integer size,
+                    String category,
+                    Double price,
+                    Temperature temperature) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.size = size;
         this.category = category;
         this.unitPrice = price;
-        this.temperature = Temperature.AMBIENT;
+        this.temperature = (temperature == null) ? Temperature.AMBIENT : temperature;
     }
 
     public String toString() {

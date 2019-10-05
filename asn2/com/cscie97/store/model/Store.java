@@ -47,12 +47,12 @@ public class Store {
         return this.id;
     }
 
-    public Map<Integer, Aisle> getAisleList() {
-        return this.aisleMap;
-    }
-
     public Aisle getAisle(Integer number) {
         return this.aisleMap.get(number);
+    }
+
+    public Map<Integer, Aisle> getAisleList() {
+        return this.aisleMap;
     }
 
     public Device getDevice(String id) {
@@ -71,6 +71,12 @@ public class Store {
         this.deviceMap.put(device.getId(), device);
     }
 
+    /**
+     * Override default toString method.
+     *
+     * Displays details of the store including the id, name, address, active
+     * customers, aisles, inventory, sensors, and appliances.
+     */
     public String toString() {
         String separator = "-----------------------\n";
         String store = separator;

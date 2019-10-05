@@ -11,14 +11,14 @@ public interface StoreModelServiceInterface {
                             String id,
                             String name,
                             String description,
-                            String location) throws StoreModelServiceException;
+                            Location location) throws StoreModelServiceException;
 
     public void defineShelf(String authToken,
                             String id,
                             String name,
-                            String level,
+                            Level level,
                             String description,
-                            String temperature) throws StoreModelServiceException;
+                            Temperature temperature) throws StoreModelServiceException;
 
     public void defineInventory(String authToken,
                                 String id,
@@ -40,7 +40,7 @@ public interface StoreModelServiceInterface {
                               Integer size,
                               String category,
                               Double price,
-                              String temperature) throws StoreModelServiceException;
+                              Temperature temperature) throws StoreModelServiceException;
 
     public void defineCustomer(String authToken,
                                String id,

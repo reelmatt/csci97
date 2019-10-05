@@ -13,4 +13,14 @@ public enum SensorType {
 
         return false;
     }
+
+    public static SensorType getType(String choice) {
+        for (SensorType sensor : SensorType.values()) {
+            if (choice.equals(sensor.toString().toLowerCase())) {
+                return sensor;
+            }
+        }
+
+        return null;
+    }
 }
