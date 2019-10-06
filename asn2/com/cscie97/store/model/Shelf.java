@@ -32,18 +32,30 @@ public class Shelf {
         return this.id;
     }
 
+    public List<Inventory> getInventoryList() {
+        return this.inventoryList;
+    }
+
     public Inventory getInventory(String inventoryId) {
-        Iterator<Inventory> inventories = this.inventoryList.iterator();
-
-        while(inventories.hasNext()) {
-            Inventory inventory = inventories.next();
-
+        for (Inventory inventory : getInventoryList()) {
             if(inventoryId.equals(inventory.getId())) {
                 return inventory;
             }
         }
 
         return null;
+
+//        Iterator<Inventory> inventories = this.inventoryList.iterator();
+//
+//        while(inventories.hasNext()) {
+//            Inventory inventory = inventories.next();
+//
+//            if(inventoryId.equals(inventory.getId())) {
+//                return inventory;
+//            }
+//        }
+
+//        return null;
     }
 
     public String toString() {

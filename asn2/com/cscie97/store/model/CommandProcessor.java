@@ -134,6 +134,22 @@ public class CommandProcessor {
                 case "show":
                     show(token, command, object, id, args);
                     break;
+                case "update":
+                    update(token, command, object, id, args);
+                    break;
+                case "create":
+                    create(token, command, object, id, args);
+                    break;
+                case "get":
+                    getBasket(token, command, object, id, args);
+                    break;
+                case "add":
+                    addItem(token, command, object, id, args);
+                case "remove":
+                    removeItem(token, command, object, id, args);
+                case "clear":
+                    clearBasket(token, command, object, id, args);
+                    break;
                 default:
                     throw new CommandProcessorException(command, "Unknown command", lineNumber);
             }
@@ -265,20 +281,13 @@ public class CommandProcessor {
 
         // Causes problems for Product and Customer, rethink placement
         Store store;
+
         switch (object.toLowerCase()) {
             case "store":
-                store = this.storeModelService.getStore(token, ids[0]);
-
-                System.out.println(store);
+                showStore(token, command, id, args);
                 break;
             case "aisle":
-                store = this.storeModelService.getStore(token, ids[0]);
-
-                if (ids.length > 1) {
-                    Aisle aisle = store.getAisle(Integer.parseInt(ids[1]));
-                } else {
-                    store.getAisleList().forEach((k, aisle) -> System.out.println(aisle));
-                }
+                showAisle(token, command, id, args);
                 break;
             case "shelf":
                 store = this.storeModelService.getStore(token, ids[0]);
@@ -286,7 +295,7 @@ public class CommandProcessor {
                 if (ids.length == 0) {
                     System.out.println(store);
                 } else if (ids.length == 1) {
-                    Aisle aisle = store.getAisle(Integer.parseInt(ids[1]));
+                    Aisle aisle = store.getAisle(ids[1]);
                     System.out.println(aisle);
 
                 } else {
@@ -295,11 +304,9 @@ public class CommandProcessor {
 
                 break;
             case "inventory":
-
                 System.out.println(this.storeModelService.getInventory("auth", id));
                 break;
             case "product":
-                System.out.println("WHATtttt???");
                 System.out.println(this.storeModelService.getProduct("auth", id));
                 break;
             case "customer":
@@ -307,6 +314,46 @@ public class CommandProcessor {
                 break;
             case "device":
                 System.out.println(this.storeModelService.getDevice("auth", id));
+                break;
+            default:
+                throw new CommandProcessorException(command, "Unknown command");
+        }
+
+    }
+
+    private void update(String token,
+                        String command,
+                        String object,
+                        String id,
+                        List<String> args)
+            throws CommandProcessorException, StoreModelServiceException {
+
+        switch (object.toLowerCase()) {
+            case "inventory":
+                updateInventory(token, command, id, args);
+                break;
+            case "customer":
+                updateCustomer(token, command, id, args);
+                break;
+            default:
+                throw new CommandProcessorException(command, "Unknown command");
+        }
+
+    }
+
+    private void create(String token,
+                        String command,
+                        String object,
+                        String id,
+                        List<String> args)
+            throws CommandProcessorException, StoreModelServiceException {
+
+        switch (object.toLowerCase()) {
+            case "command":
+                createCommand(token, command, id, args);
+                break;
+            case "event":
+                createEvent(token, command, id, args);
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command");
@@ -513,11 +560,171 @@ public class CommandProcessor {
                     entityInfo.get("email_address"),
                     entityInfo.get("account")
             );
-        } catch (NumberFormatException e) {
-            throw new CommandProcessorException(command, "Argument is not a valid Integer.");
         } catch (StoreModelServiceException e) {
             System.err.println(e);
         }
 
+    }
+
+    private void showStore(String authToken, String command, String storeId, List<String> args) throws CommandProcessorException {
+        try {
+            Store store = this.storeModelService.getStore(authToken, storeId);
+
+            printSection();
+            System.out.println(store);
+
+            printSection();
+            System.out.println("customers");
+
+            printSection();
+            for(Aisle aisle : store.getAisleList()) {
+                System.out.println(aisle);
+            }
+
+            printSection();
+            for(Device device : this.storeModelService.getStoreDevices(authToken, storeId)) {
+                System.out.println(device);
+            }
+
+            printSection();
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+    }
+
+    private void showAisle(String authToken, String command, String aisleId, List<String> args) throws CommandProcessorException {
+        try {
+            String[] ids = parseLocationIdentifier(aisleId);
+            Store store = this.storeModelService.getStore(authToken, ids[0]);
+
+            // If the aisleId includes a specific aisle, print just that
+            if (ids.length >= 1) {
+                System.out.println(store.getAisle(ids[1]));
+
+            } else {
+                // Otherwise, print all aisles located in the store
+                store.getAisleList().forEach((aisle) -> System.out.println(aisle));
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    private void showShelf(String authToken, String command, String shelfId, List<String> args) throws CommandProcessorException {
+        try {
+            String[] ids = parseLocationIdentifier(shelfId);
+            Store store = this.storeModelService.getStore(authToken, ids[0]);
+
+            // If the shelfId includes a specific shelf, print just that
+            if (ids.length >= 2) {
+                System.out.println(store.getAisle(ids[1]));
+
+            } else if (ids.length == 1) {
+                // Otherwise check to see if a specific aisle is listed
+
+            } else {
+                // Otherwise, print all shelves in all aisles in specified store
+                store.getAisleList().forEach((aisle) -> System.out.println(aisle));
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+    }
+
+    private void updateInventory(String authToken, String command, String inventoryId, List<String> args) throws CommandProcessorException {
+        try {
+            String updateCount = getArgument("update_count", args);
+            this.storeModelService.updateInventory(authToken, inventoryId, Integer.parseInt(updateCount));
+
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, "Update count is an invalid number.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+
+    }
+
+    private void updateCustomer(String authToken, String command, String customerId, List<String> args) throws CommandProcessorException {
+        try {
+            String location = getArgument("location", args);
+            this.storeModelService.updateCustomer(authToken, customerId, location);
+
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+
+        return;
+    }
+
+    private void createCommand(String authToken, String command, String deviceId, List<String> args) throws CommandProcessorException {
+        try {
+            String message = getArgument("message", args);
+            this.storeModelService.createCommand(authToken, deviceId, message);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+    }
+
+    private void createEvent (String authToken, String command, String deviceId, List<String> args) throws CommandProcessorException {
+        try {
+            String event = getArgument("event", args);
+            this.storeModelService.createEvent(authToken, deviceId, event);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+    }
+
+    private void getBasket (String authToken, String command, String basketId, List<String> args) throws CommandProcessorException {
+        Basket basket = this.storeModelService.getCustomerBasket(authToken, customerId);
+
+        if (basket == null) {
+            basket = this.storeModelService.createCustomerBasket(authToken, customerId);
+        }
+        System.out.println("COMMAND: got basket " + basket);
+        return;
+    }
+
+    private void addItem (String authToken, String command, String basketId, List<String> args) throws CommandProcessorException {
+        try {
+            String productId = getArgument("product", args);
+            Integer itemCount = Integer.parseInt(getArgument("item_count", args));
+
+            this.storeModelService.addItemToBasket(authToken, basketId, productId, itemCount);
+
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, "Invalid item count.");
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        }
+    }
+
+    private void removeItem (String authToken, String command, String basketId, List<String> args) throws CommandProcessorException {
+
+    }
+
+    private void clearBasket (String authToken, String command, String basketId, List<String> args) throws CommandProcessorException {
+
+    }
+
+    private void printSection() {
+        String separator = "-----------------------\n";
+        System.out.println(separator);
     }
 }

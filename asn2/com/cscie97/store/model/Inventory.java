@@ -16,6 +16,10 @@ public class Inventory extends ProductAssociation {
         return this.id;
     }
 
+    public Integer getCapacity() {
+        return this.capacity;
+    }
+
     public String toString() {
         return "Inventory #" + this.id + " -- capacity " + this.capacity;
     }

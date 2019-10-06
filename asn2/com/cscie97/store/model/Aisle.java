@@ -8,8 +8,8 @@ public class Aisle {
     /** Name of the Aisle (e.g. Dairy) */
     private String name;
 
-    /** Aisle number. */
-    private Integer number;
+    /** Aisle ID (number). */
+    private String id;
 
     /** Description of Aisle (e.g. ) */
     private String description;
@@ -28,16 +28,16 @@ public class Aisle {
      * @param description
      * @param location
      */
-    public Aisle (Integer aisleNumber, String name, String description, Location location) {
-        this.number = aisleNumber;
+    public Aisle (String aisleId, String name, String description, Location location) {
+        this.id = aisleId;
         this.name = name;
         this.description = description;
         this.location = (location == null) ? Location.FLOOR : location;
         this.shelfList = new ArrayList<Shelf>();
     }
 
-    public Integer getNumber() {
-        return this.number;
+    public String getId() {
+        return this.id;
     }
     public String getLocation() {
         return this.location.toString();
@@ -73,7 +73,7 @@ public class Aisle {
 
         String aisle;
 
-        aisle = String.format("| Aisle #%d -- %s\n", this.number, this.name);
+        aisle = String.format("| Aisle #%s -- %s\n", this.id, this.name);
         aisle += String.format("|\t Location: %s\n", this.location);
         aisle += String.format("|\t Description: %s\n", this.description);
         aisle += String.format("|\t Shelves:\n");

@@ -17,10 +17,7 @@ public class Store {
     private String address;
 
     /** A Map of Aisles in the Store. */
-    private Map<Integer, Aisle> aisleMap;
-
-    /** A Map of Devices in the Store. */
-    private Map<String, Device> deviceMap;
+    private List<Aisle> aisleList;
 
     /** A List of Customers currently in the Store. */
     private List<Customer> customerList;
@@ -38,8 +35,7 @@ public class Store {
         this.id = id;
         this.name = name;
         this.address = address;
-        this.aisleMap = new HashMap<Integer, Aisle>();
-        this.deviceMap = new HashMap<String, Device>();
+        this.aisleList = new ArrayList<Aisle>();
         this.customerList = new ArrayList<Customer>();
     }
 
@@ -47,28 +43,26 @@ public class Store {
         return this.id;
     }
 
-    public Aisle getAisle(Integer number) {
-        return this.aisleMap.get(number);
+    public String getName() {
+        return this.name;
     }
 
-    public Map<Integer, Aisle> getAisleList() {
-        return this.aisleMap;
+    public Aisle getAisle(String aisleId) {
+        for (Aisle aisle : getAisleList()) {
+            if (aisleId.equals(aisle.getId())) {
+                return aisle;
+            }
+        }
+
+        return null;
     }
 
-    public Device getDevice(String id) {
-        return this.deviceMap.get(id);
-    }
-
-    public Map<String, Device> getDeviceList() {
-        return this.deviceMap;
+    public List<Aisle> getAisleList() {
+        return this.aisleList;
     }
 
     public void addAisle(Aisle aisle) {
-        this.aisleMap.put(aisle.getNumber(), aisle);
-    }
-
-    public void addDevice(Device device) {
-        this.deviceMap.put(device.getId(), device);
+        this.aisleList.add(aisle);
     }
 
     /**
@@ -88,14 +82,14 @@ public class Store {
 
         // List of customers
         store += " Customers:\n";
-        store += this.customerList;
+//        store += this.customerList;
         store += "\n" + separator;
 
         // List of aisles (with shelves/inventory)
         store += String.format("| Aisles:\n|\n");
-        for(Aisle aisle : getAisleList().values()) {
-            store += aisle + "\n";
-        }
+//        for(Aisle aisle : getAisleList().values()) {
+//            store += aisle + "\n";
+//        }
         store += "\n" + separator;
 
         // Inventory List
@@ -104,9 +98,9 @@ public class Store {
 
         // List of Devices in the Store
         store += String.format("| Devices:\n|\n");
-        for(Device device : getDeviceList().values()) {
-            store += device;
-        }
+//        for(Device device : getDeviceList().values()) {
+//            store += device;
+//        }
         store += "\n" + separator;
 
         return store;

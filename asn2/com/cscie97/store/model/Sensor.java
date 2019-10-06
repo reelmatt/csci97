@@ -8,7 +8,7 @@ public class Sensor extends Device {
 //    private enum Type {CAMERA, MICROPHONE};
     private SensorType type;
 
-    public Sensor (String id, String name, Aisle location, SensorType type) {
+    public Sensor (String id, String name, String location, SensorType type) {
         super(id, name, location);
         this.type = SensorType.CAMERA;
     }
@@ -18,7 +18,7 @@ public class Sensor extends Device {
 
         sensor = String.format("| Device %s -- %s\n", this.getId(), this.getName());
         sensor += String.format("|\tType: %s\n", this.type);
-        sensor += String.format("|\tLocation: Aisle %d\n", this.getLocation().getNumber());
+//        sensor += String.format("|\tLocation: Aisle %d\n", this.getLocation().getId());
 
         return sensor;
     }

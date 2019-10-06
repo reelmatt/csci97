@@ -11,7 +11,9 @@ public class Customer {
     private String accountAddress;
     private String lastSeen;
     private Age ageGroup;
-    private Aisle location;
+    private Store store;
+    private Aisle aisle;
+
     private Basket basket;
 
     public Customer (String id, String first, String last, String type, String email, String account) {
@@ -22,7 +24,9 @@ public class Customer {
         this.email = email;
         this.accountAddress = account;
         this.ageGroup = Age.ADULT;
-        this.location = null;
+        this.store = null;
+        this.aisle = null;
+        this.basket = null;
 
     }
 
@@ -46,8 +50,19 @@ public class Customer {
 
     }
 
-    public void setLocation(Aisle aisle) {
-        this.location = aisle;
+    public void setLocation(Store store, Aisle aisle) {
+        this.store = store;
+        this.aisle = aisle;
+    }
+
+    public String getStore() {
+        if (this.store == null) {
+            return null;
+        }
+
+//        String[] ids = this.location.split(":");
+//        return ids[0];
+        return this.store.getName();
     }
 
     public String customerName() {
@@ -55,6 +70,6 @@ public class Customer {
     }
 
     public String toString() {
-        return "Customer #" + this.id + " -- " + this.customerName();
+        return "Customer #" + this.id + " -- " + this.customerName() + ": currently @ " + this.store.getName() + ", aisle" + this.aisle.getId();
     }
 }

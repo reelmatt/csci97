@@ -4,13 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Basket {
-    private Integer id;
+    private String id;
 
     private List<ProductAssociation> productList;
 
-    public Basket (Integer id) {
+    public Basket (String id) {
         this.id = id;
         this.productList = new ArrayList<ProductAssociation>();
+    }
+
+    public String getId() {
+        return this.id;
     }
 
     public void clear() {

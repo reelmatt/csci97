@@ -4,16 +4,16 @@ public class Device {
 
     private String id;
     private String name;
-    private Aisle location;
+    private String location;
 
-    public Device(String id, String name, Aisle location) {
+    public Device(String id, String name, String location) {
         this.id = id;
         this.name = name;
         this.location = location;
     }
 
-    public void respondToEvent() {
-        System.out.println("Responding....");
+    public void respondToEvent(String event) {
+        System.out.println("Responding to event: " + event);
         return;
     }
 
@@ -25,8 +25,13 @@ public class Device {
         return this.name;
     }
 
-    public Aisle getLocation() {
+    public String getLocation() {
         return this.location;
+    }
+
+    public String getStore() {
+        String[] ids = this.location.split(":");
+        return ids[0];
     }
 
     public String toString() {

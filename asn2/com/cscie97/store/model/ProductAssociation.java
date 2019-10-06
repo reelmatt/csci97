@@ -8,4 +8,13 @@ public class ProductAssociation {
         this.count = count;
         this.product = product;
     }
+
+    public Integer getCount() {
+        return this.count;
+    }
+
+    public void updateCount(Integer countChange) {
+        this.count += countChange;
+    }
+
 }

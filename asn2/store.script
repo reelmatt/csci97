@@ -57,6 +57,7 @@ show device 1:2:1
 show device 1:2:4
 
 show store 1
+show store 2
 
 # define product <product_id> name <name> description <description> size <size> category <category> unit_price <unit_price> [temperature (frozen | refrigerated | ambient | warm | hot)]
 define product milkSKU1 name "Hood 1% Milk" description "1% milk fresh from Hood farms." size 2 category dairy unit_price 3 temperature refrigerated

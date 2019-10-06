@@ -81,33 +81,34 @@ public class StoreModelService implements StoreModelServiceInterface {
 
         // Parse location identification
         String[] ids = parseLocationIdentifier(fullyQualifiedAisleId);
-        String storeId;
-        Integer aisleNumber;
+        String storeId, aisleId;
 
         // Check location identification is valid
         try {
             storeId = ids[STORE];
-            aisleNumber = Integer.parseInt(ids[AISLE]);
-        } catch (NumberFormatException e) {
-            throw new StoreModelServiceException("define aisle", "Invalid Aisle number.");
+            aisleId = ids[AISLE];
         } catch (IndexOutOfBoundsException e) {
-            throw new StoreModelServiceException("define aisle", "Missing location ID.");
+            throw new StoreModelServiceException("define aisle", "Missing location ID(s).");
         }
 
         // Check if Aisle already exists in store
         Store store = getStore(authToken, storeId);
-        if (store.getAisle(aisleNumber) != null) {
+        if (store.getAisle(aisleId) != null) {
             throw new StoreModelServiceException(
                     "define aisle",
-                    String.format("Aisle #%d already exists in store %s", aisleNumber, storeId)
+                    String.format("Aisle '%sæ already exists in store '%s'", aisleId, storeId)
             );
         }
 
         // Doesn't already exist, so create it
-        Aisle newAisle = new Aisle(aisleNumber, name, description, location);
+        Aisle newAisle = new Aisle(aisleId, name, description, location);
         store.addAisle(newAisle);
     }
 
+    /**
+     * {@inheritDoc}
+     * Additional details about the method implementation goes here...
+     */
     public void defineShelf(String authToken,
                             String fullyQualifiedShelfId,
                             String name,
@@ -123,28 +124,26 @@ public class StoreModelService implements StoreModelServiceInterface {
 
         // Parse location identification
         String[] ids = parseLocationIdentifier(fullyQualifiedShelfId);
-        String storeId, shelfId;
-        Integer aisleNumber;
+        System.out.println("SHELF ID: " + fullyQualifiedShelfId);
+        String storeId, aisleId, shelfId;
 
         // Check location identification is valid
         try {
             storeId = ids[STORE];
-            aisleNumber = Integer.parseInt(ids[AISLE]);
+            aisleId = ids[AISLE];
             shelfId = ids[SHELF];
-        } catch (NumberFormatException e) {
-            throw new StoreModelServiceException("define shelf", "Invalid Aisle number.");
         } catch (IndexOutOfBoundsException e) {
-            throw new StoreModelServiceException("define shelf", "Missing location ID.");
+            throw new StoreModelServiceException("define shelf", "Missing location ID(s).");
         }
 
         // Check if Shelf already exists in a given Aisle of a given store
-        Aisle aisle = getStore(authToken, storeId).getAisle(aisleNumber);
+        Aisle aisle = getStore(authToken, storeId).getAisle(aisleId);
 
         if (aisle.getShelf(shelfId) != null) {
             throw new StoreModelServiceException(
                     "define shelf",
                     String.format(
-                        "Shelf #%s already exists in aisle %d", ids[SHELF], aisle.getNumber()
+                        "Shelf '%s' already exists in aisle '%s'", shelfId, aisleId
                     )
             );
         }
@@ -155,6 +154,10 @@ public class StoreModelService implements StoreModelServiceInterface {
         return;
     }
 
+    /**
+     * {@inheritDoc}
+     * Additional details about the method implementation goes here...
+     */
     public void defineInventory(String authToken,
                                 String inventoryId,
                                 String location,
@@ -163,12 +166,26 @@ public class StoreModelService implements StoreModelServiceInterface {
                                 String productId)
             throws StoreModelServiceException {
 
+        // All Inventory information must be present
+        if (inventoryId == null || location == null || capacity == null || count == null || productId == null) {
+            throw new StoreModelServiceException("define shelf", "Some inventory info is missing.");
+        }
+
+        // Parse location identification
         String[] ids = parseLocationIdentifier(location);
+        String storeId, aisleId, shelfId;
 
-        Shelf shelf = getShelf(authToken, location);
-        Product product = getProduct(authToken, productId);
+        // Check location identification is valid
+        try {
+            storeId = ids[STORE];
+            aisleId = ids[AISLE];
+            shelfId = ids[SHELF];
+        } catch (IndexOutOfBoundsException e) {
+            throw new StoreModelServiceException("define shelf", "Missing location ID(s).");
+        }
 
-        // Shelf already contains the inventory
+        // Check that the Shelf doesn't already contain 'inventoryId'
+        Shelf shelf = getStore(authToken, storeId).getAisle(aisleId).getShelf(shelfId);
         if (shelf.getInventory(inventoryId) != null) {
             throw new StoreModelServiceException(
                 "define inventory",
@@ -176,11 +193,25 @@ public class StoreModelService implements StoreModelServiceInterface {
             );
         }
 
+        // Check that the product exists
+        Product product = getProduct(authToken, productId);
+        if (product == null) {
+            throw new StoreModelServiceException(
+                    "define inventory",
+                    String.format("The Product '%s' does not exist.", productId)
+            );
+        }
+
+        // Create inventory and add to the shelf
         Inventory inventory = new Inventory(inventoryId, capacity, count, product);
         shelf.addInventory(inventory);
         return;
     }
 
+    /**
+     * {@inheritDoc}
+     * Additional details about the method implementation goes here...
+     */
     public void defineProduct(String authToken,
                               String productId,
                               String name,
@@ -190,6 +221,11 @@ public class StoreModelService implements StoreModelServiceInterface {
                               Double price,
                               Temperature temperature)
             throws StoreModelServiceException {
+
+        // All Product information must be present
+        if (productId == null || name == null || description == null || size < 0 || category == null || price < 0) {
+            throw new StoreModelServiceException("define product", "Some product info is invalid.");
+        }
 
         // Check if a product already exists
         if (this.productMap.containsKey(productId)) {
@@ -201,6 +237,10 @@ public class StoreModelService implements StoreModelServiceInterface {
         this.productMap.put(productId, newProduct);
     }
 
+    /**
+     * {@inheritDoc}
+     * Additional details about the method implementation goes here...
+     */
     public void defineCustomer(String authToken,
                                String customerId,
                                String firstName,
@@ -209,6 +249,11 @@ public class StoreModelService implements StoreModelServiceInterface {
                                String email,
                                String account)
             throws StoreModelServiceException {
+
+        // All Customer information must be present
+        if (customerId == null || firstName == null || lastName == null || type == null || email == null || account == null) {
+            throw new StoreModelServiceException("define customer", "Some Customer info is missing..");
+        }
 
         // Check if customer already exists
         if (this.masterCustomerList.get(customerId) != null) {
@@ -226,13 +271,21 @@ public class StoreModelService implements StoreModelServiceInterface {
         return;
     }
 
+    /**
+     * {@inheritDoc}
+     * Additional details about the method implementation goes here...
+     */
     public void defineDevice(String authToken,
                              String deviceId,
                              String name,
                              String type,
-                             String location)
+                             String fullyQualifiedAisleLocation)
             throws StoreModelServiceException {
 
+        // All Device information must be present
+        if (deviceId == null || name == null || type == null || fullyQualifiedAisleLocation == null) {
+            throw new StoreModelServiceException("define device", "Some device info is missing.");
+        }
 
         // Needs to be globablly unique
         if (this.deviceMap.containsKey(deviceId)) {
@@ -240,19 +293,19 @@ public class StoreModelService implements StoreModelServiceInterface {
         }
 
 
-        Device newDevice = null;
-        String[] ids = parseLocationIdentifier(location);
-        Aisle aisle = getAisle(authToken, location);
+        // Retrieve Aisle where device is located
+//        Aisle aisle = getAisle(authToken, fullyQualifiedAisleLocation);
 
+        // Create new Sensor/Appliance
+        Device newDevice = null;
         Enum deviceType;
         if ( (deviceType = ApplianceType.getType(type)) != null) {
-            newDevice = new Appliance(deviceId, name, aisle, (ApplianceType) deviceType);
+            newDevice = new Appliance(deviceId, name, fullyQualifiedAisleLocation, (ApplianceType) deviceType);
         } else if ((deviceType = SensorType.getType(type)) != null) {
-            newDevice = new Sensor(deviceId, name, aisle, (SensorType) deviceType);
+            newDevice = new Sensor(deviceId, name, fullyQualifiedAisleLocation, (SensorType) deviceType);
         }
 
-
-        // Create new store and add to list
+        // Add Device to the StoreModelService list
         this.deviceMap.put(deviceId, newDevice);
         return;
     }
@@ -277,11 +330,21 @@ public class StoreModelService implements StoreModelServiceInterface {
         String[] ids = parseLocationIdentifier(locationId);
 
         // Store the individual parts
-        String store = ids[STORE];
-        Integer aisleNumber = Integer.parseInt(ids[AISLE]);
+        String storeId, aisleId;
+        storeId = ids[STORE];
+        aisleId = ids[AISLE];
 
         // Lookup the aisle
-        return getStore(authToken, store).getAisle(aisleNumber);
+        Aisle aisle = getStore(authToken, storeId).getAisle(aisleId);
+
+        if (aisle == null) {
+            throw new StoreModelServiceException(
+                "get aisle",
+                String.format("An aisle with id '%s' does not exist in store '%s'.", aisleId, storeId)
+            );
+        }
+
+        return aisle;
     }
 
 //    public void showAisle(String id) throws StoreModelServiceException {
@@ -309,12 +372,22 @@ public class StoreModelService implements StoreModelServiceInterface {
         String[] ids = parseLocationIdentifier(locationId);
 
         // Store the individual parts
-        String store = ids[STORE];
-        Integer aisleNumber = Integer.parseInt(ids[AISLE]);
-        String shelf = ids[SHELF];
+        String storeId, aisleId, shelfId;
+        storeId = ids[STORE];
+        aisleId = ids[AISLE];
+        shelfId = ids[SHELF];
 
         // Lookup the shelf
-        return getStore(authToken, store).getAisle(aisleNumber).getShelf(shelf);
+        Shelf shelf = getStore(authToken, storeId).getAisle(aisleId).getShelf(shelfId);
+
+        if (shelf == null) {
+            throw new StoreModelServiceException(
+                    "get shelf",
+                    String.format("A shelf with id '%s' does not exist in location '%s:%s'.", shelfId, storeId, aisleId)
+            );
+        }
+
+        return shelf;
     }
 
 //    public void showShelf(String id) throws StoreModelServiceException {
@@ -343,27 +416,166 @@ public class StoreModelService implements StoreModelServiceInterface {
         String[] ids = parseLocationIdentifier(locationId);
 
         // Store the individual parts
-        String store = ids[STORE];
-        Integer aisleNumber = Integer.parseInt(ids[AISLE]);
-        String shelf = ids[SHELF];
-        String inventory = ids[INVENTORY];
+        String storeId, aisleId, shelfId, inventoryId;
+        storeId = ids[STORE];
+        aisleId = ids[AISLE];
+        shelfId = ids[SHELF];
+        inventoryId = ids[INVENTORY];
 
+        // Lookup the shelf
+        Inventory inventory = getStore(authToken, storeId).getAisle(aisleId).getShelf(shelfId).getInventory(inventoryId);
 
-        return getStore(authToken, store).getAisle(aisleNumber).getShelf(shelf).getInventory(inventory);
-//        return getAisle(authToken, locationId).getShelf(ids[SHELF]).getInventory(ids[INVENTORY]);
+        if (inventory == null) {
+            throw new StoreModelServiceException(
+                    "get inventory",
+                    String.format("An inventory with id '%s' does not exist in location '%s:%s:%s'.", inventoryId, storeId, aisleId, shelfId)
+            );
+        }
+
+        return inventory;
     }
 
 
-    public Product getProduct(String authToken, String productId) {
-        return this.productMap.get(productId);
+    public Product getProduct(String authToken, String productId) throws StoreModelServiceException  {
+        Product product = this.productMap.get(productId);
+
+        if (product == null) {
+            throw new StoreModelServiceException(
+                    "get product",
+                    String.format("A product with id '%s' does not exist.", productId)
+            );
+        }
+
+        return product;
     }
 
-    public Customer getCustomer(String authToken, String customerId) {
-        return this.masterCustomerList.get(customerId);
+    public Customer getCustomer(String authToken, String customerId) throws StoreModelServiceException {
+        Customer customer = this.masterCustomerList.get(customerId);
+
+        if (customer == null) {
+            throw new StoreModelServiceException(
+                    "get customer",
+                    String.format("A Customer with id '%s' is not registered with the StoreModelService.", customerId)
+            );
+        }
+
+        return customer;
+    }
+
+    public List<Device> getStoreDevices(String authToken, String storeId) throws StoreModelServiceException {
+        Store store = getStore(authToken, storeId);
+
+        List<Device> storeDeviceList = new ArrayList<Device>();
+
+        for (Device device : this.deviceMap.values()) {
+            String deviceStoreId = device.getStore();
+            if (storeId.equals(deviceStoreId)) {
+                storeDeviceList.add(device);
+            }
+        }
+
+        return storeDeviceList;
+
+    }
+
+    public List<Customer> getStoreCustomers(String authToken, String storeId) throws StoreModelServiceException {
+        Store store = getStore(authToken, storeId);
+
+        List<Customer> storeCustomerList = new ArrayList<Customer>();
+
+        for (Customer customer : this.masterCustomerList.values()) {
+            String customerStoreId = customer.getStore();
+
+            if (storeId.equals(customerStoreId)) {
+                storeCustomerList.add(customer);
+            }
+        }
+
+        return storeCustomerList;
     }
 
     public Device getDevice(String authToken, String deviceId) throws StoreModelServiceException {
-        return this.deviceMap.get(deviceId);
+        Device device = this.deviceMap.get(deviceId);
+
+        if (device == null) {
+            throw new StoreModelServiceException(
+                    "get device",
+                    String.format("A device with id '%s' does not exist.", deviceId)
+            );
+        }
+
+        return device;
+    }
+
+    public void updateInventory(String authToken, String inventoryId, Integer updateCount) throws StoreModelServiceException {
+        Inventory inventory = getInventory(authToken, inventoryId);
+
+        Integer currentCount = inventory.getCount();
+        Integer newCount = currentCount + updateCount;
+
+
+        if (newCount < 0) {
+            throw new StoreModelServiceException("update inventory", "Count change would be less than 0.");
+        } else if (newCount > inventory.getCapacity()) {
+            throw new StoreModelServiceException("update inventory", "Count change would exceed capacity.");
+        }
+
+        inventory.updateCount(updateCount);
+        System.out.println("INVENTORY: updated count from " + currentCount + " to " + inventory.getCount());
+        return;
+    }
+
+    public void updateCustomer(String authToken, String customerId, String location) throws StoreModelServiceException {
+        Customer customer = getCustomer(authToken, customerId);
+
+        String[] ids = parseLocationIdentifier(location);
+
+        if (ids.length < 2) {
+            throw new StoreModelServiceException("update customer", "Missing location arguments");
+        }
+
+        Store store = getStore(authToken, ids[STORE]);
+        Aisle aisle = store.getAisle(ids[AISLE]);
+        customer.setLocation(store, aisle);
+
+
+        return;
+    }
+
+    public void createCommand(String authToken, String deviceId, String message) throws StoreModelServiceException {
+
+        Device device = getDevice(authToken, deviceId);
+
+        if (! (device instanceof Appliance)) {
+            throw new StoreModelServiceException("create command", device.getName() + " cannot process commands.");
+        }
+
+        Appliance appliance = (Appliance) device;
+        appliance.respondToCommand(message);
+    }
+
+    public void createEvent(String authToken, String deviceId, String event) throws StoreModelServiceException {
+        Device device = getDevice(authToken, deviceId);
+        device.respondToEvent(event);
+    }
+
+    public Basket getCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
+        Customer customer = getCustomer(authToken, customerId);
+
+        return customer.getBasket();
+    }
+
+    public String createCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
+        Customer customer = getCustomer(authToken, customerId);
+
+        Basket newBasket = new Basket(customerId);
+        customer.setBasket(basket);
+    }
+
+    public void addItemToBasket(String authToken, String basketId, String productId, Integer itemCount) {
+        Basket basket = getCustomerBasket(authToken, basketId);
+        Product product = getProduct(authToken, productId);
+
     }
 
     private String[] parseLocationIdentifier(String location) {
