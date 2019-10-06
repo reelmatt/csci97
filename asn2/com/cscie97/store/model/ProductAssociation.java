@@ -13,6 +13,13 @@ public class ProductAssociation {
         return this.count;
     }
 
+    public void setCount(Integer itemCount) {
+        this.count += itemCount;
+    }
+
+    public String getProductId() {
+        return this.product.getId();
+    }
     public void updateCount(Integer countChange) {
         this.count += countChange;
     }

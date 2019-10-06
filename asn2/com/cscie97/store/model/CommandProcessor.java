@@ -141,14 +141,14 @@ public class CommandProcessor {
                     create(token, command, object, id, args);
                     break;
                 case "get":
-                    getBasket(token, command, object, id, args);
+                    getBasket(token, command, id, args);
                     break;
                 case "add":
-                    addItem(token, command, object, id, args);
+                    addItem(token, command, id, args);
                 case "remove":
-                    removeItem(token, command, object, id, args);
+                    removeItem(token, command, id, args);
                 case "clear":
-                    clearBasket(token, command, object, id, args);
+                    clearBasket(token, command, id, args);
                     break;
                 default:
                     throw new CommandProcessorException(command, "Unknown command", lineNumber);
@@ -689,14 +689,18 @@ public class CommandProcessor {
         }
     }
 
-    private void getBasket (String authToken, String command, String basketId, List<String> args) throws CommandProcessorException {
-        Basket basket = this.storeModelService.getCustomerBasket(authToken, customerId);
+    private void getBasket (String authToken, String command, String customerId, List<String> args) throws CommandProcessorException {
+        try {
+            Basket basket = this.storeModelService.getCustomerBasket(authToken, customerId);
 
-        if (basket == null) {
-            basket = this.storeModelService.createCustomerBasket(authToken, customerId);
+            if (basket == null) {
+                basket = this.storeModelService.createCustomerBasket(authToken, customerId);
+            }
+            System.out.println("COMMAND: got basket " + basket);
+            return;
+        } catch (StoreModelServiceException e) {
+            System.err.println(e);
         }
-        System.out.println("COMMAND: got basket " + basket);
-        return;
     }
 
     private void addItem (String authToken, String command, String basketId, List<String> args) throws CommandProcessorException {

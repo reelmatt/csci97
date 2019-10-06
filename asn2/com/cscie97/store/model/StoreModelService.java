@@ -565,17 +565,39 @@ public class StoreModelService implements StoreModelServiceInterface {
         return customer.getBasket();
     }
 
-    public String createCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
+    public Basket createCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
         Customer customer = getCustomer(authToken, customerId);
 
         Basket newBasket = new Basket(customerId);
-        customer.setBasket(basket);
+        customer.setBasket(newBasket);
+        return newBasket;
     }
 
-    public void addItemToBasket(String authToken, String basketId, String productId, Integer itemCount) {
+    public void addItemToBasket(String authToken, String basketId, String productId, Integer itemCount) throws StoreModelServiceException {
         Basket basket = getCustomerBasket(authToken, basketId);
         Product product = getProduct(authToken, productId);
 
+        ProductAssociation items = new ProductAssociation(itemCount, product);
+        basket.addItem(items);
+    }
+
+    public void removeItemFromBasket(String authToken, String basketId, String productId, Integer itemCount) throws StoreModelServiceException{
+        Basket basket = getCustomerBasket(authToken, basketId);
+        Product product = getProduct(authToken, productId);
+
+        ProductAssociation pa = basket.removeItem(productId, itemCount);
+    }
+
+    public void clearBasket(String authToken, String customerId) throws StoreModelServiceException {
+        Customer customer = getCustomer(authToken, customerId);
+        customer.clearBasket();
+
+        return;
+    }
+
+    public List<ProductAssociation> getBasketItems(String authToken, String basketId, String productId, Integer itemCount) throws StoreModelServiceException {
+        Basket basket = getCustomerBasket(authToken, basketId);
+        return basket.getBasketItems();
     }
 
     private String[] parseLocationIdentifier(String location) {

@@ -26,6 +26,9 @@ public class Product {
         this.temperature = (temperature == null) ? Temperature.AMBIENT : temperature;
     }
 
+    public String getId() {
+        return this.id;
+    }
     public String toString() {
         return "Product #" + this.id + " -- " + this.name;
     }
