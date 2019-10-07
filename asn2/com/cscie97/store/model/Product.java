@@ -5,7 +5,7 @@ public class Product {
     private String id;
     private String name;
     private String description;
-    private Integer size;
+    private String size;
     private String category;
     private Double unitPrice;
     private Temperature temperature;
@@ -13,7 +13,7 @@ public class Product {
     public Product (String id,
                     String name,
                     String description,
-                    Integer size,
+                    String size,
                     String category,
                     Double price,
                     Temperature temperature) {

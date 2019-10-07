@@ -19,34 +19,50 @@ public class Store {
     /** A Map of Aisles in the Store. */
     private List<Aisle> aisleList;
 
-    /** A List of Customers currently in the Store. */
-    private List<Customer> customerList;
-
     /**
      * Store Constructor
      *
+     * Creates a Store to be managed by the Store 24X7 System. A Store is globally
+     * unique within the System. Each Store contains any number of Aisle(s), which
+     * in turn track Shelf, Inventory, and Product information.
      *
+     * Stores also contain Devices and Customers, each of which are associated with
+     * a specific location within the Store, but those lists are tracked by the
+     * StoreModelService and operated by the StoreController (forthcoming in
+     * assignment 3).
      *
-     * @param id
-     * @param name
-     * @param address
+     * @param id        Globally unique identifier.
+     * @param name      Name of the Store.
+     * @param address   Address of the Store.
      */
     public Store (String id, String name, String address) {
         this.id = id;
         this.name = name;
         this.address = address;
         this.aisleList = new ArrayList<Aisle>();
-        this.customerList = new ArrayList<Customer>();
     }
 
+    /** Returns the Store's unique identifier. */
     public String getId() {
         return this.id;
     }
 
+    /** Returns the name of the Store. */
     public String getName() {
         return this.name;
     }
 
+    /** Returns the address where the Store is located. */
+    public String getAddress() {
+        return this.address;
+    }
+
+    /**
+     * Locate the given Aisle within the Store's aisleList.
+     *
+     * @param   aisleId     The Aisle to find.
+     * @return              Requested Aisle if exists. Otherwise, null.
+     */
     public Aisle getAisle(String aisleId) {
         for (Aisle aisle : getAisleList()) {
             if (aisleId.equals(aisle.getId())) {
@@ -57,10 +73,12 @@ public class Store {
         return null;
     }
 
+    /** Returns a list of Aisles located within the Store. */
     public List<Aisle> getAisleList() {
         return this.aisleList;
     }
 
+    /** @param aisle The aisle to add to the Store's list. */
     public void addAisle(Aisle aisle) {
         this.aisleList.add(aisle);
     }
@@ -68,40 +86,13 @@ public class Store {
     /**
      * Override default toString method.
      *
-     * Displays details of the store including the id, name, address, active
-     * customers, aisles, inventory, sensors, and appliances.
+     * Displays details of the store including the id, name, and address.
      */
     public String toString() {
-        String separator = "-----------------------\n";
-        String store = separator;
-
         // Store Info
-        store += String.format("| Store %s -- %s\n", this.id, this.name);
-        store += String.format("| Address: %s\n", this.address);
-        store += separator;
-
-        // List of customers
-        store += " Customers:\n";
-//        store += this.customerList;
-        store += "\n" + separator;
-
-        // List of aisles (with shelves/inventory)
-        store += String.format("| Aisles:\n|\n");
-//        for(Aisle aisle : getAisleList().values()) {
-//            store += aisle + "\n";
-//        }
-        store += "\n" + separator;
-
-        // Inventory List
-        store += " Inventory:\n";
-        store += "\n" + separator;
-
-        // List of Devices in the Store
-        store += String.format("| Devices:\n|\n");
-//        for(Device device : getDeviceList().values()) {
-//            store += device;
-//        }
-        store += "\n" + separator;
+        String store = this.id + "\n";
+        store += String.format("Name: %s\n", this.name);
+        store += String.format("Address: %s\", this.address);
 
         return store;
     }

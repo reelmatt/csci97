@@ -16,11 +16,11 @@ public class Customer {
 
     private Basket basket;
 
-    public Customer (String id, String first, String last, String type, String email, String account) {
+    public Customer (String id, String first, String last, CustomerType type, String email, String account) {
         this.id = id;
         this.firstName = first;
         this.lastName = last;
-        this.type = CustomerType.GUEST;
+        this.type = (type == null) ? CustomerType.GUEST : type;
         this.email = email;
         this.accountAddress = account;
         this.ageGroup = Age.ADULT;
@@ -55,6 +55,9 @@ public class Customer {
         this.aisle = aisle;
     }
 
+    public String getId() {
+        return this.id;
+    }
     public String getStore() {
         if (this.store == null) {
             return null;
@@ -62,14 +65,21 @@ public class Customer {
 
 //        String[] ids = this.location.split(":");
 //        return ids[0];
-        return this.store.getName();
+        return this.store.getId();
     }
 
     public String customerName() {
         return this.firstName + " " + this.lastName;
     }
 
+    public String customerLocation() {
+        String location = "Currently @ ";
+        location += (this.store == null) ? "N/a" : this.store.getName();
+        location += (this.aisle == null) ? "" : this.aisle.getId();
+        return location;
+//        return ": currently @ " + this.store.getName() + ", aisle" + this.aisle.getId();
+    }
     public String toString() {
-        return "Customer #" + this.id + " -- " + this.customerName() + ": currently @ " + this.store.getName() + ", aisle" + this.aisle.getId();
+        return "Customer #" + this.id + " -- " + this.customerName() + ": " + this.customerLocation();
     }
 }

@@ -29,11 +29,11 @@ define shelf 1:2:1 name "Milk" level medium description "Skim and whole milk" te
 show shelf 1:2:2
 show shelf 1:2:1
 
-#show shelf 1
+show shelf 1
 
-#show shelf 1:2
+show shelf 1:2
 
-#show shelf 2
+show shelf 2
 
 # define inventory <inventory_id> location <store_id>:<aisle_number>:<shelf_id> capacity <capacity> count <count> product <product_id>
 define inventory 1 location 1:2:1 capacity 4 count 3 product milk123

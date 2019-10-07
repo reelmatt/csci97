@@ -137,6 +137,7 @@ update  customer  cust_S2  location  store_123:aisle_B2
 update  customer  cust_21  location  store_123:aisle_A2
 update  customer  cust_22  location  store_123:aisle_A2
 
+show store store_123
 
 # Show the details of the customer
 # show  customer  <customer_id>
