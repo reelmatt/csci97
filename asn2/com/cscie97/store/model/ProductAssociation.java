@@ -20,6 +20,10 @@ public class ProductAssociation {
     public String getProductId() {
         return this.product.getId();
     }
+
+    public String getProductName() {
+        return this.product.getName();
+    }
     public void updateCount(Integer countChange) {
         this.count += countChange;
     }

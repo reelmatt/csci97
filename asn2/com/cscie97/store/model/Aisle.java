@@ -2,8 +2,18 @@ package com.cscie97.store.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Iterator;
 
+/**
+ * An individual Aisle, which is located within a Store and tracked by the
+ * Store Model Service.
+ *
+ * An Aisle stores a list of Shelf objects which break down further to ultimately
+ * track Products within a Store. The Aisle is also where Customers can walk and
+ * Devices (Sensors and Appliances) can monitor activity and also respond to
+ * commands (Appliances only).
+ *
+ * @author Matthew Thomas
+ */
 public class Aisle {
     /** Name of the Aisle (e.g. Dairy) */
     private String name;
@@ -23,35 +33,42 @@ public class Aisle {
     /**
      * Aisle Constructor
      *
-     * @param aisleNumber
-     * @param name
-     * @param description
-     * @param location
+     * Creates an Aisle that is then added by the Store Model Service to a
+     * corresponding Store. Aisles are unique within a given Store, but are not
+     * required to be unique between Stores.
+     *
+     * @param aisleId       The identifier, aka 'number' of the Aisle.
+     * @param name          Name of the Aisle.
+     * @param description   Description of what is contained in the Aisle.
+     * @param location      Place where Aisle is located within the Store.
      */
     public Aisle (String aisleId, String name, String description, Location location) {
         this.id = aisleId;
         this.name = name;
         this.description = description;
-        this.location = (location == null) ? Location.FLOOR : location;
+        this.location = location;
         this.shelfList = new ArrayList<Shelf>();
     }
 
+    /** Returns the Aisle's identifier (or number). */
     public String getId() {
         return this.id;
     }
+
+    /** Returns the location within a Store where the Aisle is located. */
     public String getLocation() {
         return this.location.toString();
     }
 
-    public List<Shelf> getShelfList() {
-        return this.shelfList;
-    }
-
-    public Shelf getShelf(String id){
-//        List<Shelf> shelves = getShelfList();
-
+    /**
+     * Locate a given Shelf within the Aisle.
+     *
+     * @param   id      The Shelf to find.
+     * @return          Requested Shelf, if exists. Otherwise, null.
+     */
+    public Shelf getShelf(String shelfId){
         for (Shelf shelf : getShelfList()) {
-            if(id.equals(shelf.getId())) {
+            if(shelfId.equals(shelf.getId())) {
                 return shelf;
             }
         }
@@ -59,6 +76,12 @@ public class Aisle {
         return null;
     }
 
+    /** Returns a list of Shelf objects located in the Aisle. */
+    public List<Shelf> getShelfList() {
+        return this.shelfList;
+    }
+
+    /** @param  shelf   The Shelf to add to the Aisle's list. */
     public void addShelf(Shelf shelf) {
         this.shelfList.add(shelf);
     }
@@ -73,12 +96,12 @@ public class Aisle {
 
         String aisle;
 
-        aisle = String.format("| Aisle #%s -- %s\n", this.id, this.name);
-        aisle += String.format("|\t Location: %s\n", this.location);
-        aisle += String.format("|\t Description: %s\n", this.description);
-        aisle += String.format("|\t Shelves:\n");
+        aisle = String.format("Aisle #%s -- %s\n", this.id, this.name);
+        aisle += String.format("Location: %s\n", this.location);
+        aisle += String.format("Description: %s\n", this.description);
+        aisle += String.format("Shelves:\n");
         for(Shelf shelf : getShelfList()) {
-            aisle += shelf;
+            aisle += "    " + shelf;
         }
 
         return aisle;

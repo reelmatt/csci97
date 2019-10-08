@@ -1,11 +1,21 @@
 package com.cscie97.store.model;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 
+/**
+ * An individual Store within the Store Model Service.
+ *
+ * A Store is globally unique within the System. Each Store contains any number
+ * of Aisle(s), which in turn track Shelf, Inventory, and Product information.
+ *
+ * Stores also contain Devices and Customers, each of which are associated with
+ * a specific location within the Store, but those lists are tracked by the
+ * StoreModelService and operated by the StoreController (forthcoming in
+ * assignment 3).
+ *
+ * @author Matthew Thomas
+ */
 public class Store {
     /** Store ID */
     private String id;
@@ -16,20 +26,14 @@ public class Store {
     /** Physical address of the Store. */
     private String address;
 
-    /** A Map of Aisles in the Store. */
+    /** A List of Aisles in the Store. */
     private List<Aisle> aisleList;
 
     /**
      * Store Constructor
      *
-     * Creates a Store to be managed by the Store 24X7 System. A Store is globally
-     * unique within the System. Each Store contains any number of Aisle(s), which
-     * in turn track Shelf, Inventory, and Product information.
-     *
-     * Stores also contain Devices and Customers, each of which are associated with
-     * a specific location within the Store, but those lists are tracked by the
-     * StoreModelService and operated by the StoreController (forthcoming in
-     * assignment 3).
+     * Creates a Store with a globally unique identifier. Each Store starts
+     * with an empty list of Aisles.
      *
      * @param id        Globally unique identifier.
      * @param name      Name of the Store.
@@ -89,10 +93,9 @@ public class Store {
      * Displays details of the store including the id, name, and address.
      */
     public String toString() {
-        // Store Info
         String store = this.id + "\n";
         store += String.format("Name: %s\n", this.name);
-        store += String.format("Address: %s\", this.address);
+        store += String.format("Address: %s", this.address);
 
         return store;
     }
