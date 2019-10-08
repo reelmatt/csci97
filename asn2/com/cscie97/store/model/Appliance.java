@@ -14,7 +14,10 @@ public class Appliance extends Device {
     }
 
     public void respondToCommand(String command) {
-        System.out.println("Responding to Command:" + command);
+        System.out.println(
+            String.format("Appliance '%s' received command %s.\n", super.getId(), command)
+        );
+        return;
     }
 
     public String toString() {

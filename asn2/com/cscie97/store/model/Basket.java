@@ -38,7 +38,9 @@ public class Basket {
         this.productList.add(product);
     }
 
-    /** */
+    /**
+     *
+     */
     public ProductAssociation removeItem(String productId, Integer itemCount) {
         ProductAssociation product = getBasketItem(productId);
 
@@ -49,7 +51,7 @@ public class Basket {
         if ((product.getCount() + itemCount) < 0) {
             return null;
         }
-        product.setCount(itemCount);
+        product.updateCount(itemCount);
         return product;
     }
 
@@ -68,8 +70,12 @@ public class Basket {
         return this.productList;
     }
 
+    public boolean removeItem(ProductAssociation item) {
+        return this.productList.remove(item);
+    }
+
     public void clear() {
-        return;
+        this.productList.clear();
     }
 
     /**

@@ -8,7 +8,7 @@ define
 define store 3 name Walmart
 
 # show store <identifier>
-# show store 1
+show store 1
 # show store 2
 
 # define aisle <store_id>:<aisle_number> name <name> description <description> location (floor | store_room)

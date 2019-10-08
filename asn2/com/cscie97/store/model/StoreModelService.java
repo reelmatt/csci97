@@ -47,12 +47,91 @@ public class StoreModelService implements StoreModelServiceInterface {
     /**
      * {@inheritDoc}
      */
+    public ProductAssociation addItemToBasket(String authToken,
+                                              String customerId,
+                                              String productId,
+                                              Integer itemCount) throws StoreModelServiceException {
+        // All information must be present
+        if (customerId == null || productId == null) {
+            throw new StoreModelServiceException("add basket_item", "Required information is missing.");
+        }
+
+        // Item count must be >= 0
+        if (itemCount < 0) {
+            throw new StoreModelServiceException("add basket_item", "Item count must be >= 0.");
+        }
+
+        Basket basket = getCustomerBasket(authToken, customerId);
+        ProductAssociation basketItem = basket.getBasketItem(productId);
+
+        // Check if the Basket already contains some of the item
+        if (basketItem != null) {
+            // Update that count
+            basketItem.updateCount(itemCount);
+        } else {
+            // Otherwise, add new item to basket with given count
+            Product product = getProduct(authToken, productId);
+            basketItem = new ProductAssociation(itemCount, product);
+            basket.addItem(basketItem);
+
+        }
+
+        return basketItem;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void clearBasket(String authToken, String customerId) throws StoreModelServiceException {
+        Customer customer = getCustomer(authToken, customerId);
+        customer.clearBasket();
+
+        return;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void commandAppliance(String authToken, String deviceId, String message)
+            throws StoreModelServiceException {
+        // Command message must be present
+        if (message == null) {
+            throw new StoreModelServiceException("create command", "Message is required to create a command.");
+        }
+
+        // Get the Device specified
+        Device device = getDevice(authToken, deviceId);
+
+        // Make sure it is an Appliance, not a Sensor
+        if (! (device instanceof Appliance)) {
+            throw new StoreModelServiceException("create command", device.getName() + " cannot process commands.");
+        }
+
+        // Cast the device, and send it the message
+        Appliance appliance = (Appliance) device;
+        appliance.respondToCommand(message);
+        return;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Basket createCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
+        Customer customer = getCustomer(authToken, customerId);
+
+        Basket newBasket = new Basket(customerId);
+        customer.setBasket(newBasket);
+        return newBasket;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public Aisle defineAisle(String authToken,
                              String fullyQualifiedAisleId,
                              String name,
                              String description,
-                             Location location)
-            throws StoreModelServiceException {
+                             Location location) throws StoreModelServiceException {
 
         // All Aisle information must be present
         if (fullyQualifiedAisleId == null || name == null || description == null || location == null) {
@@ -95,9 +174,7 @@ public class StoreModelService implements StoreModelServiceInterface {
                                    String lastName,
                                    CustomerType type,
                                    String email,
-                                   String account)
-            throws StoreModelServiceException {
-
+                                   String account) throws StoreModelServiceException {
         // All Customer information must be present
         if (customerId == null || type == null || email == null || account == null) {
             throw new StoreModelServiceException(
@@ -137,9 +214,7 @@ public class StoreModelService implements StoreModelServiceInterface {
                                String deviceId,
                                String name,
                                String type,
-                               String fullyQualifiedAisleLocation)
-            throws StoreModelServiceException {
-
+                               String fullyQualifiedAisleLocation) throws StoreModelServiceException {
         // All Device information must be present
         if (deviceId == null || name == null || type == null || fullyQualifiedAisleLocation == null) {
             throw new StoreModelServiceException(
@@ -172,16 +247,13 @@ public class StoreModelService implements StoreModelServiceInterface {
 
     /**
      * {@inheritDoc}
-     * Additional details about the method implementation goes here...
      */
     public Inventory defineInventory(String authToken,
                                      String inventoryId,
                                      String location,
                                      Integer capacity,
                                      Integer count,
-                                     String productId)
-            throws StoreModelServiceException {
-
+                                     String productId) throws StoreModelServiceException {
         // All Inventory information must be present
         if (inventoryId == null || location == null || productId == null) {
             throw new StoreModelServiceException(
@@ -232,9 +304,7 @@ public class StoreModelService implements StoreModelServiceInterface {
                                  String size,
                                  String category,
                                  Integer price,
-                                 Temperature temperature)
-            throws StoreModelServiceException {
-
+                                 Temperature temperature) throws StoreModelServiceException {
         // All Product information must be present
         if (productId == null || name == null || description == null || size == null || category == null) {
             throw new StoreModelServiceException("define product", "Required product information is missing.");
@@ -258,16 +328,13 @@ public class StoreModelService implements StoreModelServiceInterface {
 
     /**
      * {@inheritDoc}
-     * Additional details about the method implementation goes here...
      */
     public Shelf defineShelf(String authToken,
                              String fullyQualifiedShelfId,
                              String name,
                              Level level,
                              String description,
-                             Temperature temperature)
-            throws StoreModelServiceException {
-
+                             Temperature temperature) throws StoreModelServiceException {
         // All Shelf information must be present
         if (fullyQualifiedShelfId == null || name == null || level == null || description == null) {
             throw new StoreModelServiceException("define shelf", "Some shelf info is missing.");
@@ -311,9 +378,7 @@ public class StoreModelService implements StoreModelServiceInterface {
     public Store defineStore(String authToken,
                             String storeId,
                             String name,
-                            String address)
-            throws StoreModelServiceException {
-
+                            String address) throws StoreModelServiceException {
         // All store information must be present
         if (storeId == null || name == null || address == null) {
             throw new StoreModelServiceException("define store", "Required store information is missing.");
@@ -329,6 +394,8 @@ public class StoreModelService implements StoreModelServiceInterface {
         this.storeMap.put(storeId, newStore);
         return newStore;
     }
+
+
 
     /**
      * {@inheritDoc}
@@ -359,6 +426,17 @@ public class StoreModelService implements StoreModelServiceInterface {
         return aisle;
     }
 
+    public List<ProductAssociation> getBasketItems(String authToken,
+                                                   String customerId) throws StoreModelServiceException {
+        Basket basket = getCustomerBasket(authToken, customerId);
+
+        if (basket == null) {
+            throw new StoreModelServiceException("get basket_items", "Customer " + customerId + " does not have a basket.");
+        }
+
+        return basket.getBasketItems();
+    }
+
     public Customer getCustomer(String authToken, String customerId) throws StoreModelServiceException {
         Customer customer = this.masterCustomerList.get(customerId);
 
@@ -371,6 +449,13 @@ public class StoreModelService implements StoreModelServiceInterface {
 
         return customer;
     }
+
+    public Basket getCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
+        Customer customer = getCustomer(authToken, customerId);
+
+        return customer.getBasket();
+    }
+
 
     public Device getDevice(String authToken, String deviceId) throws StoreModelServiceException {
         Device device = this.deviceMap.get(deviceId);
@@ -415,8 +500,8 @@ public class StoreModelService implements StoreModelServiceInterface {
 
         if (product == null) {
             throw new StoreModelServiceException(
-                    "get product",
-                    String.format("A product with id '%s' does not exist.", productId)
+                "get product",
+                String.format("A product with id '%s' does not exist.", productId)
             );
         }
 
@@ -458,6 +543,22 @@ public class StoreModelService implements StoreModelServiceInterface {
         }
 
         return store;
+    }
+
+    public List<Device> getStoreDevices(String authToken, String storeId) throws StoreModelServiceException {
+        Store store = getStore(authToken, storeId);
+
+        List<Device> storeDeviceList = new ArrayList<Device>();
+
+        for (Device device : this.deviceMap.values()) {
+            String deviceStoreId = device.getStore();
+            if (storeId.equals(deviceStoreId)) {
+                storeDeviceList.add(device);
+            }
+        }
+
+        return storeDeviceList;
+
     }
 
     /**
@@ -514,21 +615,7 @@ public class StoreModelService implements StoreModelServiceInterface {
     }
 
 
-    public List<Device> getStoreDevices(String authToken, String storeId) throws StoreModelServiceException {
-        Store store = getStore(authToken, storeId);
 
-        List<Device> storeDeviceList = new ArrayList<Device>();
-
-        for (Device device : this.deviceMap.values()) {
-            String deviceStoreId = device.getStore();
-            if (storeId.equals(deviceStoreId)) {
-                storeDeviceList.add(device);
-            }
-        }
-
-        return storeDeviceList;
-
-    }
 
 //    public List<Customer> getStoreCustomers(String authToken, String storeId) throws StoreModelServiceException {
 //        Store store = getStore(authToken, storeId);
@@ -545,79 +632,6 @@ public class StoreModelService implements StoreModelServiceInterface {
 //
 //        return storeCustomerList;
 //    }
-
-
-
-
-
-
-    public void createCommand(String authToken, String deviceId, String message) throws StoreModelServiceException {
-
-        Device device = getDevice(authToken, deviceId);
-
-        if (! (device instanceof Appliance)) {
-            throw new StoreModelServiceException("create command", device.getName() + " cannot process commands.");
-        }
-
-        Appliance appliance = (Appliance) device;
-        appliance.respondToCommand(message);
-    }
-
-    public void createEvent(String authToken, String deviceId, String event) throws StoreModelServiceException {
-        Device device = getDevice(authToken, deviceId);
-        device.respondToEvent(event);
-    }
-
-    public Basket getCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
-        Customer customer = getCustomer(authToken, customerId);
-
-        return customer.getBasket();
-    }
-
-    public Basket createCustomerBasket(String authToken, String customerId) throws StoreModelServiceException {
-        Customer customer = getCustomer(authToken, customerId);
-
-        Basket newBasket = new Basket(customerId);
-        customer.setBasket(newBasket);
-        return newBasket;
-    }
-
-    public void addItemToBasket(String authToken,
-                                String basketId,
-                                String productId,
-                                Integer itemCount) throws StoreModelServiceException {
-        Basket basket = getCustomerBasket(authToken, basketId);
-        Product product = getProduct(authToken, productId);
-
-        ProductAssociation items = new ProductAssociation(itemCount, product);
-        basket.addItem(items);
-    }
-
-    public void removeItemFromBasket(String authToken,
-                                     String basketId,
-                                     String productId,
-                                     Integer itemCount) throws StoreModelServiceException{
-        Basket basket = getCustomerBasket(authToken, basketId);
-        Product product = getProduct(authToken, productId);
-
-        ProductAssociation pa = basket.removeItem(productId, itemCount);
-    }
-
-    public void clearBasket(String authToken, String customerId) throws StoreModelServiceException {
-        Customer customer = getCustomer(authToken, customerId);
-        customer.clearBasket();
-
-        return;
-    }
-
-    public List<ProductAssociation> getBasketItems(String authToken,
-                                                   String basketId,
-                                                   String productId,
-                                                   Integer itemCount) throws StoreModelServiceException {
-        Basket basket = getCustomerBasket(authToken, basketId);
-        return basket.getBasketItems();
-    }
-
     public List<Customer> getStoreCustomers(String authToken, String storeId) {
         List<Customer> customersInStore = new ArrayList<Customer>();
         for (Customer customer : this.masterCustomerList.values()) {
@@ -628,6 +642,57 @@ public class StoreModelService implements StoreModelServiceInterface {
 
         return customersInStore;
     }
+
+    public ProductAssociation removeItemFromBasket(String authToken,
+                                     String customerId,
+                                     String productId,
+                                     Integer itemCount) throws StoreModelServiceException{
+//        Basket basket = getCustomerBasket(authToken, basketId);
+//        Product product = getProduct(authToken, productId);
+//
+//        ProductAssociation pa = basket.removeItem(productId, itemCount);
+
+
+        // All information must be present
+        if (customerId == null || productId == null) {
+            throw new StoreModelServiceException("remove basket_item", "Required information is missing.");
+        }
+
+        // Item count must be >= 0 (to decrement the count)
+        if (itemCount < 0) {
+            throw new StoreModelServiceException("remove basket_item", "Count to remove from item must be >= 0.");
+        }
+
+        Basket basket = getCustomerBasket(authToken, customerId);
+        ProductAssociation basketItem = basket.getBasketItem(productId);
+
+        // Check if the Basket already contains some of the item
+        if (basketItem == null) {
+            throw new StoreModelServiceException("remove basket_item", productId + " is not in the Customer basket.");
+        }
+
+        // Placeholder counts
+        Integer newCount = basketItem.getCount() - itemCount;
+
+        // Check new count is valid
+        if (newCount <= 0) {
+            if (! basket.removeItem(basketItem)) {
+                throw new StoreModelServiceException("remove basket_item", "Product could not be removed from basket.");
+            }
+
+            return null;
+        }
+
+        // Update that count
+        basketItem.decrementCount(itemCount);
+        return basketItem;
+    }
+
+
+
+
+
+
 
 //    private List<Customer> getCustomerList() {
 //        return this.masterCustomerList.values();

@@ -31,6 +31,9 @@ public class Device {
         this.location = location;
     }
 
+    public String createEvent(String event) {
+        return event;
+    }
     public void respondToEvent(String event) {
         System.out.println("Responding to event: " + event);
         return;

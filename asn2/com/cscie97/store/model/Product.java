@@ -78,9 +78,9 @@ public class Product {
         product = String.format("Product '%s': %s\n", this.id, this.name);
         product += String.format("\t Description: %s\n", this.description);
         product += String.format("\t Size: %s\n", this.size);
-        product += String.format("\t Size: %s\n", this.category);
-        product += String.format("\t Size: %d\n", this.unitPrice);
-        product += String.format("\t Size: %s\n", this.temperature);
+        product += String.format("\t Categor: %s\n", this.category);
+        product += String.format("\t Unit Price: %d\n", this.unitPrice);
+        product += String.format("\t Temperature: %s\n", this.temperature);
 
         return product;
     }

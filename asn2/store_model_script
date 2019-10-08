@@ -148,21 +148,6 @@ show  customer  cust_S2
 # Basket Commands
 
 
-#define basket <basket_id>
-define basket b1
-define basket b2
-define basket b3
-define basket b4
-define basket b5
-
-
-# Associate basket with Customer
-#assign basket <basket_id> customer  <customer_id>
-assign basket b1 customer  cust_21
-assign basket b2 customer  cust_S2
-assign basket b3 customer  cust_22
-
-
 # Get basket_id associated with the customer, create new basket if the customer does not already have a basket associated.
 # get_customer_basket  <customer_id>
 get customer_basket  cust_21
@@ -172,31 +157,32 @@ get customer_basket  cust_22
 
 # Add a product item to a basket
 # add_basket_item  <basket_id>  product  <product_id>  item_count  <count>
-add basket_item  b1  product  prod10  item_count  4
-add basket_item  b3  product  prod11  item_count  2
-add basket_item  b3  product  prod12  item_count  7
+add basket_item  cust_21  product  prod10  item_count  4
+add basket_item  cust_21  product  prod10  item_count  4
+add basket_item  cust_S2  product  prod11  item_count  2
+add basket_item  cust_22  product  prod12  item_count  7
 
 
 
 
 # Remove a product item from a basket
 # remove_basket_item  <basket_id>  product  <product_id>  item_count  <count>
-remove basket_item  b1  product  prod10  item_count  1
-remove basket_item  b3  product  prod12  item_count  5
+remove basket_item  cust_21  product  prod10  item_count  1
+remove basket_item  cust_22  product  prod12  item_count  7
 
 
 
 
 # Clear the contents of the basket and remove the customer association
 # clear_basket  <basket_id>
-clear basket  b3
+clear basket  cust_21
 
 
 # Get the list of product items in the basket, include the product_id and count
 # Show  basket_items  <basket_id>
-Show  basket_items  b3  # it is empty
-Show  basket_items  b1
-Show  basket_items  b5  #it is not assigned yet
+Show  basket_items  cust_21  # it is empty
+Show  basket_items  cust_22
+Show  basket_items  cust_foo  #it is not assigned yet
 
 
 
