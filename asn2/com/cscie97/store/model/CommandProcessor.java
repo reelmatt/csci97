@@ -367,7 +367,7 @@ public class CommandProcessor {
         }
 
         // Send command to Appliance, which will respond itself
-        this.storeModelService.commandAppliance(authToken, deviceId, message);
+        this.storeModelService.receiveCommand(authToken, deviceId, message);
     }
 
     /**
@@ -393,7 +393,7 @@ public class CommandProcessor {
      */
     private void createEvent (String authToken, String command, String deviceId, List<String> args)
             throws CommandProcessorException, StoreModelServiceException {
-        // Get information needed to add basket item
+        // Get the opaque event string
         String event = null;
 
         // Check for argument exceptions
@@ -403,14 +403,11 @@ public class CommandProcessor {
             throw new CommandProcessorException(command, "Missing arguments.");
         }
 
-        // Retrieve device
+        // Check deviceId references a valid device
         Device device = this.storeModelService.getDevice(authToken, deviceId);
 
-        // Send opaque event String to the Device to simulate event
-        String response = device.createEvent(event);
-
-        // Print response
-        System.out.println("Device '" + deviceId + "' emitted event: " + response);
+        // Send simulated event to the Store Model Service
+        this.storeModelService.receiveEvent(authToken, deviceId, event);
     }
 
     /**
@@ -827,7 +824,7 @@ public class CommandProcessor {
 
         Basket basket = null;
         try {
-            basket = this.storeModelService.getCustomerBasket(authToken, customerId);
+            basket = this.storeModelService.getBasket(authToken, customerId);
         } catch (StoreModelServiceException e) {
             System.out.println("Customer '" + customerId + "' does not have a basket. Creating one.");
         }
@@ -835,7 +832,7 @@ public class CommandProcessor {
         // Does not have one
         if (basket == null) {
             // Create a new one
-            basket = this.storeModelService.createCustomerBasket(authToken, customerId);
+            basket = this.storeModelService.defineBasket(authToken, customerId);
             System.out.println("Basket created for Customer '" + customerId + "'");
         } else {
             System.out.println("Customer '" + customerId + "' has an associated basket.");
@@ -1032,7 +1029,7 @@ public class CommandProcessor {
     }
 
     private void showBasketItems(String authToken, String customerId) throws StoreModelServiceException {
-        Basket basket = this.storeModelService.getCustomerBasket(authToken, customerId);
+        Basket basket = this.storeModelService.getBasket(authToken, customerId);
 
 
         List<ProductAssociation> basketItems = basket.getBasketItems();

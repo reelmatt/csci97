@@ -4,24 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- *
+ * A basket is associated with a Store 24X7 Customer and tracks the Products,
+ * and amounts, that they add during their shopping trip. The Basket can add
+ * and remove Products (with specified amounts) and clear all Products currently
+ * contained within it. A Basket is directly linked to one Customer and uses the
+ * same reference ID.
  *
  * @author Matthew Thomas
  */
 public class Basket {
-    /** */
+    /** Basket ID (matches the customer id). */
     private String id;
 
-    /** */
+    /** List of Products (and count) the basket contains. */
     private List<ProductAssociation> productList;
 
     /**
      * Basket Constructor
      *
+     * Creates a Basket that is associated with a Customer. The Basket starts
+     * with an empty list of ProductAssociations.
      *
-     *
-     * @param id
+     * @param id  The basket identifier (matches the customer id to whom the
+     *            basket belongs).
      */
     public Basket (String id) {
         this.id = id;

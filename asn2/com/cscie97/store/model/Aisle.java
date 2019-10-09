@@ -10,18 +10,20 @@ import java.util.List;
  * An Aisle stores a list of Shelf objects which break down further to ultimately
  * track Products within a Store. The Aisle is also where Customers can walk and
  * Devices (Sensors and Appliances) can monitor activity and also respond to
- * commands (Appliances only).
+ * commands (Appliances only). An Aisle can be located either on the 'floor'
+ * (which is accessible by all) or the 'stock_room' (which is not accessible by
+ * customers).
  *
  * @author Matthew Thomas
  */
 public class Aisle {
-    /** Name of the Aisle (e.g. Dairy) */
-    private String name;
-
     /** Aisle ID (number). */
     private String id;
 
-    /** Description of Aisle (e.g. ) */
+    /** Name of the Aisle (e.g. Product) */
+    private String name;
+
+    /** Description of Aisle (e.g. fruits and vegetables) */
     private String description;
 
     /** Location of Aisle (Floor or Stock Room) */
@@ -93,15 +95,20 @@ public class Aisle {
      * list of shelves.
      */
     public String toString() {
-
         String aisle;
 
         aisle = String.format("Aisle #%s -- %s\n", this.id, this.name);
         aisle += String.format("Location: %s\n", this.location);
         aisle += String.format("Description: %s\n", this.description);
         aisle += String.format("Shelves:\n");
-        for(Shelf shelf : getShelfList()) {
-            aisle += "    " + shelf;
+
+        List<Shelf> shelves = getShelfList();
+        if (shelves.size() == 0) {
+            aisle += "\tThe store has 0 shelves.";
+        } else {
+            for(Shelf shelf : shelves) {
+                aisle += "    " + shelf;
+            }
         }
 
         return aisle;

@@ -7,7 +7,9 @@ import java.util.List;
  * An individual Shelf, which is located within an Aisle within a Store and
  * tracked by the Store Model Service.
  *
- * A Shelf contains information about
+ * A Shelf contains information about it's height (or level) and temperature
+ * that it is maintained at. The Shelf stores a list of Inventory to track
+ * Products within a store.
  *
  * @author Matthew Thomas
  */
@@ -15,16 +17,16 @@ public class Shelf {
     /** Shelf ID */
     private String id;
 
-    /** Name of the Shelf (e.g. ) */
+    /** Name of the Shelf (e.g. apples) */
     private String name;
 
     /** Level of the Shelf (low | medium | high) */
     private Level level;
 
-    /** Description of Shelf (e.g. ) */
+    /** Description of Shelf (e.g. Red Delicious, Gala, Granny Smith.) */
     private String description;
 
-    /** Temperature Shelf is kept at. */
+    /** Temperature that the shelf is kept at. */
     private Temperature temperature;
 
     /** List of Inventory objects located on the Shelf. */
@@ -60,21 +62,11 @@ public class Shelf {
         return this.id;
     }
 
-    /** @param inventory The Inventory to add to the Shelf. */
-    public void addInventory(Inventory inventory) {
-        this.inventoryList.add(inventory);
-    }
-
-    /** Returns a list of Inventory objects located on the Shelf. */
-    public List<Inventory> getInventoryList() {
-        return this.inventoryList;
-    }
-
     /**
      * Located a given Inventory on the Shelf.
      *
-     * @param   inventoryId   The Inventory to find.
-     * @return  Requested Inventory, if exists. Otherwise, null.
+     * @param   inventoryId The Inventory to find.
+     * @return              Requested Inventory, if exists. Otherwise, null.
      */
     public Inventory getInventory(String inventoryId) {
         for (Inventory inventory : getInventoryList()) {
@@ -84,6 +76,21 @@ public class Shelf {
         }
 
         return null;
+    }
+
+    /** Returns a list of Inventory objects located on the Shelf. */
+    public List<Inventory> getInventoryList() {
+        return this.inventoryList;
+    }
+
+    /** Returns the Shelf temperature. */
+    public Temperature getTemperature() {
+        return temperature;
+    }
+
+    /** @param inventory The Inventory to add to the Shelf. */
+    public void addInventory(Inventory inventory) {
+        this.inventoryList.add(inventory);
     }
 
     /**

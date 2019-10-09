@@ -1,9 +1,16 @@
 package com.cscie97.store.model;
 
 /**
- * Inventory tracks the number of Products remaning on a Store Shelf.
+ * An inventory tracks the number of Products remaning on a given shelf within
+ * a store.
  *
- *
+ * An inventory extends a ProductAssociation and adds two properties: id and
+ * capacity. The id can be added to a fully-qualified location string of the
+ * form
+ *      <store>:<aisle>:<shelf>:<inventory>
+ * to locate the Inventory within the Store 24X7 System. The capacity must
+ * remain >= 0 and <= capacity to be valid. This is ensured by the Store Model
+ * Service in response to events detected by Devices within a Store.
  *
  * @author Matthew Thomas
  */
@@ -14,14 +21,11 @@ public class Inventory extends ProductAssociation {
     /** Total capacity of the Inventory. */
     private Integer capacity;
 
-    /** Current count of Products remaining. */
-    private Integer count;
-
-    /** Product tracked by the Inventory. */
-    private Product product;
-
     /**
      * Inventory Constructor.
+     *
+     * Creates a ProductAssociation object with the added properties of
+     * id and capacity.
      *
      * @param id        The inventory identifier.
      * @param capacity  Total capacity the inventory can hold.
@@ -39,7 +43,7 @@ public class Inventory extends ProductAssociation {
         return this.id;
     }
 
-    /** */
+    /** Returns the Inventory capacity. */
     public Integer getCapacity() {
         return this.capacity;
     }
@@ -55,7 +59,8 @@ public class Inventory extends ProductAssociation {
 
         inventory = String.format("Inventory '%s': %s", this.id, super.getProductName());
         inventory += String.format("\tCapacity: %d", this.capacity);
-        inventory += String.format("\tCount: %d", this.count);
+        inventory += String.format("\tCount: %d", super.getCount());
+
         return inventory;
     }
 }

@@ -103,7 +103,7 @@ define  inventory  inv_u23  location  store_123:aisle_B2:shelf_q1 capacity  500 
 define  inventory  inv_u24  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod10
 define  inventory  inv_u25  location  store_123:aisle_A2:shelf_q1 capacity  200  count  100  product  prod10
 define  inventory  inv_u26  location  store_123:aisle_A2:shelf_q3 capacity  300  count  100  product  prod12
-
+define  inventory  inv_u27  location  store_123:aisle_A2:shelf_q1 capacity  200  count  50   product  prod12
 
 # Show the details of the inventory
 # show  inventory  <inventory_id>

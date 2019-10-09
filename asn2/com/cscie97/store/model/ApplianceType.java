@@ -5,23 +5,19 @@ public enum ApplianceType {
     SPEAKER,
     TURNSTILE;
 
-    public static ApplianceType getType(String choice) {
+    /**
+     * Helper method to convert String into Appliance type.
+     * @param   type    The ApplianceType to look for.
+     * @return          If the type matches an ApplianceType option, return
+     *                  that value. Otherwise, null.
+     */
+    public static ApplianceType getType(String type) {
         for (ApplianceType appliance : ApplianceType.values()) {
-            if (choice.equals(appliance.toString().toLowerCase())) {
+            if (type.equals(appliance.toString().toLowerCase())) {
                 return appliance;
             }
         }
 
         return null;
     }
-
-//    public static boolean isAppliance(String type) {
-//        for (ApplianceType appliance : ApplianceType.values()) {
-//            if (type.equals(appliance.toString().toLowerCase())) {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
 }
