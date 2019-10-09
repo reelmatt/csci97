@@ -824,12 +824,17 @@ public class CommandProcessor {
     private void getBasket (String authToken, String command, String customerId, List<String> args)
             throws CommandProcessorException, StoreModelServiceException {
         // Check to see if the Customer already has a basket
-        Basket basket = this.storeModelService.getCustomerBasket(authToken, customerId);
+
+        Basket basket = null;
+        try {
+            basket = this.storeModelService.getCustomerBasket(authToken, customerId);
+        } catch (StoreModelServiceException e) {
+            System.out.println("Customer '" + customerId + "' does not have a basket. Creating one.");
+        }
 
         // Does not have one
         if (basket == null) {
             // Create a new one
-            System.out.println("Customer '" + customerId + "' does not have a basket. Creating one.");
             basket = this.storeModelService.createCustomerBasket(authToken, customerId);
             System.out.println("Basket created for Customer '" + customerId + "'");
         } else {
@@ -1027,7 +1032,10 @@ public class CommandProcessor {
     }
 
     private void showBasketItems(String authToken, String customerId) throws StoreModelServiceException {
-        List<ProductAssociation> basketItems = this.storeModelService.getBasketItems(authToken, customerId);
+        Basket basket = this.storeModelService.getCustomerBasket(authToken, customerId);
+
+
+        List<ProductAssociation> basketItems = basket.getBasketItems();
 
         if (basketItems.size() == 0) {
             System.out.println("The basket contains 0 items.");

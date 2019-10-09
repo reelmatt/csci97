@@ -168,14 +168,14 @@ add basket_item  cust_22  product  prod12  item_count  7
 # Remove a product item from a basket
 # remove_basket_item  <basket_id>  product  <product_id>  item_count  <count>
 remove basket_item  cust_21  product  prod10  item_count  1
-remove basket_item  cust_22  product  prod12  item_count  7
+remove basket_item  cust_22  product  prod12  item_count  5
 
 
 
 
 # Clear the contents of the basket and remove the customer association
 # clear_basket  <basket_id>
-clear basket  cust_21
+# clear basket  cust_21
 
 
 # Get the list of product items in the basket, include the product_id and count
