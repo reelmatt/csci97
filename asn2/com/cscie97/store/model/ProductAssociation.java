@@ -58,6 +58,11 @@ public class ProductAssociation {
         this.count -= countChange;
     }
 
+    /**
+     * Override default toString method.
+     *
+     * Displays the product name and the current count.
+     */
     public String toString() {
         return String.format("Product: %s (%d)", getProductName(), getCount());
     }

@@ -758,7 +758,14 @@ public class StoreModelService implements StoreModelServiceInterface {
         return;
     }
 
-
+    /**
+     * Construct a list of Customers currently located in the Store specified by
+     * 'storeId'.
+     *
+     * @param   authToken   Authentication token to validate with the service.
+     * @param   storeId     The store whose Customers to search for.
+     * @return              List of Customer currently located in the Store.
+     */
     public List<Customer> getStoreCustomers(String authToken, String storeId) {
         List<Customer> customersInStore = new ArrayList<Customer>();
         for (Customer customer : this.customerMap.values()) {
@@ -770,6 +777,14 @@ public class StoreModelService implements StoreModelServiceInterface {
         return customersInStore;
     }
 
+    /**
+     * Construct a list of Devices currently located in the Store specified by
+     * 'storeId'.
+     *
+     * @param   authToken   Authentication token to validate with the service.
+     * @param   storeId     The store whose Devices to search for.
+     * @return              List of Devices currently located in the Store.
+     */
     public List<Device> getStoreDevices(String authToken, String storeId) throws StoreModelServiceException {
         Store store = getStore(authToken, storeId);
 
@@ -786,11 +801,8 @@ public class StoreModelService implements StoreModelServiceInterface {
 
     }
 
+
     private String[] parseLocationIdentifier(String location) {
         return location.split(":");
-    }
-
-    public String toString() {
-        return "StoreModelService: customers = ";
     }
 }

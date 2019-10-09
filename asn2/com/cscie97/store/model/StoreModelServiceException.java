@@ -1,7 +1,8 @@
 package com.cscie97.store.model;
 
 /**
- * Returns from the Ledger API methods in response to an error condition.
+ * Returns from the Store Model Service API methods in response to an error
+ * condition.
  *
  * Captures the action that was attempted and the reason for failure.
  *

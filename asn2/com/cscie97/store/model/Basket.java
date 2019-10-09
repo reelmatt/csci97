@@ -33,33 +33,23 @@ public class Basket {
         this.productList = new ArrayList<ProductAssociation>();
     }
 
-    /** Returns the Basket's id. */
-    public String getId() {
-        return this.id;
-    }
-
     /** @param product  The ProductAssociation (product and count) to add. */
     public void addItem(ProductAssociation product) {
         this.productList.add(product);
     }
 
-    /**
-     *
-     */
-    public ProductAssociation removeItem(String productId, Integer itemCount) {
-        ProductAssociation product = getBasketItem(productId);
-
-        if (product == null) {
-            return null;
-        }
-
-        if ((product.getCount() + itemCount) < 0) {
-            return null;
-        }
-        product.updateCount(itemCount);
-        return product;
+    /** Clear the product list. */
+    public void clear() {
+        this.productList.clear();
     }
 
+    /**
+     * Locate a given item within the Basket.
+     *
+     * @param   basketItemId    The Product to search for in the Basket.
+     * @return                  Requested Product, and its count, if it exists.
+     *                          Otherwise, null.
+     */
     public ProductAssociation getBasketItem(String basketItemId) {
         for (ProductAssociation item : getBasketItems()) {
             if (basketItemId.equals(item.getProductId())) {
@@ -75,12 +65,19 @@ public class Basket {
         return this.productList;
     }
 
-    public boolean removeItem(ProductAssociation item) {
-        return this.productList.remove(item);
+    /** Returns the Basket's id. */
+    public String getId() {
+        return this.id;
     }
 
-    public void clear() {
-        this.productList.clear();
+    /**
+     * Remove the ProductAssociation from the Basket (product and entire count).
+     *
+     * @param   item   The ProductAssociation to remove.
+     * @return         True, if successfully removed. False, if error occured.
+     */
+    public boolean removeItem(ProductAssociation item) {
+        return this.productList.remove(item);
     }
 
     /**
