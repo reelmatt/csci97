@@ -494,15 +494,20 @@ public class CommandProcessor {
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
 
         // Add the Aisle to the ModelService
-        Aisle aisle = this.storeModelService.defineAisle(
-                authToken,
-                aisleId,
-                entityInfo.get("name"),
-                entityInfo.get("description"),
-                (Location) getEnum(Location.values(), entityInfo.get("location"))
-        );
+//        try {
+            Aisle aisle = this.storeModelService.defineAisle(
+                    authToken,
+                    aisleId,
+                    entityInfo.get("name"),
+                    entityInfo.get("description"),
+                    (Location) getEnum(Location.values(), entityInfo.get("location"))
+            );
 
-        printCreatedEntity("aisle", aisle.getId());
+            printCreatedEntity("aisle", aisle.getId());
+//        } catch (NullPointerException e) {
+//            throw new CommandProcessorException(command, "Location type unknown.");
+//        }
+
     }
 
     /**
@@ -865,7 +870,7 @@ public class CommandProcessor {
 
     private void printInventoryList(List<Inventory> inventories) {
         if (inventories.size() == 0) {
-            System.out.println("The store has 0 inventories.");
+            System.out.println("The shelf has 0 inventories.");
         } else {
             inventories.forEach((inventory) -> System.out.println(inventory));
         }
@@ -873,7 +878,7 @@ public class CommandProcessor {
 
     private void printShelfList(List<Shelf> shelves) {
         if (shelves.size() == 0) {
-            System.out.println("The store has 0 shelves.");
+            System.out.println("The aisle has 0 shelves.");
         } else {
             shelves.forEach((shelf) -> System.out.println(shelf));
         }
@@ -1242,6 +1247,10 @@ public class CommandProcessor {
      * @return
      */
     private Enum getEnum(Enum[] values, String type) {
+        if (type == null) {
+            return null;
+        }
+
         for(Enum toCheck : values) {
             if(type.equals(toCheck.toString().toLowerCase())) {
                 return toCheck;

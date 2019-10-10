@@ -104,7 +104,7 @@ public class Aisle {
 
         List<Shelf> shelves = getShelfList();
         if (shelves.size() == 0) {
-            aisle += "\tThe store has 0 shelves.";
+            aisle += "\tThe aisle has 0 shelves.";
         } else {
             for(Shelf shelf : shelves) {
                 aisle += "    " + shelf;

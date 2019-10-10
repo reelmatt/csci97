@@ -86,6 +86,10 @@ public class Customer {
      * from the Customer.
      */
     public void clearBasket() {
+        if (this.basket == null) {
+            return;
+        }
+
         this.basket.clear();
         this.basket = null;
     }

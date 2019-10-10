@@ -106,7 +106,18 @@ public class Shelf {
         shelf += String.format("\t Description: %s\n", this.description);
         shelf += String.format("\t Temperature: %s\n", this.temperature);
         shelf += String.format("\t Level: %s\n", this.level);
+        shelf += String.format("\t Inventory:\n");
 
-        return shelf;
+        List<Inventory> inventories = getInventoryList();
+        if (inventories.size() == 0) {
+            shelf += "\tThe shelf has 0 inventory objects.";
+        } else {
+            for(Inventory inventory : inventories) {
+                shelf += "    " + inventory;
+            }
+        }
+
+
+        return shelf + "\n";
     }
 }

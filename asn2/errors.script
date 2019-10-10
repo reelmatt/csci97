@@ -1,0 +1,219 @@
+##########################
+# Command Processor errors
+##########################
+
+foobar
+
+define
+
+define store
+
+######################
+# Store Command errors
+######################
+
+# missing information
+define store store_123
+
+# define an actual store
+define  store  store_123 name RelianceMart  address  ahmedabad
+
+# duplicate error
+define  store  store_123 name RelianceMart  address  ahmedabad
+
+# store does not exist
+show store store_456
+
+#################
+# Aisle Commands
+#################
+
+# missing info
+define aisle store_123
+
+define aisle store_123:aisle_A1
+
+# incorrect location choice
+define  aisle  store_123:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  nowhere
+
+# define an actual aisle
+define  aisle  store_123:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  stock_room
+
+# duplicate error
+define  aisle  store_123:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  stock_room
+
+# store does not exist
+define  aisle  store_789:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  stock_room
+
+# aisle does not exist
+show  aisle  store_123:aisle_A2
+
+# store does not exist
+show  aisle  store_789:aisle_A1
+
+#################
+# Shelf Commands
+#################
+
+# missing info
+define shelf store_123:aisle_A1
+
+define shelf store_123:aisle_A1:shelf_q1
+
+# invalid level option
+define  shelf  store_123:aisle_A1:shelf_q1  name  Shelf_Q1  level  no_level   description  Shelf_Q1_Desc  temperature  ambient
+
+# define an actual shelf
+define  shelf  store_123:aisle_A1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  ambient
+
+# duplicate error
+define  shelf  store_123:aisle_A1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  ambient
+
+# shelf does not exist
+show shelf store_123:aisle_A1:shelf_X1
+
+# aisle does not exist
+show shelf store_123:aisle_X1:shelf_q1
+
+# store does not exist
+show shelf store_789:aisle_A1:shelf_q1
+
+##################
+# Product Commands
+##################
+
+# invalid price
+define  product  prod12  name  coffee  description  coffee  size 100  category  Food  unit_price  A_STRING temperature  refrigerated
+
+# define an actual product(s)
+define  product  prod12  name  coffee  description  coffee  size 100  category  Food  unit_price  3 temperature  ambient
+define  product  prod13  name  soda  description  "coca cola"  size 12oz  category  Beverage  unit_price  3 temperature  refrigerated
+
+# duplicate error
+define  product  prod12  name  coffee  description  coffee  size 100  category  Food  unit_price  3 temperature  ambient
+
+# product does not exist
+show product foobar
+
+####################
+# Inventory Commands
+####################
+
+# missing info
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  1000  product  prod11
+
+# invalid count
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  -1000  product  prod12
+
+# count exceeds capacity
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q1 capacity  500  count  1000  product  prod12
+
+# temperatures do no match (ambient and refrigerated)
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  1000  product  prod13
+
+# define an actual inventory
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  1000  product  prod12
+
+# duplicate error
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  1000  product  prod12
+
+# inventory does not exist
+show inventory store_123:aisle_A1:shelf_q1:inv_X01
+
+# shelf does not exist
+show inventory store_123:aisle_A1:shelf_X1:inv_u22
+
+# aisle does not exist
+show inventory store_123:aisle_X1:shelf_q1:inv_u22
+
+# store does not exist
+show inventory store_789:aisle_A1:shelf_q1:inv_u22
+
+
+###################
+# Customer Commands
+###################
+
+# missing info
+define  customer  cust_AB    first_name  JSON  last_name  WALLACE type  guest  account  json
+
+# missing name
+define  customer  cust_AB    first_name  JSON   type  guest  email_address  json.wallace@ymail.com  account  json
+
+# define an actual customer
+define  customer  cust_AB    first_name  JSON  last_name  WALLACE type  guest  email_address  json.wallace@ymail.com  account  json
+
+# duplicate error
+define  customer  cust_AB    first_name  JSON  last_name  WALLACE type  guest  email_address  json.wallace@ymail.com  account  json
+
+# customer does not exist
+show customer cust_foobar
+
+# missing info
+update customer cust_AB
+
+# invalid location
+update customer cust_AB location store_123:aisle_X1
+
+update customer cust_AB locatoin store_789
+
+#################
+# Basket Commands
+#################
+
+# customer does not exist
+get customer_basket cust_foobar
+
+# create basket to assign to customer
+get customer_basket cust_AB
+
+# customer already has basket
+get customer_basket cust_AB
+
+# product does not exist
+add basket_item cust_AB product prod_foobar item_count 1
+
+# invalid count
+add basket_item cust_AB product prod12 item_count bad_count
+
+# add item to basket
+add basket_item cust_AB product prod12 item_count 1
+add basket_item cust_AB product prod12 item_count 1
+
+# remove item from basket
+remove basket_item cust_AB product prod12 item_count 1
+remove basket_item cust_AB product prod12 item_count 1
+remove basket_item cust_AB product prod12 item_count 1
+
+# no basket
+clear basket cust_foobar
+
+# clear basket
+clear basket cust_AB
+
+#################
+# Sensor Commands
+#################
+
+# missing info
+define  device  mic_A1  name  MicrophoneA1  type  microphone  location
+
+# define an actual sensor
+define  device  mic_A1  name  MicrophoneA1  type  microphone  location store_123:aisle_A1
+
+# duplicate error
+define  device  mic_A1  name  MicrophoneA1  type  microphone  location store_123:aisle_A1
+
+####################
+# Appliance Commands
+####################
+
+# missing info
+define  device  rob_1  type  robot location  store_123:aisle_A1
+
+# define an actual appliance
+define  device  rob_1  name  ROBOT_1  type  robot location  store_123:aisle_A1
+
+# duplicate error
+define  device  rob_1  name  ROBOT_1  type  robot location  store_123:aisle_A1
+

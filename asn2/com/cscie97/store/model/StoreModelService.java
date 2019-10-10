@@ -45,8 +45,10 @@ public class StoreModelService implements StoreModelServiceInterface {
     /**
      * {@inheritDoc}
      */
-    public ProductAssociation addItemToBasket(String authToken, String customerId, String productId, Integer itemCount)
-            throws StoreModelServiceException {
+    public ProductAssociation addItemToBasket(String authToken,
+                                              String customerId,
+                                              String productId,
+                                              Integer itemCount) throws StoreModelServiceException {
         // All information must be present
         if (customerId == null || productId == null) {
             throw new StoreModelServiceException("add basket_item", "Required information is missing.");
@@ -410,6 +412,11 @@ public class StoreModelService implements StoreModelServiceInterface {
      */
     public Aisle getAisle(String authToken,
                           String locationId) throws StoreModelServiceException {
+        // Must include a location
+        if (locationId == null) {
+            throw new StoreModelServiceException("get aisle", "No location provided.");
+        }
+
         // Parse the fully qualified location string
         String[] ids = parseLocationIdentifier(locationId);
 
@@ -431,7 +438,7 @@ public class StoreModelService implements StoreModelServiceInterface {
             // getStore() will raise Exception, getAisle() is checked below
             throw new StoreModelServiceException(
                 "get aisle",
-                String.format("The Store %s does notexist.", storeId)
+                String.format("The Store %s does not exist.", storeId)
             );
         }
 
@@ -503,6 +510,11 @@ public class StoreModelService implements StoreModelServiceInterface {
      */
     public Inventory getInventory(String authToken,
                                   String locationId) throws StoreModelServiceException {
+        // Must include a location
+        if (locationId == null) {
+            throw new StoreModelServiceException("get inventory", "No location provided.");
+        }
+
         // Parse the fully qualified location string
         String[] ids = parseLocationIdentifier(locationId);
 
@@ -563,6 +575,11 @@ public class StoreModelService implements StoreModelServiceInterface {
      */
     public Shelf getShelf(String authToken,
                           String locationId) throws StoreModelServiceException {
+        // Must include a location
+        if (locationId == null) {
+            throw new StoreModelServiceException("get aisle", "No location provided.");
+        }
+
         // Parse the fully qualified location string
         String[] ids = parseLocationIdentifier(locationId);
 
@@ -700,6 +717,11 @@ public class StoreModelService implements StoreModelServiceInterface {
     public void updateCustomer(String authToken,
                                  String customerId,
                                  String location) throws StoreModelServiceException {
+        // Must include a location
+        if (location == null) {
+            throw new StoreModelServiceException("update customer", "No location provided.");
+        }
+
         // Throws Exception if doesn't exist
         Customer customer = getCustomer(authToken, customerId);
 
@@ -734,6 +756,11 @@ public class StoreModelService implements StoreModelServiceInterface {
     public void updateInventory(String authToken,
                                 String fullyQualifiedInventoryId,
                                 Integer amount) throws StoreModelServiceException {
+        // Must include a location
+        if (fullyQualifiedInventoryId == null) {
+            throw new StoreModelServiceException("update inventory", "No location provided.");
+        }
+
         // Find the Inventory, throws Exception if doesn't exist
         Inventory inventory = getInventory(authToken, fullyQualifiedInventoryId);
 
