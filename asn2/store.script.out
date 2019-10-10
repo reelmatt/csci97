@@ -1,0 +1,982 @@
+# Store Commands
+# define  store  <identifier> name <name> address <address>
+
+define  store  store_123 name RelianceMart  address  ahmedabad
+Defined new store: 'store_123'.
+
+# show  store  <identifier>
+
+show  store  store_123
+-----------------------
+Store Info:
+-----------------------
+store_123
+Name: RelianceMart
+Address: ahmedabad
+-----------------------
+Customers:
+-----------------------
+The store has 0 customers.
+-----------------------
+Aisles:
+-----------------------
+The store has 0 aisles.
+-----------------------
+Devices:
+-----------------------
+The store has 0 devices.
+
+#Aisle Commands
+# Define an aisle within the store
+# define  aisle  <store_id>:<aisle_number>  name  <name>  description  <description> location  (floor  |  stock_room)
+
+define  aisle  store_123:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  stock_room
+Defined new aisle: 'aisle_A1'.
+define  aisle  store_123:aisle_A2  name  AISLE_A2  description  AISLE_A2_desc location  floor
+Defined new aisle: 'aisle_A2'.
+define  aisle  store_123:aisle_A3  name  AISLE_A3  description  AISLE_A3_desc location  floor
+Defined new aisle: 'aisle_A3'.
+define  aisle  store_123:aisle_B1  name  AISLE_B1  description  AISLE_B1_desc location  stock_room
+Defined new aisle: 'aisle_B1'.
+define  aisle  store_123:aisle_B2  name  AISLE_B2  description  AISLE_B2_desc location  floor
+Defined new aisle: 'aisle_B2'.
+define  aisle  store_123:aisle_B3  name  AISLE_B3  description  AISLE_B3_desc location  floor
+Defined new aisle: 'aisle_B3'.
+
+
+#Show the details of the aisle, including the name, description and list of shelves.
+# show  aisle  <store_id>[:<aisle_number>]
+
+show  aisle  store_123:aisle_A1
+Aisle #aisle_A1 -- AISLE_A1
+Location: STOCK_ROOM
+Description: AISLE_A1_desc
+Shelves:
+	The aisle has 0 shelves.
+
+show  aisle  store_123:aisle_A2
+Aisle #aisle_A2 -- AISLE_A2
+Location: FLOOR
+Description: AISLE_A2_desc
+Shelves:
+	The aisle has 0 shelves.
+
+show  aisle  store_123:aisle_B2
+Aisle #aisle_B2 -- AISLE_B2
+Location: FLOOR
+Description: AISLE_B2_desc
+Shelves:
+	The aisle has 0 shelves.
+
+show  aisle  store_123
+Aisle #aisle_A1 -- AISLE_A1
+Location: STOCK_ROOM
+Description: AISLE_A1_desc
+Shelves:
+	The aisle has 0 shelves.
+Aisle #aisle_A2 -- AISLE_A2
+Location: FLOOR
+Description: AISLE_A2_desc
+Shelves:
+	The aisle has 0 shelves.
+Aisle #aisle_A3 -- AISLE_A3
+Location: FLOOR
+Description: AISLE_A3_desc
+Shelves:
+	The aisle has 0 shelves.
+Aisle #aisle_B1 -- AISLE_B1
+Location: STOCK_ROOM
+Description: AISLE_B1_desc
+Shelves:
+	The aisle has 0 shelves.
+Aisle #aisle_B2 -- AISLE_B2
+Location: FLOOR
+Description: AISLE_B2_desc
+Shelves:
+	The aisle has 0 shelves.
+Aisle #aisle_B3 -- AISLE_B3
+Location: FLOOR
+Description: AISLE_B3_desc
+Shelves:
+	The aisle has 0 shelves.
+
+#Shelf Commands
+# Define a new shelf within the store
+# define  shelf  <store_id>:<aisle_number>:<shelf_id>  name  <name>  level  (high  | medium  |  low)  description  <description>  [temperature  (frozen  |  refrigerated  | ambient  |  warm  |  hot  )]
+
+define  shelf  store_123:aisle_A1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
+define  shelf  store_123:aisle_A1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
+define  shelf  store_123:aisle_A1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
+define  shelf  store_123:aisle_A1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
+define  shelf  store_123:aisle_A1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
+
+
+define  shelf  store_123:aisle_A2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
+define  shelf  store_123:aisle_A2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
+define  shelf  store_123:aisle_A2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
+define  shelf  store_123:aisle_A2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
+define  shelf  store_123:aisle_A2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
+
+
+define  shelf  store_123:aisle_A3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
+define  shelf  store_123:aisle_A3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
+define  shelf  store_123:aisle_A3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
+define  shelf  store_123:aisle_A3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
+define  shelf  store_123:aisle_A3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
+
+
+define  shelf  store_123:aisle_B1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
+define  shelf  store_123:aisle_B1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
+define  shelf  store_123:aisle_B1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
+define  shelf  store_123:aisle_B1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
+define  shelf  store_123:aisle_B1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
+
+
+define  shelf  store_123:aisle_B2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
+define  shelf  store_123:aisle_B2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
+define  shelf  store_123:aisle_B2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
+define  shelf  store_123:aisle_B2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
+define  shelf  store_123:aisle_B2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
+
+
+define  shelf  store_123:aisle_B3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
+define  shelf  store_123:aisle_B3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
+define  shelf  store_123:aisle_B3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
+define  shelf  store_123:aisle_B3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
+define  shelf  store_123:aisle_B3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
+
+
+# Show the details of the shelf including id, name, level, description and temperature
+# show  shelf  <store_id>[:<aisle_number>[:<shelf_id>]]
+
+show  shelf  store_123:aisle_A2:shelf_q1
+Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+
+show  shelf  store_123:aisle_B1:shelf_q5
+Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+
+show shelf store_123:aisle_B3
+Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+
+show shelf store_123
+Aisle #aisle_A1 -- AISLE_A1
+Location: STOCK_ROOM
+Description: AISLE_A1_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_A2 -- AISLE_A2
+Location: FLOOR
+Description: AISLE_A2_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_A3 -- AISLE_A3
+Location: FLOOR
+Description: AISLE_A3_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_B1 -- AISLE_B1
+Location: STOCK_ROOM
+Description: AISLE_B1_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_B2 -- AISLE_B2
+Location: FLOOR
+Description: AISLE_B2_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_B3 -- AISLE_B3
+Location: FLOOR
+Description: AISLE_B3_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+
+# Product Commands
+# Define a new product
+# define  product  <product_id>        name  <name>  description  <description>  size <size>  category  <category>  unit_price  <unit_price>        [temperature  (frozen  | refrigerated  |  ambient  |  warm  |  hot  )]
+
+define  product  prod10        name  bournvita  description  bournvita  size 250  category  Food  unit_price  2        temperature  ambient
+Defined new product: 'prod10'.
+define  product  prod11        name  tea  description  green_tea  size 500  category  Food  unit_price  1        temperature  ambient
+Defined new product: 'prod11'.
+define  product  prod12        name  coffee  description  coffee  size 100  category  Food  unit_price  3        temperature  refrigerated
+Defined new product: 'prod12'.
+define  product  prod13        name  goggles  description  spectacles  size 3  category  Men_accessories  unit_price  5        temperature  ambient
+Defined new product: 'prod13'.
+define  product  prod14        name  sun_glass  description  spectacles  size 3  category  Fashion  unit_price  7        temperature  ambient
+Defined new product: 'prod14'.
+
+
+# Show the details of the product
+# show  product  <product_id>
+
+show  product  prod10
+Product 'prod10': bournvita
+	 Description: bournvita
+	 Size: 250
+	 Category: Food
+	 Unit Price: 2
+	 Temperature: AMBIENT
+
+
+
+#Inventory Commands
+# Define a new inventory item within the store
+# define  inventory  <inventory_id>  location  <store_id>:<aisle_number>:<shelf_id> capacity  <capacity>  count  <count>  product  <product_id>
+
+
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q2 capacity  1500  count  1000  product  prod11
+Defined new inventory: 'inv_u22'.
+define  inventory  inv_u23  location  store_123:aisle_B2:shelf_q1 capacity  500  count  200  product  prod11
+define inventory: The product (AMBIENT) and shelf (FROZEN) temperatures do not match.
+define  inventory  inv_u24  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod10
+Defined new inventory: 'inv_u24'.
+define  inventory  inv_u25  location  store_123:aisle_A2:shelf_q1 capacity  200  count  100  product  prod10
+define inventory: The product (AMBIENT) and shelf (FROZEN) temperatures do not match.
+define  inventory  inv_u26  location  store_123:aisle_A2:shelf_q3 capacity  300  count  100  product  prod12
+Defined new inventory: 'inv_u26'.
+define  inventory  inv_u27  location  store_123:aisle_A2:shelf_q1 capacity  200  count  50   product  prod12
+define inventory: The product (REFRIGERATED) and shelf (FROZEN) temperatures do not match.
+
+# Show the details of the inventory
+# show  inventory  <store_id>[:<aisle_number>[:<shelf_id>[:<inventory_id>]]]
+
+show  inventory  store_123:aisle_A1:shelf_q2:inv_u22
+Inventory 'inv_u22': tea	Capacity: 1500	Count: 1000
+
+show inventory store_123:aisle_A1:shelf_q2
+Inventory 'inv_u22': tea	Capacity: 1500	Count: 1000
+
+show inventory store_123:aisle_B2
+Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+    Inventory 'inv_u24': bournvita	Capacity: 500	Count: 200
+
+Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+
+show inventory store_123
+Aisle #aisle_A1 -- AISLE_A1
+Location: STOCK_ROOM
+Description: AISLE_A1_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+    Inventory 'inv_u22': tea	Capacity: 1500	Count: 1000
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_A2 -- AISLE_A2
+Location: FLOOR
+Description: AISLE_A2_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+    Inventory 'inv_u26': coffee	Capacity: 300	Count: 100
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_A3 -- AISLE_A3
+Location: FLOOR
+Description: AISLE_A3_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_B1 -- AISLE_B1
+Location: STOCK_ROOM
+Description: AISLE_B1_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_B2 -- AISLE_B2
+Location: FLOOR
+Description: AISLE_B2_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+    Inventory 'inv_u24': bournvita	Capacity: 500	Count: 200
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+Aisle #aisle_B3 -- AISLE_B3
+Location: FLOOR
+Description: AISLE_B3_desc
+Shelves:
+    Shelf #shelf_q1 -- Shelf_Q1
+	 Description: Shelf_Q1_Desc
+	 Temperature: FROZEN
+	 Level: HIGH
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q2 -- Shelf_Q2
+	 Description: Shelf_Q2_Desc
+	 Temperature: AMBIENT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q3 -- Shelf_Q3
+	 Description: Shelf_Q3_Desc
+	 Temperature: REFRIGERATED
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q4 -- Shelf_Q4
+	 Description: Shelf_Q4_Desc
+	 Temperature: WARM
+	 Level: LOW
+	 Inventory:
+	The shelf has 0 inventory objects.
+    Shelf #shelf_q5 -- Shelf_Q5
+	 Description: Shelf_Q5_Desc
+	 Temperature: HOT
+	 Level: MEDIUM
+	 Inventory:
+	The shelf has 0 inventory objects.
+
+
+
+# Update the inventory count, count must >= 0 and <= capacity
+# update  inventory  <inventory_id>  update_count  <increment  or  decrement>
+
+update  inventory  store_123:aisle_B2:shelf_q2:inv_u24  update_count  4
+Inventory 'inv_u24' updated count of 'prod10' from 200 to 204.
+update  inventory  store_123:aisle_A1:shelf_q1:inv_u21  update_count  7
+get inventory: An inventory with id 'inv_u21' does not exist in location 'store_123:aisle_A1:shelf_q1'.
+
+
+
+
+#Customer Commands
+# Define a new customer
+# define  customer  <customer_id>        first_name  <first_name>  last_name  <last_name> type  (registered|guest)  email_address  <email>  account  <account_address>
+define  customer  cust_AB        first_name  JSON  last_name  WALLACE type  guest  email_address  json.wallace@ymail.com  account  json
+Defined new customer: 'cust_AB'.
+define  customer  cust_21        first_name  BILL  last_name  ROSE type  registered  email_address  bill.rose@gmail.com  account  bill
+Defined new customer: 'cust_21'.
+define  customer  cust_22        first_name  MARY last_name  KELVIN type  registered  email_address  mary.kevin@yahoomail.com  account  mary
+Defined new customer: 'cust_22'.
+define  customer  cust_E2        first_name  SILVER  last_name  HAWK type  guest  email_address  silver.hawk@rocketmail.com  account  silver
+Defined new customer: 'cust_E2'.
+define  customer  cust_23        first_name  MEGON  last_name  FOX type  guest  email_address  megonfox@testmail.com  account  megon
+Defined new customer: 'cust_23'.
+define  customer  cust_24        first_name  MARIA last_name  WILIAMSON type  registered  email_address  maria4567@ymail.com  account  maria
+Defined new customer: 'cust_24'.
+define  customer  cust_S2        first_name  SALINA  last_name  GOMEZ type  registered  email_address  salina@gmail.com  account  salina
+Defined new customer: 'cust_S2'.
+
+
+# Update the location of a customer
+# update  customer  <customer_id>  location  <store:aisle>
+
+update  customer  cust_S2  location  store_123:aisle_B2
+Customer cust_S2's location updated. Currently located @ RelianceMartaisle_B2.
+update  customer  cust_21  location  store_123:aisle_A2
+Customer cust_21's location updated. Currently located @ RelianceMartaisle_A2.
+update  customer  cust_22  location  store_123:aisle_A2
+Customer cust_22's location updated. Currently located @ RelianceMartaisle_A2.
+
+# Show the details of the customer
+# show  customer  <customer_id>
+
+show  customer  cust_21
+Customer 'cust_21': BILL ROSE
+	Currently located @ RelianceMartaisle_A2
+	Last seen: Wed Oct 09 22:09:48 EDT 2019
+	Type: REGISTERED
+	Email: bill.rose@gmail.com
+	Account address: bill
+
+show  customer  cust_S2
+Customer 'cust_S2': SALINA GOMEZ
+	Currently located @ RelianceMartaisle_B2
+	Last seen: Wed Oct 09 22:09:48 EDT 2019
+	Type: REGISTERED
+	Email: salina@gmail.com
+	Account address: salina
+
+
+# Basket Commands
+
+
+# Get basket_id associated with the customer, create new basket if the customer does not already have a basket associated.
+# get_customer_basket  <customer_id>
+
+get customer_basket  cust_21
+Customer 'cust_21' does not have a basket. Creating one.
+Basket created for Customer 'cust_21'
+get customer_basket  cust_S2
+Customer 'cust_S2' does not have a basket. Creating one.
+Basket created for Customer 'cust_S2'
+get customer_basket  cust_22
+Customer 'cust_22' does not have a basket. Creating one.
+Basket created for Customer 'cust_22'
+
+
+# Add a product item to a basket
+# add_basket_item  <basket_id>  product  <product_id>  item_count  <count>
+
+add basket_item  cust_21  product  prod10  item_count  4
+Added prod10 to the basket. Current count is 4.
+add basket_item  cust_21  product  prod10  item_count  4
+Added prod10 to the basket. Current count is 8.
+add basket_item  cust_S2  product  prod11  item_count  2
+Added prod11 to the basket. Current count is 2.
+add basket_item  cust_22  product  prod12  item_count  7
+Added prod12 to the basket. Current count is 7.
+
+
+
+
+# Remove a product item from a basket
+# remove_basket_item  <basket_id>  product  <product_id>  item_count  <count>
+
+remove basket_item  cust_21  product  prod10  item_count  1
+Removed 1 prod10 from the basket. Current count is 7.
+remove basket_item  cust_22  product  prod12  item_count  5
+Removed 5 prod12 from the basket. Current count is 2.
+
+
+
+
+# Clear the contents of the basket and remove the customer association
+# clear_basket  <basket_id>
+
+clear basket  cust_21
+Customer 'cust_21' basket cleared and removed.
+
+
+# Get the list of product items in the basket, include the product_id and count
+# Show  basket_items  <basket_id>
+
+Show  basket_items  cust_21  # does not have a basket
+get customer_basket: Customer 'cust_21' does not have a basket.
+
+Show  basket_items  cust_22
+Product: coffee (2)
+
+Show  basket_items  cust_foo  #customer does not exist
+get customer: A Customer with id 'cust_foo' is not registered with the StoreModelService.
+
+
+
+
+#Sensor Commands
+# Define device of type sensor
+# define  device  <device_id>  name  <name>  type  (microphone|camera)  location <store>:<aisle>
+
+define  device  mic_A1  name  MicrophoneA1  type  microphone  location store_123:aisle_A2
+Defined new device: 'mic_A1'.
+define  device  cam_A1  name  CameraA1  type  camera  location store_123:aisle_A2
+Defined new device: 'cam_A1'.
+define  device  cam_A2  name  CameraA2  type  camera  location store_123:aisle_A1
+Defined new device: 'cam_A2'.
+define  device  cam_B2  name  CameraB1  type  camera  location store_123:aisle_B2
+Defined new device: 'cam_B2'.
+
+
+
+
+# Show device details
+# show  device  <device_id>
+
+show  device  cam_A1
+Device 'cam_A1' -- CameraA1
+	Located @ store_123:aisle_A2
+	Type: CAMERA
+show  device  mic_A1
+Device 'mic_A1' -- MicrophoneA1
+	Located @ store_123:aisle_A2
+	Type: MICROPHONE
+show  device  cam_A2
+Device 'cam_A2' -- CameraA2
+	Located @ store_123:aisle_A1
+	Type: CAMERA
+
+
+
+
+# Create a sensor event, this simulates a sensor event
+# create_event  <device_id>  event  <event>
+
+create event  cam_A1  event  watch_store_room
+Device 'cam_A1' emitted event: watch_store_room
+create event  mic_A1  event  tell_robot_to_bring_items_from_store_123:aisle_A1
+Device 'mic_A1' emitted event: tell_robot_to_bring_items_from_store_123:aisle_A1
+
+
+Appliance Commands
+Appliance Commands: Missing arguments. (line 245).
+
+# Define device of type appliance
+# define  device  <device_id>  name  <name>  type  (speaker  |  robot  |  turnstile) location  <store>:<aisle>
+
+define  device  rob_1  name  ROBOT_1  type  robot location  store_123:aisle_A1
+Defined new device: 'rob_1'.
+define  device  rob_2  name  ROBOT_2  type  robot location  store_123:aisle_A2
+Defined new device: 'rob_2'.
+define  device  spk_1  name  SPEAKER_1  type  speaker location  store_123:aisle_A1
+Defined new device: 'spk_1'.
+define  device  spk_2  name  SPEAKER_2  type  speaker location  store_123:aisle_A2
+Defined new device: 'spk_2'.
+define  device  turn_a1  name  TURNSTILE_A1  type  turnstile location  store_123:aisle_A2
+Defined new device: 'turn_a1'.
+define  device  turn_a2  name  TURNSTILE_A2  type  turnstile location  store_123:aisle_A2
+Defined new device: 'turn_a2'.
+define  device  turn_a3  name  TURNSTILE_A3  type  turnstile location  store_123:aisle_A2
+Defined new device: 'turn_a3'.
+
+
+# Show appliance device details
+
+show  device  turn_a1
+Device 'turn_a1' -- TURNSTILE_A1
+	Located @ store_123:aisle_A2
+	Type: TURNSTILE
+show  device  rob_2
+Device 'rob_2' -- ROBOT_2
+	Located @ store_123:aisle_A2
+	Type: ROBOT
+
+
+# Create an appliance event, this simulates a sensor event
+# create  event  <device_id>  event  <event_description>
+
+create event  rob_2  event  CLEAN_FLOOR
+Device 'rob_2' emitted event: CLEAN_FLOOR
+create event  rob_1  event  STOCK_SHELL
+Device 'rob_1' emitted event: STOCK_SHELL
+create event  turn_a1  event  COUNT_INVENTORY
+Device 'turn_a1' emitted event: COUNT_INVENTORY
+
+
+# Send the appliance a command
+# create  command  <device_id>  message  <command>
+
+create  command  rob_1  message  STOCK_SHELL
+Appliance 'rob_1' received command STOCK_SHELL.
+
+create  command  rob_2  message  CLEAN_FLOOR
+Appliance 'rob_2' received command CLEAN_FLOOR.
+
+create  command  turn_a3  message  COUNT_INVENTORY
+Appliance 'turn_a3' received command COUNT_INVENTORY.
+
+create  command  cam_A1  message  COUNT_INVENTORY
+create command: CameraA1 cannot process commands.
