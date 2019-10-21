@@ -1,19 +1,19 @@
-package com.cscie97.store.model;
+package com.cscie97.store.controller;
 
 /**
- * Returns from the Store Model Service API methods in response to an error
+ * Returns from Store Controller Service methods in response to an error
  * condition.
  *
  * Captures the action that was attempted and the reason for failure.
  *
  * @author Matthew Thomas
  */
-public class StoreModelServiceException extends Exception {
+public class StoreControllerServiceException extends Exception {
     private String action;
     private String reason;
 
     /** Constructor for an individual command exception. */
-    public StoreModelServiceException(String action, String reason) {
+    public StoreControllerServiceException(String action, String reason) {
         super(action);
         this.action = action;
         this.reason = reason;

@@ -5,6 +5,6 @@ package com.cscie97.store.model;
  *
  * @author Matthew Thomas
  */
-public interface ObserverInterface {
+public interface Observer {
     public void update(String event);
 }
