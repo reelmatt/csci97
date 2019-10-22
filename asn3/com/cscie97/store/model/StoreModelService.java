@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * {@inheritDoc}
  */
-public class StoreModelService implements StoreModelServiceInterface {
+public class StoreModelService implements StoreModelServiceInterface, Subject {
     /** A list of all Customers registered with the Model Service. */
     private Map<String, Customer> customerMap;
 
@@ -21,6 +21,9 @@ public class StoreModelService implements StoreModelServiceInterface {
 
     /** A list of Stores tracked by the Model Service. */
     private Map<String, Store> storeMap;
+
+    /** A list of Observers to notify of events. */
+    private List<Observer> observerList;
 
     /** Constants for accessing location IDs -- to rethink?? */
     private static final Integer STORE = 0;
@@ -40,6 +43,7 @@ public class StoreModelService implements StoreModelServiceInterface {
         this.deviceMap = new HashMap<String, Device>();
         this.productMap = new HashMap<String, Product>();
         this.storeMap = new HashMap<String, Store>();
+        this.observerList = new ArrayList<Observer>();
     }
 
     /**
@@ -832,4 +836,26 @@ public class StoreModelService implements StoreModelServiceInterface {
     private String[] parseLocationIdentifier(String location) {
         return location.split(":");
     }
+
+    public void register(Observer observer) {
+        if (observer != null) {
+            this.observerList.add(observer);
+        }
+
+        return;
+    };
+    public void deregister(Observer observer) {
+        if (observer != null) {
+            this.observerList.remove(observer);
+        }
+
+        return;
+    };
+    
+    public void notifyObservers(String event) {
+        for (Observer observer : this.observerList) {
+            observer.update(event);
+        }
+        return;
+    };
 }
