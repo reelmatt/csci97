@@ -19,14 +19,18 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
 
     public StoreControllerService() {
         this.storeModel = new StoreModelService();
+
         try {
-            this.ledger = new Ledger("a", "b", "c");
+            this.ledger = new Ledger("test", "test ledger", "cambridge");
         } catch (LedgerException e) {
             System.err.println(e);
         }
+
+        this.storeModel.register(this);
     }
 
     public void update(String event) {
+        System.out.println("NOTIFICATION: " + event);
         return;
     }
 
@@ -42,5 +46,9 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
 
     public StoreModelServiceInterface getStoreModel() {
         return this.storeModel;
+    }
+
+    public Ledger getLedger() {
+        return this.ledger;
     }
 }

@@ -17,6 +17,7 @@ import java.util.List;
  * @author Matthew Thomas
  */
 public interface StoreModelServiceInterface {
+    public void register(Observer observer);
     /**
      * Add a given count of a Product to a Customer's Basket.
      *

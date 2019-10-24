@@ -60,10 +60,12 @@ public class CommandProcessor {
             throw new CommandProcessorException("open file", e.toString(), currentLineNumber);
         }
 
-        // Instantiate a StoreModelService to perform operations with
+        // Instantiate a StoreControllerService to perform operations with
         this.storeControllerService = new StoreControllerService();
-//        this.storeModelService = new StoreModelService();
+
+        // Retrieve the associated Model and Ledger services
         this.storeModelService = storeControllerService.getStoreModel();
+        this.ledger = storeControllerService.getLedger();
 
         // Read file
         try {
@@ -91,45 +93,9 @@ public class CommandProcessor {
         return;
     }
 
-    /**
-     * Process a single command.
-     *
-     * Output of the command is formatted and displayed to stdout. Any
-     * StoreModelServiceExceptions are caught with their contents output to stderr.
-     * Problems with the commands written from the file, missing arguments, or
-     * others, will throw a CommandProcessorException.
-     *
-     * @param   commandLine                 The current command line from the
-     *                                      input file.
-     * @param   lineNumber                  The current line number in the file.
-     * @throws  CommandProcessorException   If there is a problem reading or
-     *                                      processing the command line received
-     *                                      from the input file.
-     */
-    public void processCommand(String commandLine, Integer lineNumber) throws CommandProcessorException {
-        // StoreModelService instance needs to be created to run commands
-        if (this.storeModelService == null) {
-            throw new CommandProcessorException("command", "StoreModelService has not been initialized.", lineNumber);
-        }
-
-        // Break command line into a list of arguments
-        List<String> args = parseCommand(commandLine);
-
-        // Key syntax variables
-        String command = null;
-        String storeObject = null;
-        String id = null;
-        String authToken = "authToken is part of Assignment 4";
-
-        try {
-            // First argument is the command to run
-            command = args.remove(0);
-
-        } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
-        }
-
+    private boolean processLedgerCommand(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         boolean ledgerCommand = true;
+
         // Pass remaining args into helper methods
         switch (command.toLowerCase()) {
             case "create-ledger":
@@ -157,25 +123,12 @@ public class CommandProcessor {
                 validate(command, lineNumber);
                 break;
             default:
-                ledgerCommand = false;
-                break;
-//                throw new CommandProcessorException(command, "Unknown command", lineNumber);
+                return false;
         }
+        return true;
+    }
 
-        if (ledgerCommand) {
-            return;
-        }
-
-        try {
-            // Second argument is the object (Store, Aisle, etc.)
-            storeObject = args.remove(0);
-
-            // Third argument is the identifier (storeId, aisleId, etc.)
-            id = args.remove(0);
-        } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
-        }
-
+    private void processStoreModelCommand(String authToken, String command, String storeObject, String id, List<String> args, Integer lineNumber) throws CommandProcessorException{
         // Pass remaining args into helper methods
         try {
             switch (command.toLowerCase()) {
@@ -209,6 +162,63 @@ public class CommandProcessor {
         } catch (StoreModelServiceException e) {
             System.err.println(e);
         }
+    }
+
+    /**
+     * Process a single command.
+     *
+     * Output of the command is formatted and displayed to stdout. Any
+     * StoreModelServiceExceptions are caught with their contents output to stderr.
+     * Problems with the commands written from the file, missing arguments, or
+     * others, will throw a CommandProcessorException.
+     *
+     * @param   commandLine                 The current command line from the
+     *                                      input file.
+     * @param   lineNumber                  The current line number in the file.
+     * @throws  CommandProcessorException   If there is a problem reading or
+     *                                      processing the command line received
+     *                                      from the input file.
+     */
+    public void processCommand(String commandLine, Integer lineNumber) throws CommandProcessorException {
+        // StoreModelService instance needs to be created to run commands
+        if (this.storeControllerService == null) {
+            throw new CommandProcessorException("command", "StoreControllerService has not been initialized.", lineNumber);
+        }
+
+        // Break command line into a list of arguments
+        List<String> args = parseCommand(commandLine);
+
+        // Key syntax variable
+        String command = null;
+
+        try {
+            // First argument is the command to run
+            command = args.remove(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
+        }
+
+        if ( processLedgerCommand(command, args, lineNumber) ) {
+            return;
+        }
+
+        // Key syntax variables
+        String storeObject = null;
+        String id = null;
+        String authToken = "authToken is part of Assignment 4";
+
+
+        try {
+            // Second argument is the object (Store, Aisle, etc.)
+            storeObject = args.remove(0);
+
+            // Third argument is the identifier (storeId, aisleId, etc.)
+            id = args.remove(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
+        }
+
+        processStoreModelCommand(authToken, command, storeObject, id, args, lineNumber);
 
         return;
     }
@@ -1316,8 +1326,8 @@ public class CommandProcessor {
         try {
             // Look for arguments
             String name = args.get(0);
-            String description = (String) getArgument("description", args);
-            String seed = (String) getArgument("seed", args);
+            String description = getArgument("description", args);
+            String seed = getArgument("seed", args);
 
             // Initialize the Ledger with values
             this.ledger = new Ledger(name, description, seed);
@@ -1401,11 +1411,11 @@ public class CommandProcessor {
         try {
             // Extract arguments from command line
             String id = args.get(0);
-            Integer amount = Integer.parseInt((String) getArgument("amount", args));
-            Integer fee = Integer.parseInt((String) getArgument("fee", args));
-            String payload = (String) getArgument("payload", args);
-            String payerAddress = (String) getArgument("payer", args);
-            String receiverAddress = (String) getArgument("receiver", args);
+            Integer amount = Integer.parseInt(getArgument("amount", args));
+            Integer fee = Integer.parseInt(getArgument("fee", args));
+            String payload = getArgument("payload", args);
+            String payerAddress = getArgument("payer", args);
+            String receiverAddress = getArgument("receiver", args);
 
             // Check accounts are valid
             Account payer = this.ledger.getExistingAccount(payerAddress);

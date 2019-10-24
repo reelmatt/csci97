@@ -670,6 +670,9 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
 
         // Print event
         System.out.println("Device '" + deviceId + "' emitted event: " + event);
+
+        // Notify observers
+        notifyObservers(event);
         return;
     }
 
