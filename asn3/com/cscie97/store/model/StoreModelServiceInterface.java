@@ -1,5 +1,7 @@
 package com.cscie97.store.model;
 
+import java.util.List;
+
 /**
  * Interface for a Store Model Service.
  *
@@ -337,6 +339,11 @@ public interface StoreModelServiceInterface {
      */
     public Store getStore(String authToken,
                           String storeId) throws StoreModelServiceException;
+
+
+    public List<Customer> getStoreCustomers(String authToken, String storeId);
+    public List<Device> getStoreDevices(String authToken,
+                                        String storeId) throws StoreModelServiceException;
 
     /**
      * Receive a command to forward to an Appliance.

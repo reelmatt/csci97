@@ -1,4 +1,4 @@
-package com.cscie97.store.model;
+package com.cscie97.store.controller;
 
 /**
  * Returns from CommandProcessor methods in response to error conditions.

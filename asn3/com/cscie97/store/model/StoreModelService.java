@@ -851,7 +851,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
 
         return;
     };
-    
+
     public void notifyObservers(String event) {
         for (Observer observer : this.observerList) {
             observer.update(event);

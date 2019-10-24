@@ -1,4 +1,7 @@
-package com.cscie97.store.model;
+package com.cscie97.store.controller;
+
+import com.cscie97.store.model.*;
+import com.cscie97.ledger.*;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -25,7 +28,9 @@ import java.util.HashMap;
  */
 public class CommandProcessor {
     /** StoreModelService to create, read, and update Store objects. */
-    private StoreModelService storeModelService = null;
+    private StoreModelServiceInterface storeModelService = null;
+    private StoreControllerService storeControllerService = null;
+    private Ledger ledger = null;
 
     /**
      * Process a set of commands provided within the given 'commandFile'.
@@ -56,7 +61,9 @@ public class CommandProcessor {
         }
 
         // Instantiate a StoreModelService to perform operations with
-        storeModelService = new StoreModelService();
+        this.storeControllerService = new StoreControllerService();
+//        this.storeModelService = new StoreModelService();
+        this.storeModelService = storeControllerService.getStoreModel();
 
         // Read file
         try {
@@ -112,12 +119,54 @@ public class CommandProcessor {
         String command = null;
         String storeObject = null;
         String id = null;
-        String authToken = "authToken is part of Assignment 3";
+        String authToken = "authToken is part of Assignment 4";
 
         try {
             // First argument is the command to run
             command = args.remove(0);
 
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
+        }
+
+        boolean ledgerCommand = true;
+        // Pass remaining args into helper methods
+        switch (command.toLowerCase()) {
+            case "create-ledger":
+                createLedger(command, args, lineNumber);
+                break;
+            case "create-account":
+                createAccount(command, args, lineNumber);
+                break;
+            case "process-transaction":
+                processTransaction(command, args, lineNumber);
+                break;
+            case "get-account-balance":
+                getAccountBalance(command, args, lineNumber);
+                break;
+            case "get-account-balances":
+                getAccountBalances(command, lineNumber);
+                break;
+            case "get-block":
+                getBlock(command, args, lineNumber);
+                break;
+            case "get-transaction":
+                getTransaction(command, args, lineNumber);
+                break;
+            case "validate":
+                validate(command, lineNumber);
+                break;
+            default:
+                ledgerCommand = false;
+                break;
+//                throw new CommandProcessorException(command, "Unknown command", lineNumber);
+        }
+
+        if (ledgerCommand) {
+            return;
+        }
+
+        try {
             // Second argument is the object (Store, Aisle, etc.)
             storeObject = args.remove(0);
 
@@ -1238,7 +1287,349 @@ public class CommandProcessor {
         this.storeModelService.updateInventory(authToken, inventoryId, updateCount);
         return;
     }
-    
+
+
+
+    /**
+     * Create a new ledger with the given name, description, and seed value.
+     *
+     * Expected command line to be formatted as:
+     *      create-ledger <name> description <description> seed <seed>
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     */
+    private void createLedger(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        // Error if Ledger already exists
+        if (this.ledger != null) {
+            throw new CommandProcessorException(
+                    command,
+                    "A Ledger has already been initialized.",
+                    lineNumber
+            );
+        }
+
+        try {
+            // Look for arguments
+            String name = args.get(0);
+            String description = (String) getArgument("description", args);
+            String seed = (String) getArgument("seed", args);
+
+            // Initialize the Ledger with values
+            this.ledger = new Ledger(name, description, seed);
+            System.out.println(String.format("Created ledger '%s'", this.ledger));
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        return;
+    }
+
+    /**
+     * Create a new account with the given account id.
+     *
+     * Expected command line to be formatted as:
+     *      create-account <account-id>
+     *
+     * Additional arguments provided are ignored. A Ledger needs to have been
+     * initialized to run this method.
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
+     */
+    private void createAccount(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        // Create account, id == arg[0]
+        try {
+            Account account = this.ledger.createAccount(args.get(0));
+            System.out.println("Created account '" + account.getAddress() + "'");
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing 'account-id'", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        return;
+    }
+
+    /**
+     * Process a new transaction.
+     *
+     * Expected command line to be formatted as:
+     *      process-transaction <transaction-id>
+     *                          amount <amount>
+     *                          fee <fee>
+     *                          payload <payload>
+     *                          payer <account-address>
+     *                          receiver <account-address>
+     *
+     * Extract the required arguments from the command line, retrieve the
+     * Accounts from the Ledger, and construct a new Transaction to submit to
+     * the Ledger to process. If the Transaction fails to process, a
+     * LedgerException is thrown and output to stderr.
+     *
+     * @see getArgument()
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException. If an argument
+     *                                      is suppose to be an Integer, but no
+     *                                      number is provided, a NumberFormatException
+     *                                      will be thrown.
+     */
+    private void processTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        try {
+            // Extract arguments from command line
+            String id = args.get(0);
+            Integer amount = Integer.parseInt((String) getArgument("amount", args));
+            Integer fee = Integer.parseInt((String) getArgument("fee", args));
+            String payload = (String) getArgument("payload", args);
+            String payerAddress = (String) getArgument("payer", args);
+            String receiverAddress = (String) getArgument("receiver", args);
+
+            // Check accounts are valid
+            Account payer = this.ledger.getExistingAccount(payerAddress);
+            Account receiver = this.ledger.getExistingAccount(receiverAddress);
+
+            // Create the transaction
+            Transaction newTransaction = new Transaction(id, amount, fee, payload, payer, receiver);
+
+            // Output transaction status
+            String result = this.ledger.processTransaction(newTransaction);
+            System.out.println("Processed transaction #" + result);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, e.toString(), lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        return;
+    }
+
+    /**
+     * Output account balances.
+     *
+     * Expected command line to be formatted as:
+     *      get-account-balance <account-id>
+     *
+     * Handles output of individual accounts, specified by an accountId.
+     *
+     * @see printAccountBalances
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
+     */
+    private void getAccountBalance(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        // Init a new map to store account balance
+        Map<String, Integer> balances = new HashMap<String, Integer>();
+
+        try {
+            // Account ID located at arg[0]
+            String accountId = args.get(0);
+            balances.put(accountId, this.ledger.getAccountBalance(accountId));
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        // Print with formatting
+        printAccountBalances(balances);
+        return;
+    }
+
+    /**
+     * Output account balances.
+     *
+     * Expected command line to be formatted as:
+     *      get-account-balances
+     *
+     * Handles output of all accounts, located in the accountBalanceMap of the
+     * most recent completed block.
+     *
+     * @see printAccountBalances
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
+     */
+    private void getAccountBalances(String command, Integer lineNumber) throws CommandProcessorException {
+        // Map to store existing information
+        Map<String, Integer> balances = null;
+
+        // Get all accounts and balances
+        try {
+            balances = this.ledger.getAccountBalances();
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        // Print with formatting
+        printAccountBalances(balances);
+        return;
+    }
+
+    /**
+     * Formats the accountBalanceMap for printing to stdout.
+     *
+     * For each entry listed in the account balance map, the account address
+     * and current balance is extracted, formatted, and output to stdout.
+     *
+     * @param balances  The account balance map to iterate and format.
+     */
+    private void printAccountBalances(Map<String, Integer> balances) {
+        // Skip printing if no balances
+        if (balances != null) {
+            // Get address and balance for each account entry
+            for (Map.Entry<String, Integer> account : balances.entrySet()) {
+                System.out.println(String.format(
+                        "Account %s: current balance = %d",
+                        account.getKey(), account.getValue()
+                ));
+            }
+        }
+    }
+
+    /**
+     * Output the details for the given block number.
+     *
+     * Expected command line to be formatted as:
+     *      get-block <block-number>
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException. If a Block does
+     *                                      not exist.
+     */
+    private void getBlock(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        try {
+            Integer blockNumber = Integer.parseInt(args.get(0));
+            Block block = this.ledger.getBlock(blockNumber);
+            System.out.print(block);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments", lineNumber);
+        } catch (NumberFormatException e) {
+            throw new CommandProcessorException(command, args.get(0) + " is not a number.", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        return;
+    }
+
+    /**
+     * Output the details of the given transaction id.
+     *
+     * Expected command line to be formatted as:
+     *      get-transaction <transaction-id>
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   args                        Command line arguments.
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If command line arguments are missing,
+     *                                      indicated by an IndexOutOfBoundsException.
+     *                                      If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException. If a Transaction
+     *                                      is not found in the Ledger.
+     */
+    private void getTransaction(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
+        try {
+            String transactionId = args.get(0);
+            Transaction transaction = this.ledger.getTransaction(transactionId);
+            System.out.println(transaction);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments", lineNumber);
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            throw new CommandProcessorException(command, e.getReason(), lineNumber);
+        }
+
+        return;
+    }
+
+    /**
+     * Validate the current state of the block chain. On success, message will
+     * be printed to stdout. On LedgerException (i.e. blockchain is _not_ valid),
+     * the Exception will be printed to stderr.
+     *
+     * Expected command line to be formatted as:
+     *      validate
+     *
+     * @see Ledger#validate
+     *
+     * @param   command                     The name of the command to be run
+     *                                      (used to format Exception).
+     * @param   lineNumber                  Current line number in the file.
+     * @throws  CommandProcessorException   If a Ledger has not been initialized
+     *                                      one will be thrown due to a
+     *                                      NullPointerException.
+     */
+    private void validate(String command, Integer lineNumber) throws CommandProcessorException {
+        try {
+            this.ledger.validate();
+        } catch (NullPointerException e) {
+            throw new CommandProcessorException(command, "A Ledger has not been initialized.", lineNumber);
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        System.out.println("Blockchain successfully validated.");
+        return;
+    }
+
+
+
 
     /**
      * Helper method to convert String into Enum type.

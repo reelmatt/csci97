@@ -1,7 +1,7 @@
 package com.cscie97.store.test;
 
-import com.cscie97.store.model.CommandProcessor;
-import com.cscie97.store.model.CommandProcessorException;
+import com.cscie97.store.controller.CommandProcessor;
+import com.cscie97.store.controller.CommandProcessorException;
 
 /**
  * Main program to run test scripts for Ledger Service.
