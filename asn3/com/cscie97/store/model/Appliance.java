@@ -43,6 +43,10 @@ public class Appliance extends Device {
         return;
     }
 
+    public ApplianceType getType() {
+        return type;
+    }
+
     /**
      * Override default toString method.
      *

@@ -837,6 +837,29 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
 
     }
 
+    public List<Appliance> getAppliances(String authToken, ApplianceType type, String storeId) throws StoreModelServiceException{
+        Store store = getStore(authToken, storeId);
+
+        List<Appliance> applianceList = new ArrayList<Appliance>();
+
+        for (Device device : this.deviceMap.values()) {
+            Appliance appliance = null;
+            try {
+                appliance = (Appliance) device;
+            } catch (ClassCastException e) {
+//                System.err.println(e);
+            }
+
+            String deviceStoreId = device.getStore();
+            if (appliance != null && appliance.getType() == type && storeId.equals(deviceStoreId)) {
+                applianceList.add(appliance);
+            }
+
+        }
+
+        return applianceList;
+
+    }
 
     private String[] parseLocationIdentifier(String location) {
         return location.split(":");

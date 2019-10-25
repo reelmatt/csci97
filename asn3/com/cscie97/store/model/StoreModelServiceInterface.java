@@ -18,6 +18,9 @@ import java.util.List;
  */
 public interface StoreModelServiceInterface {
     public void register(Observer observer);
+    public List<Appliance> getAppliances(String authToken, ApplianceType type, String storeId) throws StoreModelServiceException;
+//    public List<Appliance> getTurnstiles(String authToken, String storeId) throws StoreModelServiceException;
+
     /**
      * Add a given count of a Product to a Customer's Basket.
      *

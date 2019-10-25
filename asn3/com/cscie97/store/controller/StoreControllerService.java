@@ -36,26 +36,29 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
 
     public void update(Device device, String event) {
         List<String> eventArgs = parseCommand(event);
-        System.out.println("NOTIFICATION: " + eventArgs);
+//        System.out.println("NOTIFICATION: " + eventArgs);
 
         Command storeCommand = null;
-
-        switch (eventArgs.get(0).toLowerCase()) {
-            case "customer":
-                break;
-            case "emergency":
-                storeCommand = new EmergencyCommand(device);
-                break;
-            case "product":
-                storeCommand = new CleaningCommand(device);
-                break;
-            case "can":
-            case "sound":
-                storeCommand = checkMicrophoneEvent(device, event, eventArgs);
-                break;
-            default:
-                System.out.println("UNKNOWN event");
-                break;
+        try {
+            switch (eventArgs.get(0).toLowerCase()) {
+                case "customer":
+                    break;
+                case "emergency":
+                    storeCommand = new EmergencyCommand(device, getStoreModel());
+                    break;
+                case "product":
+                    storeCommand = new CleaningCommand(device);
+                    break;
+                case "can":
+                case "sound":
+                    storeCommand = checkMicrophoneEvent(device, event, eventArgs);
+                    break;
+                default:
+                    System.out.println("UNKNOWN event");
+                    break;
+            }
+        } catch (StoreControllerServiceException e) {
+            System.err.println(e);
         }
 
         if (storeCommand != null) {
@@ -73,9 +76,9 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
 
 
     private Command checkMicrophoneEvent(Device device, String event, List<String> eventArgs) throws StoreControllerServiceException {
-        if (eventArgs.size() < 5) {
-            throw new StoreControllerServiceException("mic event", "Not enough arguments.");
-        }
+//        if (eventArgs.size() < 5) {
+//            throw new StoreControllerServiceException("mic event", "Not enough arguments.");
+//        }
         Command command = null;
 
         if (event.toLowerCase().contains("can you help me find")) {
@@ -83,8 +86,10 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
         } else if (event.toLowerCase().contains("sound of breaking glass")) {
             command = new BrokenGlassCommand(device);
         } else {
-            throw new StoreControllerService("mic event", "Unknown command.");
+            throw new StoreControllerServiceException("mic event", "Unknown command.");
         }
+
+        return command;
     }
 
 
