@@ -6,5 +6,5 @@ package com.cscie97.store.model;
  * @author Matthew Thomas
  */
 public interface Observer {
-    public void update(String event);
+    public void update(Device device, String event);
 }

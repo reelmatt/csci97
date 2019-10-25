@@ -668,11 +668,13 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
             throw new StoreModelServiceException("create event", "Event is required.");
         }
 
+        Device device = getDevice(authToken, deviceId);
+
         // Print event
         System.out.println("Device '" + deviceId + "' emitted event: " + event);
 
         // Notify observers
-        notifyObservers(event);
+        notifyObservers(device, event);
         return;
     }
 
@@ -855,9 +857,9 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
         return;
     };
 
-    public void notifyObservers(String event) {
+    public void notifyObservers(Device device, String event) {
         for (Observer observer : this.observerList) {
-            observer.update(event);
+            observer.update(device, event);
         }
         return;
     };

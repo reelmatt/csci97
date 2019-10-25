@@ -9,5 +9,5 @@ public interface Subject {
 
     public void register(Observer observer);
     public void deregister(Observer observer);
-    public void notifyObservers(String event);
+    public void notifyObservers(Device device, String event);
 }
