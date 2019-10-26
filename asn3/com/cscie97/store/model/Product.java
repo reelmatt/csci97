@@ -75,6 +75,11 @@ public class Product {
         return this.name;
     }
 
+    /** Get the unit price of the product. */
+    public Integer getUnitPrice() {
+        return unitPrice;
+    }
+
     /** Returns the Product's temperature. */
     public Temperature getTemperature() {
         return temperature;

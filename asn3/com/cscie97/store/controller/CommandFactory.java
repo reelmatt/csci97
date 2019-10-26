@@ -138,7 +138,7 @@ public class CommandFactory {
                     command = createCustomerRequestCommand(authToken, storeModel, device, event, eventArgs, customer);
                     break;
                 case "approaches":
-                    command = new CheckoutCommand(authToken, storeModel, device);
+                    command = new CheckoutCommand(authToken, storeModel, device, customer);
                     break;
                 case "waiting":
                     command = new EnterStoreCommand(device, storeModel, ledger, customerId);

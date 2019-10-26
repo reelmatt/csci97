@@ -43,6 +43,11 @@ public class ProductAssociation {
         return this.product.getName();
     }
 
+    /** Returns the cost of the Product. */
+    public Integer getCost() {
+        return this.product.getUnitPrice() * this.count;
+    }
+
     /** Returns the current count of Product. */
     public Integer getCount() {
         return this.count;

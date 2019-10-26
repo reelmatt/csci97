@@ -1,5 +1,8 @@
 package com.cscie97.store.model;
 
+import java.util.List;
+//import java.util.ArrayList;
+
 /**
  * A Customer known by the Store 24X7 System.
  *
@@ -144,7 +147,19 @@ public class Customer {
     }
 
     public Integer calculateBasketTotal() {
-        return 42;
+        if (this.basket == null) {
+            return -1;
+        }
+
+        List<ProductAssociation> items = this.basket.getBasketItems();
+
+        Integer cost = 0;
+
+        for (ProductAssociation item : items) {
+            cost += item.getCost();
+        }
+
+        return cost;
     }
 
     public String getAccountAddress() {

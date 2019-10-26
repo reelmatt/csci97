@@ -110,6 +110,11 @@ get customer_basket  cust_5
 get customer_basket  cust_6
 
 
+add basket_item  cust_2  product  prod10  item_count  4
+add basket_item  cust_5  product  prod10  item_count  4
+add basket_item  cust_5  product  prod11  item_count  2
+add basket_item  cust_6  product  prod12  item_count  7
+
 
 # Create Sensors
 # define  device  <device_id>  name  <name>  type  (microphone|camera)  location <store>:<aisle>
@@ -268,9 +273,9 @@ create event mic_A1 event "customer cust_4 says please get me 3 of prod11"
 
 create event mic_A1 event "customer cust_1 says 'What is the total basket value?'"
 
-create event mic_A1 event "customer cust_2 says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_5 says 'What is the total basket value?'"
 
-create event mic_A1 event "customer cust_3 says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_6 says 'What is the total basket value?'"
 
 ####################################################################
 # Assist customer to car

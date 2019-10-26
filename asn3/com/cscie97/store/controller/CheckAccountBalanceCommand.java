@@ -30,7 +30,12 @@ public class CheckAccountBalanceCommand extends AbstractCommand {
     public void execute() {
         try {
             Integer basketTotal = this.customer.calculateBasketTotal();
-            System.out.println(this.customer.customerName() + " basket total is " + basketTotal);
+
+            if (basketTotal < 0) {
+                throw new StoreControllerServiceException("check account balance", this.customer.customerName() + " does not have a basket.");
+            } else {
+                System.out.println(this.customer.customerName() + " basket total is " + basketTotal);
+            }
 
             Integer accountBalance = this.ledger.getAccountBalance(this.customer.getAccountAddress());
 
