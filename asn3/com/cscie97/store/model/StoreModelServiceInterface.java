@@ -16,10 +16,9 @@ import java.util.List;
  *
  * @author Matthew Thomas
  */
-public interface StoreModelServiceInterface {
-    public void register(Observer observer);
+public interface StoreModelServiceInterface extends Subject {
+
     public List<Appliance> getAppliances(String authToken, ApplianceType type, String storeId) throws StoreModelServiceException;
-//    public List<Appliance> getTurnstiles(String authToken, String storeId) throws StoreModelServiceException;
 
     /**
      * Add a given count of a Product to a Customer's Basket.
@@ -346,6 +345,7 @@ public interface StoreModelServiceInterface {
 
 
     public List<Customer> getStoreCustomers(String authToken, String storeId);
+
     public List<Device> getStoreDevices(String authToken,
                                         String storeId) throws StoreModelServiceException;
 

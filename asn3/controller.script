@@ -1,4 +1,5 @@
-﻿########################################
+﻿#
+########################################
 # Store Controller Service Sample Script
 ########################################
 
@@ -85,7 +86,7 @@ define  inventory  inv_u27  location  store_123:aisle_A2:shelf_q1 capacity  200 
 #Customer Commands
 # Define a new customer
 # define  customer  <customer_id>        first_name  <first_name>  last_name  <last_name> type  (registered|guest)  email_address  <email>  account  <account_address>
-define  customer  cust_1        first_name  JSON  last_name  WALLACE type  guest  email_address  json.wallace@ymail.com  account  json
+define  customer  cust_1        first_name  JASON  last_name  WALLACE type  guest  email_address  jason.wallace@ymail.com  account  jason
 define  customer  cust_2        first_name  BILL  last_name  ROSE type  registered  email_address  bill.rose@gmail.com  account  bill
 define  customer  cust_3        first_name  MARY last_name  KELVIN type  registered  email_address  mary.kevin@yahoomail.com  account  mary
 define  customer  cust_4        first_name  SILVER  last_name  HAWK type  guest  email_address  silver.hawk@rocketmail.com  account  silver
@@ -101,12 +102,7 @@ update  customer  cust_5  location  store_123:aisle_A2
 update  customer  cust_6  location  store_123:aisle_A2
 
 
-# show  store  <identifier>
-# show  store  store_123
-
-
 # Basket Commands
-
 # Get basket_id associated with the customer, create new basket if the customer does not already have a basket associated.
 # get_customer_basket  <customer_id>
 get customer_basket  cust_2
@@ -115,21 +111,15 @@ get customer_basket  cust_6
 
 
 
-#Sensor Commands
-# Define device of type sensor
+# Create Sensors
 # define  device  <device_id>  name  <name>  type  (microphone|camera)  location <store>:<aisle>
 define  device  mic_A1  name  MicrophoneA1  type  microphone  location store_123:aisle_A2
 define  device  cam_A1  name  CameraA1  type  camera  location store_123:aisle_A2
 define  device  cam_A2  name  CameraA2  type  camera  location store_123:aisle_A1
 define  device  cam_B2  name  CameraB1  type  camera  location store_123:aisle_B2
 
-# Create a sensor event, this simulates a sensor event
-# create_event  <device_id>  event  <event>
-create event  cam_A1  event  watch_store_room
-create event  mic_A1  event  tell_robot_to_bring_items_from_store_123:aisle_A1
 
-Appliance Commands
-# Define device of type appliance
+# Create Appliances
 # define  device  <device_id>  name  <name>  type  (speaker  |  robot  |  turnstile) location  <store>:<aisle>
 define  device  rob_1  name  ROBOT_1  type  robot location  store_123:aisle_A1
 define  device  rob_2  name  ROBOT_2  type  robot location  store_123:aisle_A2
@@ -139,44 +129,30 @@ define  device  turn_a1  name  TURNSTILE_A1  type  turnstile location  store_123
 define  device  turn_a2  name  TURNSTILE_A2  type  turnstile location  store_123:aisle_A2
 define  device  turn_a3  name  TURNSTILE_A3  type  turnstile location  store_123:aisle_A2
 
-# Create an appliance event, this simulates a sensor event
-# create  event  <device_id>  event  <event_description>
-create event  rob_2  event  CLEAN_FLOOR
-create event  rob_1  event  STOCK_SHELL
-create event  turn_a1  event  COUNT_INVENTORY
-
-# Send the appliance a command
-# create  command  <device_id>  message  <command>
-create  command  rob_1  message  STOCK_SHELL
-create  command  rob_2  message  CLEAN_FLOOR
-create  command  turn_a3  message  COUNT_INVENTORY
-create  command  cam_A1  message  COUNT_INVENTORY
-
-
 #############
 # LEDGER INIT
 #############
 
 # create-account <account-id>
-create-account mary
-create-account bob
+create-account jason
 create-account bill
-create-account susan
-create-account jack
+create-account mary
+create-account silver
+create-account megon
+create-account maria
+create-account salina
 
-#process-transaction <transaction-id> amount <amount> fee <fee> payload <payload> payer <account-address> receiver <account-address>
-
-
-process-transaction 1 amount 1000 fee 10 payload "fund account" payer master receiver mary
-process-transaction 2 amount 1000 fee 10 payload "fund account" payer master receiver bob
-process-transaction 3 amount 1000 fee 10 payload "fund account" payer master receiver bill
-process-transaction 4 amount 1000 fee 10 payload "fund account" payer master receiver susan
-process-transaction 5 amount 1000 fee 10 payload "fund account" payer master receiver mary
-process-transaction 6 amount 1000 fee 10 payload "fund account" payer master receiver bob
-process-transaction 7 amount 1000 fee 10 payload "fund account" payer master receiver bill
-process-transaction 8 amount 1000 fee 10 payload "fund account" payer master receiver susan
-process-transaction 9 amount 1000 fee 10 payload "fund account" payer master receiver mary
-process-transaction 10 amount 1000 fee 10 payload "fund account" payer master receiver bob
+# process-transaction <transaction-id> amount <amount> fee <fee> payload <payload> payer <account-address> receiver <account-address>
+process-transaction 1 amount 1000 fee 10 payload "fund account" payer master receiver jason
+process-transaction 2 amount 1000 fee 10 payload "fund account" payer master receiver bill
+process-transaction 3 amount 1000 fee 10 payload "fund account" payer master receiver mary
+process-transaction 4 amount 1000 fee 10 payload "fund account" payer master receiver silver
+process-transaction 5 amount 1000 fee 10 payload "fund account" payer master receiver megon
+process-transaction 6 amount 1000 fee 10 payload "fund account" payer master receiver maria
+process-transaction 7 amount 1000 fee 10 payload "fund account" payer master receiver salina
+process-transaction 8 amount 1000 fee 10 payload "fund account" payer master receiver jason
+process-transaction 9 amount 1000 fee 10 payload "fund account" payer master receiver bill
+process-transaction 10 amount 1000 fee 10 payload "fund account" payer master receiver mary
 
 
 # show the details of block #1
@@ -193,81 +169,122 @@ Validate
 # customer <customer> waiting to enter at the turnstile <turnstile>
 
 create event turn_a1 event "customer cust_1 waiting to enter at the turnstile turn_a1"
+
 create event turn_a2 event "customer cust_2 waiting to enter at the turnstile turn_a2"
+
 create event turn_a3 event "customer cust_3 waiting to enter at the turnstile turn_a3"
+
 create event turn_a1 event "customer cust_4 waiting to enter at the turnstile turn_a1"
+
 create event turn_a2 event "customer cust_5 waiting to enter at the turnstile turn_a2"
+
 create event turn_a3 event "customer cust_6 waiting to enter at the turnstile turn_a3"
+
 create event turn_a1 event "customer cust_7 waiting to enter at the turnstile turn_a1"
 
 
-
+####################################################################
 # Emergency Command
 # emergency (fire | flood | earthquake | armed intruder) in <aisle>
 # emergency fire in aisle_A1
+####################################################################
 
 create event cam_A1 event "emergency fire in aisle_A1"
+
 create event cam_B2 event "emergency flood in aisle_A1"
 
+####################################################################
 # Basket Event
 # customer <customer> (adds | removes) <product> from <aisle:shelf>
+####################################################################
 
 create event cam_A1 event "customer cust_1 adds prod_1 from aisle_A1:shelf_A1"
 
+####################################################################
 # Cleaning Event
 # product <product> on floor <store:aisle>
+####################################################################
 
-create event cam_A1 event "product prod10 on floor store123:aisle_A1"
-create event cam_A1 event "product prod11 on floor store123:aisle_A2"
-create event cam_A1 event "product prod13 on floor store123:aisle_B1"
+create event cam_A1 event "product prod10 on floor store_123:aisle_A1"
 
+create event cam_A1 event "product prod11 on floor store_123:aisle_A2"
+
+create event cam_A1 event "product prod13 on floor store_123:aisle_B1"
+
+####################################################################
 # Broken glass
 # sound of breaking glass in <aisle>
+####################################################################
 
 create event mic_A1 event "sound of breaking glass in aisle_A1"
+
 create event mic_A1 event "sound of breaking glass in aisle_A2"
+
 create event mic_A1 event "sound of breaking glass in aisle_B1"
+
 create event mic_A1 event "sound of breaking glass in aisle_B3"
 
-
+####################################################################
 # Missing person
 # can you help me find <customer name>
+####################################################################
 
 create event mic_A1 event "can you help me find cust_1"
+
 create event mic_A1 event "can you help me find cust_2"
+
 create event mic_A1 event "can you help me find cust_4"
 
+####################################################################
 # Customer seen
 # customer <customer> enters <aisle>
+####################################################################
 
 create event cam_A1 event "customer cust_1 enters aisle_A1"
+
 create event cam_B2 event "customer cust_3 enters aisle_B2"
+
 create event cam_B2 event "customer cust_3 enters aisle_B3"
+
 create event cam_A2 event "customer cust_7 enters aisle_A2"
 
+####################################################################
 # Fetch product
 # customer <customer> says please get me <number> of <product>
+####################################################################
 
 create event mic_A1 event "customer cust_1 says please get me 3 of prod10"
+
 create event mic_A1 event "customer cust_2 says please get me 3 of prod13"
+
 create event mic_A1 event "customer cust_3 says please get me 3 of prod13"
+
 create event mic_A1 event "customer cust_4 says please get me 3 of prod11"
 
+####################################################################
 # Check account balance
 # customer <customer> says "What is the total basket value?"
+####################################################################
 
 create event mic_A1 event "customer cust_1 says 'What is the total basket value?'"
+
 create event mic_A1 event "customer cust_2 says 'What is the total basket value?'"
+
 create event mic_A1 event "customer cust_3 says 'What is the total basket value?'"
 
-
+####################################################################
 # Assist customer to car
 # checkout: total weight of products in basket exceeds 10lbs
+####################################################################
 
+####################################################################
 # Checkout
 # customer <customer> approaches turnstile
+####################################################################
 
 create event turn_a1 event "customer cust_1 approaches turnstile"
+
 create event turn_a2 event "customer cust_3 approaches turnstile"
+
 create event turn_a3 event "customer cust_5 approaches turnstile"
 

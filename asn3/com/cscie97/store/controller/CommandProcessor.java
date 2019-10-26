@@ -29,8 +29,12 @@ import java.util.HashMap;
 public class CommandProcessor {
     /** StoreModelService to create, read, and update Store objects. */
     private StoreModelServiceInterface storeModelService = null;
-    private StoreControllerService storeControllerService = null;
+
+    /** Ledger to manage accounts and process transactions. */
     private Ledger ledger = null;
+
+    /** StoreControllerService to monitor store state and control appliances. */
+    private StoreControllerService storeControllerService = null;
 
     /**
      * Process a set of commands provided within the given 'commandFile'.
@@ -60,12 +64,18 @@ public class CommandProcessor {
             throw new CommandProcessorException("open file", e.toString(), currentLineNumber);
         }
 
-        // Instantiate a StoreControllerService to perform operations with
-        this.storeControllerService = new StoreControllerService();
-
         // Retrieve the associated Model and Ledger services
-        this.storeModelService = storeControllerService.getStoreModel();
-        this.ledger = storeControllerService.getLedger();
+        this.storeModelService = new StoreModelService();
+
+        try {
+            this.ledger = new Ledger("test", "test ledger", "cambridge");
+        } catch (LedgerException e) {
+            System.err.println(e);
+        }
+
+        // Instantiate a StoreControllerService to perform operations with
+        this.storeControllerService = new StoreControllerService(this.storeModelService, this.ledger);
+
 
         // Read file
         try {

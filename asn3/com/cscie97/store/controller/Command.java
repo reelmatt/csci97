@@ -9,5 +9,5 @@ import com.cscie97.store.model.Device;
  */
 public interface Command {
 
-    public void execute();
+    public void execute() throws StoreControllerServiceException;
 }

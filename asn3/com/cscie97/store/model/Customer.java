@@ -143,6 +143,14 @@ public class Customer {
         return location;
     }
 
+    public Integer calculateBasketTotal() {
+        return 42;
+    }
+
+    public String getAccountAddress() {
+        return this.accountAddress;
+    }
+
     /**
      * Override default toString method.
      *

@@ -38,7 +38,7 @@ public class Appliance extends Device {
      */
     public void processCommand(String command) {
         System.out.println(
-            String.format("Appliance '%s' received command %s.\n", super.getId(), command)
+            String.format("Appliance '%s' received command '%s'.", super.getId(), command)
         );
         return;
     }

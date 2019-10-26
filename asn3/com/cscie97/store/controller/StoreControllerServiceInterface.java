@@ -7,6 +7,6 @@ package com.cscie97.store.controller;
  */
 public interface StoreControllerServiceInterface {
 
-    public Command createCommand(String event);
+
 
 }
