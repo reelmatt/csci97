@@ -194,7 +194,7 @@ public interface StoreModelServiceInterface extends Subject {
                               String productId,
                               String name,
                               String description,
-                              String size,
+                              Double size,
                               String category,
                               Integer price,
                               Temperature temperature) throws StoreModelServiceException;
@@ -282,6 +282,10 @@ public interface StoreModelServiceInterface extends Subject {
      */
     public Customer getCustomer(String authToken,
                                 String customerId) throws StoreModelServiceException;
+
+    public Customer getCustomerByName(String authToken,
+                                      String storeId,
+                                      String name) throws StoreModelServiceException;
 
     /**
      * Retrieve the Device specified by 'deviceId'.

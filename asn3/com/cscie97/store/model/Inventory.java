@@ -43,11 +43,18 @@ public class Inventory extends ProductAssociation {
         return this.id;
     }
 
+    public Integer getCount() {
+        return super.getCount();
+    }
+
     /** Returns the Inventory capacity. */
     public Integer getCapacity() {
         return this.capacity;
     }
 
+    public String getProductId() {
+        return super.getProductId();
+    }
     /**
      * Override default toString method.
      *

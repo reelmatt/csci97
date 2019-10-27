@@ -2,7 +2,6 @@ package com.cscie97.store.controller;
 
 import com.cscie97.store.model.*;
 import com.cscie97.ledger.*;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileNotFoundException;
@@ -27,14 +26,14 @@ import java.util.HashMap;
  * @author Matthew Thomas
  */
 public class CommandProcessor {
+    /** StoreControllerService to monitor store state and control appliances. */
+    private StoreControllerService storeControllerService = null;
+
     /** StoreModelService to create, read, and update Store objects. */
     private StoreModelServiceInterface storeModelService = null;
 
     /** Ledger to manage accounts and process transactions. */
     private Ledger ledger = null;
-
-    /** StoreControllerService to monitor store state and control appliances. */
-    private StoreControllerService storeControllerService = null;
 
     /**
      * Process a set of commands provided within the given 'commandFile'.
@@ -64,18 +63,18 @@ public class CommandProcessor {
             throw new CommandProcessorException("open file", e.toString(), currentLineNumber);
         }
 
-        // Retrieve the associated Model and Ledger services
+        // Create Store Model Service
         this.storeModelService = new StoreModelService();
 
+        // Create Ledger
         try {
             this.ledger = new Ledger("test", "test ledger", "cambridge");
         } catch (LedgerException e) {
             System.err.println(e);
         }
 
-        // Instantiate a StoreControllerService to perform operations with
+        // Create Store Controller Service with Model and Ledger
         this.storeControllerService = new StoreControllerService(this.storeModelService, this.ledger);
-
 
         // Read file
         try {
@@ -103,9 +102,80 @@ public class CommandProcessor {
         return;
     }
 
-    private boolean processLedgerCommand(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
-        boolean ledgerCommand = true;
+    /**
+     * Process a single command.
+     *
+     * Output of the command is formatted and displayed to stdout. Any
+     * StoreModelServiceExceptions are caught with their contents output to stderr.
+     * Problems with the commands written from the file, missing arguments, or
+     * others, will throw a CommandProcessorException.
+     *
+     * @param   commandLine                 The current command line from the
+     *                                      input file.
+     * @param   lineNumber                  The current line number in the file.
+     * @throws  CommandProcessorException   If there is a problem reading or
+     *                                      processing the command line received
+     *                                      from the input file.
+     */
+    public void processCommand(String commandLine, Integer lineNumber) throws CommandProcessorException {
+        // StoreControllerService instance needs to be created to run commands
+        if (this.storeControllerService == null) {
+            throw new CommandProcessorException("command", "StoreControllerService has not been initialized.", lineNumber);
+        }
 
+        // Break command line into a list of arguments
+        List<String> args = parseCommand(commandLine);
+
+        // Key syntax variable
+        String command = null;
+
+        try {
+            // First argument is the command to run
+            command = args.remove(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
+        }
+
+        // Check if command matches a Ledger command
+        if ( processLedgerCommand(command, args, lineNumber) ) {
+            // It was a Ledger command, so return
+            return;
+        }
+
+        // Key syntax variables for Model service
+        String storeObject = null;
+        String id = null;
+        String authToken = "authToken is part of Assignment 4";
+
+        // Extract additional key arguments
+        try {
+            // Second argument is the object (Store, Aisle, etc.)
+            storeObject = args.remove(0);
+
+            // Third argument is the identifier (storeId, aisleId, etc.)
+            id = args.remove(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
+        }
+
+        // Process Store Model Command
+        processStoreModelCommand(authToken, command, storeObject, id, args, lineNumber);
+        return;
+    }
+
+    /**
+     * Process a single Ledger command.
+     *
+     * @param   command                     The current command to process
+     * @param   args                        The remaining args in the command line.
+     * @param   lineNumber                  The current line number in the file.
+     * @return                              True if Ledger command was matched.
+     *                                      Otherwise, false.
+     * @throws  CommandProcessorException   If there is a problem reading or
+     *                                      processing the command line received
+     *                                      from the input file.
+     */
+    private boolean processLedgerCommand(String command, List<String> args, Integer lineNumber) throws CommandProcessorException {
         // Pass remaining args into helper methods
         switch (command.toLowerCase()) {
             case "create-ledger":
@@ -133,11 +203,25 @@ public class CommandProcessor {
                 validate(command, lineNumber);
                 break;
             default:
+                // was not a Ledger command, return false to try Store Model command
                 return false;
         }
         return true;
     }
 
+    /**
+     * Process a single Store Model Service command.
+     *
+     * @param   authToken                   Authentication token to validate with the service.
+     * @param   command                     The current command to process.
+     * @param   storeObject                 The name of the Store Model object to modify/create.
+     * @param   id                          The storeObject identifier.
+     * @param   args                        The remaining args in the command line.
+     * @param   lineNumber                  The current line number in the file.
+     * @throws  CommandProcessorException   If there is a problem reading or
+     *                                      processing the command line received
+     *                                      from the input file.
+     */
     private void processStoreModelCommand(String authToken, String command, String storeObject, String id, List<String> args, Integer lineNumber) throws CommandProcessorException{
         // Pass remaining args into helper methods
         try {
@@ -172,65 +256,6 @@ public class CommandProcessor {
         } catch (StoreModelServiceException e) {
             System.err.println(e);
         }
-    }
-
-    /**
-     * Process a single command.
-     *
-     * Output of the command is formatted and displayed to stdout. Any
-     * StoreModelServiceExceptions are caught with their contents output to stderr.
-     * Problems with the commands written from the file, missing arguments, or
-     * others, will throw a CommandProcessorException.
-     *
-     * @param   commandLine                 The current command line from the
-     *                                      input file.
-     * @param   lineNumber                  The current line number in the file.
-     * @throws  CommandProcessorException   If there is a problem reading or
-     *                                      processing the command line received
-     *                                      from the input file.
-     */
-    public void processCommand(String commandLine, Integer lineNumber) throws CommandProcessorException {
-        // StoreModelService instance needs to be created to run commands
-        if (this.storeControllerService == null) {
-            throw new CommandProcessorException("command", "StoreControllerService has not been initialized.", lineNumber);
-        }
-
-        // Break command line into a list of arguments
-        List<String> args = parseCommand(commandLine);
-
-        // Key syntax variable
-        String command = null;
-
-        try {
-            // First argument is the command to run
-            command = args.remove(0);
-        } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
-        }
-
-        if ( processLedgerCommand(command, args, lineNumber) ) {
-            return;
-        }
-
-        // Key syntax variables
-        String storeObject = null;
-        String id = null;
-        String authToken = "authToken is part of Assignment 4";
-
-
-        try {
-            // Second argument is the object (Store, Aisle, etc.)
-            storeObject = args.remove(0);
-
-            // Third argument is the identifier (storeId, aisleId, etc.)
-            id = args.remove(0);
-        } catch (IndexOutOfBoundsException e) {
-            throw new CommandProcessorException(commandLine, "Missing arguments.", lineNumber);
-        }
-
-        processStoreModelCommand(authToken, command, storeObject, id, args, lineNumber);
-
-        return;
     }
 
     /**
@@ -769,10 +794,12 @@ public class CommandProcessor {
         String[] keys = {"name", "description", "size", "category", "unit_price", "temperature"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
 
-        // Validate unit_price argument
+        // Validate unit_price and size arguments
         Integer unitPrice = null;
+        Double size = null;
         try {
             unitPrice = Integer.parseInt(entityInfo.get("unit_price"));
+            size =  Double.parseDouble(entityInfo.get("size"));
         } catch (NumberFormatException e) {
             throw new CommandProcessorException(command, "Unit price is not a valid Integer.");
         }
@@ -783,7 +810,7 @@ public class CommandProcessor {
                 productId,
                 entityInfo.get("name"),
                 entityInfo.get("description"),
-                entityInfo.get("size"),
+                size,
                 entityInfo.get("category"),
                 unitPrice,
                 (Temperature) getEnum(Temperature.values(), entityInfo.get("temperature"))
@@ -1647,9 +1674,6 @@ public class CommandProcessor {
         System.out.println("Blockchain successfully validated.");
         return;
     }
-
-
-
 
     /**
      * Helper method to convert String into Enum type.

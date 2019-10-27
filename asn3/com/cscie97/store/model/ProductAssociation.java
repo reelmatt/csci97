@@ -48,6 +48,11 @@ public class ProductAssociation {
         return this.product.getUnitPrice() * this.count;
     }
 
+    /** Returns the weight of the Product. */
+    public Double getSize() {
+        return this.product.getSize() * this.count;
+    }
+
     /** Returns the current count of Product. */
     public Integer getCount() {
         return this.count;

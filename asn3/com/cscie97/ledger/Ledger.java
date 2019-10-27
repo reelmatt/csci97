@@ -27,7 +27,7 @@ public class Ledger {
     private String seed;
 
     /** Number of Transactions allowed per Block. */
-    private static final Integer TRANSACTIONS_PER_BLOCK = 10;
+    private static final Integer TRANSACTIONS_PER_BLOCK = 1;
 
     /** The minimum allowed fee for any transaction. */
     private static final Integer MIN_FEE = 10;
@@ -268,6 +268,11 @@ public class Ledger {
 
     }
 
+    /** Returns the minimum fee required for each transaction. */
+    public static Integer getMinFee() {
+        return MIN_FEE;
+    }
+
     /**
      * Check all commited Blocks for Transaction with given 'transactionId'.
      *
@@ -291,6 +296,12 @@ public class Ledger {
         }
 
         throw new LedgerException("get transaction", "Transaction " + transactionId + " does not exist.");
+    }
+
+    public String nextTransactionId() {
+        Integer blocks = this.blockMap.size();
+        Integer transactions = blocks * TRANSACTIONS_PER_BLOCK + this.currentBlock.getNumberOfTransactions();
+        return String.valueOf(transactions + 1);
     }
 
     /**

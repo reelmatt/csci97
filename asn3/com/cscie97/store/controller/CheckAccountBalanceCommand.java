@@ -27,24 +27,36 @@ public class CheckAccountBalanceCommand extends AbstractCommand {
         this.customer = customer;
     }
 
-    public void execute() {
+    public void execute() throws StoreControllerServiceException {
         try {
             Integer basketTotal = this.customer.calculateBasketTotal();
 
             if (basketTotal < 0) {
-                throw new StoreControllerServiceException("check account balance", this.customer.customerName() + " does not have a basket.");
+                throw new StoreControllerServiceException(
+                    "check account balance",
+                    this.customer.customerName() + " does not have a basket."
+                );
             } else {
                 System.out.println(this.customer.customerName() + " basket total is " + basketTotal);
             }
 
+            Integer minFee = this.ledger.getMinFee();
             Integer accountBalance = this.ledger.getAccountBalance(this.customer.getAccountAddress());
 
-            String message;
-            if (basketTotal < accountBalance) {
-                message = "Total value of basket items is " + basketTotal + " which is less than your account balance of " + accountBalance;
+            String balanceCheck;
+            if (basketTotal + minFee < accountBalance) {
+                balanceCheck = "less";
             } else {
-                message = "Total value of basket items is " + basketTotal + " which is more than your account balance of " + accountBalance;
+                balanceCheck = "more";
             }
+
+            String message = String.format(
+                    "Total value of basket items (and %d unit fee) is %d, which is %s than your account balance of %d",
+                    minFee,
+                    basketTotal + minFee,
+                    balanceCheck,
+                    accountBalance
+            );
 
             Appliance speaker = super.getOneAppliance(ApplianceType.SPEAKER);
             super.sendCommand(speaker, message);

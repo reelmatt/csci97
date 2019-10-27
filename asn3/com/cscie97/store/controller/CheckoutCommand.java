@@ -3,6 +3,10 @@ package com.cscie97.store.controller;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.Appliance;
 import com.cscie97.store.model.Customer;
+import com.cscie97.ledger.Ledger;
+import com.cscie97.ledger.Transaction;
+import com.cscie97.ledger.Account;
+import com.cscie97.ledger.LedgerException;
 import com.cscie97.store.model.StoreModelServiceInterface;
 import com.cscie97.store.model.ApplianceType;
 import com.cscie97.store.model.StoreModelServiceException;
@@ -17,13 +21,16 @@ import java.util.ArrayList;
 public class CheckoutCommand extends AbstractCommand {
     private Customer customer;
 
-    public CheckoutCommand(String authToken, StoreModelServiceInterface storeModel, Device source, Customer customer) {
+    private Ledger ledger;
+
+    public CheckoutCommand(String authToken, StoreModelServiceInterface storeModel, Ledger ledger, Device source, Customer customer) {
         super(authToken, storeModel, source);
         this.customer = customer;
+        this.ledger = ledger;
     }
 
 
-    public void execute() {
+    public void execute() throws StoreControllerServiceException{
         try {
             Integer basketTotal = this.customer.calculateBasketTotal();
 
@@ -33,14 +40,40 @@ public class CheckoutCommand extends AbstractCommand {
                 System.out.println(this.customer.customerName() + " basket total is " + basketTotal);
             }
 
+            Integer minFee = this.ledger.getMinFee();
             Integer accountBalance = this.ledger.getAccountBalance(this.customer.getAccountAddress());
 
-            if (basketTotal > accountBalance) {
-                throw new StoreControllerServiceException("checkout", "The basket total exceeds your account balance. Please remove some items.");
+            if (basketTotal + minFee > accountBalance) {
+                throw new StoreControllerServiceException(
+                    "checkout",
+                    "The basket total (with fee) exceeds your account balance. Please remove some items."
+                );
+            }
+
+
+            Account payer = this.ledger.getExistingAccount(this.customer.getAccountAddress());
+            Account receiver = this.ledger.getExistingAccount("master");
+
+            String nextTransaction = this.ledger.nextTransactionId();
+
+            Transaction transaction = new Transaction(nextTransaction, basketTotal, minFee, "tets transaction", payer, receiver);
+
+            String transactionId = this.ledger.processTransaction(transaction);
+
+            System.out.println("Processed transaction #" + transactionId);
+
+
+            // Assist Customer to Car command
+            Double basketWeight = this.customer.calculateBasketWeight();
+            if (basketWeight > 10.0) {
+                Appliance robot = super.getOneAppliance(ApplianceType.ROBOT);
+                super.sendCommand(robot, "Basket weighs " + basketWeight + " lbs. Assist customer " + this.customer.customerName() + " to car");
             }
 
 
 
+            super.sendCommand(super.getSource().getId(), "Open");
+            String message = "Goodbye " + this.customer.customerName() + ", thanks for shopping!";
             Appliance speaker = super.getOneAppliance(ApplianceType.SPEAKER);
             super.sendCommand(speaker, message);
 
@@ -50,8 +83,6 @@ public class CheckoutCommand extends AbstractCommand {
         } catch (StoreModelServiceException e) {
             System.err.println(e);
         }
-
-        return;
 
 
         return;

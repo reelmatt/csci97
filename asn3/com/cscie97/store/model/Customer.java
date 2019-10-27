@@ -138,10 +138,20 @@ public class Customer {
         return this.firstName + " " + this.lastName;
     }
 
+    /** Returns the Customer's first name. */
+    public String getFirstName() {
+        return firstName;
+    }
+
+    /** Returns the Customer's last name. */
+    public String getLastName() {
+        return lastName;
+    }
+
     /** toString() helper method to output Customer's current location. */
     public String customerLocation() {
         String location = "Currently located @ ";
-        location += (this.store == null) ? "N/a" : this.store.getName();
+        location += (this.store == null) ? "N/a" : this.store.getName() + ", ";
         location += (this.aisle == null) ? "" : this.aisle.getId();
         return location;
     }
@@ -160,6 +170,23 @@ public class Customer {
         }
 
         return cost;
+    }
+
+    public Double calculateBasketWeight() {
+        if (this.basket == null) {
+            return -1.0;
+        }
+
+        List<ProductAssociation> items = this.basket.getBasketItems();
+
+        Double weight = 0.0;
+
+        for (ProductAssociation item : items) {
+            weight += item.getSize();
+        }
+
+        return weight;
+
     }
 
     public String getAccountAddress() {

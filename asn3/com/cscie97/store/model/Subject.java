@@ -6,8 +6,22 @@ package com.cscie97.store.model;
  * @author Matthew Thomas
  */
 public interface Subject {
-
+    /**
+     *
+     * @param observer
+     */
     public void register(Observer observer);
+
+    /**
+     *
+     * @param observer
+     */
     public void deregister(Observer observer);
+
+    /**
+     *
+     * @param device
+     * @param event
+     */
     public void notifyObservers(Device device, String event);
 }

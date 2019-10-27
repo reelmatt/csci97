@@ -21,8 +21,8 @@ public class Product {
     /** Description of the Product (e.g. Carbonated soft drink). */
     private String description;
 
-    /** Size of the product, either weight/volume (e.g. 12 fluid ounces). */
-    private String size;
+    /** Size of the product, weight of the product, in pounds. */
+    private Double size;
 
     /** Product category (e.g. Beverage). */
     private String category;
@@ -44,7 +44,7 @@ public class Product {
      * @param id            The Product identifier (aka SKU).
      * @param name          Name of the Product.
      * @param description   Description of the Product.
-     * @param size          Size (weight/volume).
+     * @param size          Size (weight, in lbs).
      * @param category      Product category.
      * @param price         Unit price.
      * @param temperature   Temperature the Product is stored at.
@@ -52,7 +52,7 @@ public class Product {
     public Product (String id,
                     String name,
                     String description,
-                    String size,
+                    Double size,
                     String category,
                     Integer price,
                     Temperature temperature) {
@@ -85,6 +85,11 @@ public class Product {
         return temperature;
     }
 
+    /** Returns the size of the product (weight in lbs). */
+    public Double getSize() {
+        return size;
+    }
+
     /**
      * Override default toString method.
      *
@@ -96,7 +101,7 @@ public class Product {
 
         product = String.format("Product '%s': %s\n", this.id, this.name);
         product += String.format("\t Description: %s\n", this.description);
-        product += String.format("\t Size: %s\n", this.size);
+        product += String.format("\t Size: %f lbs\n", this.size);
         product += String.format("\t Category: %s\n", this.category);
         product += String.format("\t Unit Price: %d\n", this.unitPrice);
         product += String.format("\t Temperature: %s\n", this.temperature);

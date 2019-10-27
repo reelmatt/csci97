@@ -48,7 +48,7 @@ public class Block implements Serializable {
     private static final int MAX_ACCOUNT_BALANCE = Integer.MAX_VALUE;
 
     /** Number of Transactions allowed per Block. */
-    private static final int TRANSACTIONS_PER_BLOCK = 10;
+    private static final int TRANSACTIONS_PER_BLOCK = 1;
 
     /**
      * Block Constructor
@@ -99,6 +99,11 @@ public class Block implements Serializable {
     /** Returns the hash of the previous block. */
     public String getPreviousHash() {
         return this.previousHash;
+    }
+
+    /** Returns the number of transactions. */
+    public Integer getNumberOfTransactions() {
+        return this.transactionList.size();
     }
 
     /** Returns the list of transactions. */

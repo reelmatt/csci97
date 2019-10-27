@@ -25,7 +25,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /** A list of Observers to notify of events. */
     private List<Observer> observerList;
 
-    /** Constants for accessing location IDs -- to rethink?? */
+    /** Constants for accessing location IDs */
     private static final Integer STORE = 0;
     private static final Integer AISLE = 1;
     private static final Integer SHELF = 2;
@@ -169,6 +169,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
             );
         }
 
+        // Check a full name is provided
         if (firstName == null || lastName == null) {
             throw new StoreModelServiceException(
                 "define customer",
@@ -304,18 +305,23 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                  String productId,
                                  String name,
                                  String description,
-                                 String size,
+                                 Double size,
                                  String category,
                                  Integer price,
                                  Temperature temperature) throws StoreModelServiceException {
         // All Product information must be present
-        if (productId == null || name == null || description == null || size == null || category == null) {
+        if (productId == null || name == null || description == null || category == null) {
             throw new StoreModelServiceException("define product", "Required product information is missing.");
         }
 
         // Validate price value
         if (price < 0) {
             throw new StoreModelServiceException("define product", "Product price is invalid.");
+        }
+
+        // Validate price size
+        if (size < 0) {
+            throw new StoreModelServiceException("define product", "Product size must have positive weight.");
         }
 
         // Check if a product already exists
@@ -490,6 +496,33 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
         }
 
         return customer;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Customer getCustomerByName(String authToken,
+                                      String storeId,
+                                      String name) throws StoreModelServiceException {
+
+        Customer customerFound = null;
+        List<Customer> customers = getStoreCustomers(authToken, storeId);
+
+        for (Customer customer : customers) {
+            String nameToCheck = customer.customerName().toLowerCase();
+            if (nameToCheck.equals(name)) {
+                return customer;
+            }
+        }
+
+        if (customerFound == null) {
+            throw new StoreModelServiceException(
+                    "get customer by name",
+                    String.format("A Customer with name '%s' is not located in store %s.", name, storeId)
+            );
+        }
+
+        return customerFound;
     }
 
     /**
@@ -670,7 +703,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
 
         Device device = getDevice(authToken, deviceId);
 
-        // Print event
+        // Log event
         System.out.println("Device '" + deviceId + "' emitted event: " + event);
 
         // Notify observers
@@ -864,6 +897,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     private String[] parseLocationIdentifier(String location) {
         return location.split(":");
     }
+
 
     public void register(Observer observer) {
         if (observer != null) {
