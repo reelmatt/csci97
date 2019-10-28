@@ -9,15 +9,19 @@ import com.cscie97.ledger.LedgerException;
 import com.cscie97.store.model.Aisle;
 import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Device;
+import com.cscie97.store.model.Inventory;
 import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.Product;
 import com.cscie97.store.model.Shelf;
-import com.cscie97.store.model.StoreModelServiceInterface;
 import com.cscie97.store.model.StoreModelService;
 import com.cscie97.store.model.StoreModelServiceException;
+import com.cscie97.store.model.StoreModelServiceInterface;
 
 /**
- * CommandFactory.
+ * A CommandFactory works in conjuction with a StoreModelServiceInterface and a
+ * Ledger to parse Store events and generate Commands to run sets of actions. The
+ * Factory is run in a StoreControllerService and is invoked anytime the Observer
+ * is notified of an event by the Subject (StoreModelServiceInterface).
  *
  * @author Matthew Thomas
  */
@@ -45,15 +49,23 @@ public class CommandFactory {
     /**
      * Parse an event and create a corresponding Command.
      *
-     * @param   authToken                       Token to authenticate with StoreModel API
-     * @param   event                           Event created by a store Device
+     * The event is parsed and checked against a list of known 'eventCommands'.
+     * If recognized, a helper method is called that handles retrieving necessary
+     * store objects from event parameters.
+     *
+     * @param   authToken                       Token to authenticate with StoreModel API.
+     * @param   event                           Event message created by a store Device.
      * @param   device                          The Device which detected the event.
      * @return                                  The Command to be executed.
      * @throws  StoreControllerServiceException If a Command is not recognized, or a
      *                                          different Exception is thrown while creating
-     *                                          the Command.
+     *                                          the Command (such as missing parameters).
      */
-    public Command createCommand(String authToken, String event, Device device) throws StoreControllerServiceException {
+    public Command createCommand(String authToken, String event, Device device)
+            throws StoreControllerServiceException {
+        // Standardize event as lower case
+//        String event = message.toLowerCase();
+
         // Break stimulus into a list of arguments
         List<String> eventArgs = parseCommand(event);
 
@@ -66,7 +78,8 @@ public class CommandFactory {
             eventCommand = eventArgs.remove(0);
 
             // Second argument is often an id (customer, product)
-            // Natural language commands check full event for substring, so OK to remove from parse list
+            // Natural language commands check full event for substring, so OK
+            // to remove from parse list
             id = eventArgs.remove(0);
         } catch (IndexOutOfBoundsException e) {
             throw new StoreControllerServiceException(event, "Missing arguments.");
@@ -79,167 +92,348 @@ public class CommandFactory {
         try {
             switch (eventCommand.toLowerCase()) {
                 case "customer":
-                    storeCommand = createCustomerCommand(authToken, this.storeModel, this.ledger, device, event, eventArgs, id);
+                    storeCommand = createCustomerCommand(
+                        authToken,
+                        this.storeModel,
+                        this.ledger,
+                        device,
+                        event,
+                        eventArgs,
+                        id
+                    );
                     break;
                 case "emergency":
-                    storeCommand = createEmergencyCommand(authToken, this.storeModel, device, eventArgs, id);
+                    storeCommand = createEmergencyCommand(
+                        authToken,
+                        this.storeModel,
+                        device,
+                        eventArgs,
+                        id
+                    );
                     break;
                 case "product":
-                    storeCommand = createCleaningCommand(authToken, this.storeModel, device, eventArgs, id);
+                    storeCommand = createProductCommand(
+                        authToken,
+                        this.storeModel,
+                        device,
+                        event,
+                        eventArgs,
+                        id
+                    );
                     break;
                 case "can":
                 case "sound":
-                    // check for natural language requests via microphones, starting with 'can' or 'sound'
-                    storeCommand = createMicrophoneCommand(authToken, storeModel, device, event, eventArgs);
+                    // check for natural language requests via microphones
+                    // requests start with 'can' or 'sound'
+                    storeCommand = createMicrophoneCommand(
+                        authToken,
+                        storeModel,
+                        device,
+                        event,
+                        eventArgs
+                    );
                     break;
                 default:
                     throw new StoreControllerServiceException(event, "Unknown event");
             }
         } catch (IndexOutOfBoundsException e) {
             throw new StoreControllerServiceException(event, "Missing arguments.");
-        } catch (StoreModelServiceException e) {
-            throw new StoreControllerServiceException("create command", e.toString());
         }
 
         return storeCommand;
     }
 
+
     /**
-     * Creates a CleaningCommand object.
+     * Creates a Command referring to a Customer.
      *
-     * Extracts Product and Aisle information from event to pass in to Constructor.
+     * All Customer commands contain a customer in the event message. The
+     * corresponding Customer object is retrieved from the Store Model Service
+     * and the remaining event message is parsed.
+     *
+     * Customer requests, including the keyword 'says', are handled by the
+     * createCustomerRequestCommand() method. The following Commands are
+     * recognized by this method:
+     *
+     * BasketEventCommand which has an event string formatted as:
+     *      customer <customer> (adds | removes) <product> from <aisle>:<shelf>
+     *
+     * CustomerSeenCommand
+     *      customer <customer> enters <aisle>
+     *
+     * AssistCustomerCommand
+     *      customer <customer> assistance
+     *
+     * CheckoutCommand
+     *      customer <customer> approaches turnstile
+     *
+     * EnterStoreCommand
+     *      customer <customer> waiting to enter
+     *
      *
      * @param   authToken                       Token to authenticate with StoreModel API
      * @param   storeModel                      StoreModel to get/update state.
+     * @param   ledger                          Ledger to use for transactions.
      * @param   device                          The Device which detected the event.
+     * @param   event                           The full event message emitted by the Device.
      * @param   eventArgs                       The remaining arguments in the parsed event.
-     * @param   productId                       The Product id.
+     * @param   customerId                      The Customer id.
      * @return                                  The Command to be executed.
-     * @throws StoreModelServiceException       If a Product or Aisle does not exist with given IDs.
-     * @throws StoreControllerServiceException  If parameters are missing in the event.
+     * @throws StoreControllerServiceException  If parameters are missing in the event, or
+     *                                          an exception with retrieving Store Model objects.
      */
-    private Command createCleaningCommand(String authToken,
-                                           StoreModelServiceInterface storeModel,
-                                           Device device,
-                                           List<String> eventArgs,
-                                           String productId)
-            throws StoreControllerServiceException, StoreModelServiceException {
-        // Retrieve the product referenced
-        Product product = this.storeModel.getProduct(authToken, productId);
-
-        // Get the Aisle ID
-        String aisleId;
-        try {
-            aisleId = eventArgs.get(2);
-        } catch (IndexOutOfBoundsException e) {
-            throw new StoreControllerServiceException("create cleaning command", "missing Aisle ID");
-        }
-
-        // Retrieve the Aisle referenced
-        Aisle aisle = this.storeModel.getAisle(authToken, aisleId);
-
-        // Create the command
-        return new CleaningCommand(authToken, storeModel, device, product, aisle);
-    }
-
     private Command createCustomerCommand(String authToken,
                                          StoreModelServiceInterface storeModel,
                                          Ledger ledger,
                                          Device device,
                                          String event,
                                          List<String> eventArgs,
-                                         String customerId) throws StoreControllerServiceException {
-        Command command = null;
-
-        String action;
-
+                                         String customerId)
+            throws StoreControllerServiceException {
         try {
-            action = eventArgs.remove(0);
-
-            Aisle aisle;
+            // Retrieve the Customer
             Customer customer = this.storeModel.getCustomer(authToken, customerId);
 
+            // Extract the next keyword from the event message
+            String action = eventArgs.remove(0);
+
+            // Check against known events
             switch (action.toLowerCase()) {
                 case "adds":
                 case "removes":
+                    // Retrieve the Product
                     Product product = this.storeModel.getProduct(authToken, eventArgs.get(0));
+
+                    // Event contains <aisle>:<shelf> id, the <store> id needs to be prepended
                     String locationId = device.getStore() + ":" + eventArgs.get(2);
                     Shelf shelf = this.storeModel.getShelf(authToken, locationId);
-                    command = new BasketEventCommand(authToken, storeModel, device, customer, product, shelf, action, locationId);
-                    break;
+                    return new BasketEventCommand(authToken, storeModel, device, customer, product, shelf, action, locationId);
                 case "enters":
-                    aisle = this.storeModel.getAisle(authToken, device.getStore() + ":" + eventArgs.get(0));
-                    command = new CustomerSeenCommand(authToken, storeModel, device, customer, aisle);
-                    break;
+                    // Construct fully qualified aisle location
+                    String aisleLocation = device.getStore() + ":" + eventArgs.get(0);
+                    Aisle aisle = this.storeModel.getAisle(authToken, aisleLocation);
+                    return new CustomerSeenCommand(authToken, storeModel, device, customer, aisle);
                 case "says":
-                    command = createCustomerRequestCommand(authToken, storeModel, device, event, eventArgs, customer);
-                    break;
+                    return createCustomerRequestCommand(authToken, storeModel, device, event, eventArgs, customer);
+                case "assistance":
+                    return new AssistCustomerCommand(authToken, storeModel, device, customer);
                 case "approaches":
-                    command = new CheckoutCommand(authToken, storeModel, this.ledger, device, customer);
-                    break;
+                    return new CheckoutCommand(authToken, storeModel, this.ledger, device, customer);
                 case "waiting":
-                    command = new EnterStoreCommand(device, storeModel, ledger, customerId);
-                    break;
+                    return new EnterStoreCommand(authToken, storeModel, this.ledger, device, customerId);
                 default:
                     throw new StoreControllerServiceException(event, "Unknown event");
             }
+        } catch (IndexOutOfBoundsException e) {
+            throw new StoreControllerServiceException(event, "Missing event parameters.");
         } catch (StoreModelServiceException e) {
-            throw new StoreControllerServiceException("create command", e.toString());
+            throw new StoreControllerServiceException(event, e.getReason());
         }
-        return command;
     }
 
+    /**
+     * Creates a Command referring to a Customer request.
+     *
+     * There are two customer request commands, CheckAccountBalanceCommand and
+     * FetchProductCommand. A Customer is obtained via the createCustomerCommand()
+     * method and passed to this createCustomerRequestCommand() method for all events
+     * that include "says" in the message.
+     *
+     * CheckAccountBalanceCommand has an expected event string formatted as:
+     *      customer <customer> says 'what is the total basket value'
+     *
+     * FetchProductCommand has an expected event string formatted as:
+     *      customer <customer> says please get me <number> of <product>
+     *
+     * @param   authToken                       Token to authenticate with StoreModel API
+     * @param   storeModel                      StoreModel to get/update state.
+     * @param   device                          The Device which detected the event.
+     * @param   event                           The full event message emitted by the Device.
+     * @param   eventArgs                       The remaining arguments in the parsed event.
+     * @param   customer                        The Customer object referenced in the request.
+     * @return                                  The Command to be executed.
+     * @throws StoreControllerServiceException  If parameters are missing in the event, or
+     *                                          an exception with retrieving Store Model objects.
+     */
     private Command createCustomerRequestCommand(String authToken,
                                                  StoreModelServiceInterface storeModel,
                                                  Device device,
                                                  String event,
                                                  List<String> eventArgs,
                                                  Customer customer)
-            throws StoreControllerServiceException, StoreModelServiceException {
-        Command command = null;
+            throws StoreControllerServiceException {
+        try {
+            if (event.toLowerCase().contains("what is the total basket value")) {
+                return new CheckAccountBalanceCommand(authToken, storeModel, device, this.ledger, customer);
+            } else if (event.toLowerCase().contains("please get me ")) {
+                // Retrieve the amount
+                Integer amount = Integer.parseInt(eventArgs.get(3));
 
-        if (event.toLowerCase().contains("please get me ")) {
-            Integer amount = Integer.parseInt(eventArgs.get(3));
-            Product product = this.storeModel.getProduct(authToken, eventArgs.get(5));
-            command = new FetchProductCommand(authToken, storeModel, device, customer, amount, product);
-        } else if (event.toLowerCase().contains("what is the total basket value")) {
-            command = new CheckAccountBalanceCommand(authToken, storeModel, device, this.ledger, customer);
-        } else {
-            throw new StoreControllerServiceException(event, "Unknown event");
+                // Retrieve the Product
+                Product product = this.storeModel.getProduct(authToken, eventArgs.get(5));
+                return new FetchProductCommand(authToken, storeModel, device, customer, amount, product);
+            } else {
+                throw new StoreControllerServiceException(event, "Unknown event");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new StoreControllerServiceException(event, "Missing event parameters.");
+        } catch (NumberFormatException e) {
+            throw new StoreControllerServiceException(event, "Amount must be a valid Integer.");
+        } catch (StoreModelServiceException e) {
+            throw new StoreControllerServiceException(event, e.toString());
         }
-
-        return command;
     }
 
+    /**
+     * Create EmergencyCommand.
+     *
+     * Expected event string to be formatted as:
+     *      emergency <emergency> in <aisle>
+     *
+     * The <emergency> type is extracted in the createCommand() method. This
+     * method retrieve the <aisle> id from the remaining eventArgs and assembles
+     * the fully qualified aisle ID (of form <store>:<aisle>) to retrieve the
+     * Aisle object from the Store Model.
+     *
+     * @param   authToken                       Token to authenticate with StoreModel API
+     * @param   storeModel                      StoreModel to get/update state.
+     * @param   device                          The Device which detected the event.
+     * @param   eventArgs                       The remaining arguments in the parsed event.
+     * @param   emergency                       The type of emergency reported.
+     * @return                                  The Command to be executed.
+     * @throws StoreControllerServiceException  If parameters are missing in the event, or
+     *                                          an exception with retrieving Store Model objects.
+     */
     private Command createEmergencyCommand(String authToken,
                                            StoreModelServiceInterface storeModel,
                                            Device device,
                                            List<String> eventArgs,
                                            String emergency)
-            throws StoreControllerServiceException, StoreModelServiceException {
-        Aisle aisle = this.storeModel.getAisle(authToken, device.getStore() + ":" + eventArgs.get(1));
-        return new EmergencyCommand(authToken, this.storeModel, device, emergency, aisle);
+            throws StoreControllerServiceException {
+        try {
+            // Construct fully qualified aisle location
+            String aisleLocation = device.getStore() + ":" + eventArgs.get(1);
+            Aisle aisle = this.storeModel.getAisle(authToken, aisleLocation);
+            return new EmergencyCommand(authToken, this.storeModel, device, emergency, aisle);
+        } catch (IndexOutOfBoundsException e) {
+            throw new StoreControllerServiceException("emergency event", "Missing aisle location.");
+        } catch (StoreModelServiceException e) {
+            throw new StoreControllerServiceException("emergency event", e.getReason());
+        }
     }
 
+    /**
+     * Creates a Command referring to a Microphone request.
+     *
+     * There are two 'natural language' requests emitted by a microphone, the
+     * BrokenGlassCommand and MissingPersonCommand.
+     *
+     * BrokenGlassCommand has an expected event string formatted as:
+     *      sound of breaking glass in <aisle>
+     *
+     * If a broken glass event, 'sound' and 'of' are removed from the eventArgs
+     * during parsing, leaving the aisle ID at index 3. The fully qualified
+     * aisle location (of form <store>:<aisle>) is constructed to retrieve the
+     * Aisle object from the Store Model.
+     *
+     * MissingPersonCommand has an expected event string formatted as:
+     *      can you help me find <customer name>
+     *
+     * If a missing person event, 'can' and 'you' are removed from the eventArgs
+     * during parsing, leaving the customer name at index 3. The Command accepts
+     * a customer name as either their ID, or full name structure as "first last".
+     *
+     * @param   authToken                       Token to authenticate with StoreModel API
+     * @param   storeModel                      StoreModel to get/update state.
+     * @param   device                          The Device which detected the event.
+     * @param   event                           The full event message emitted by the Device.
+     * @param   eventArgs                       The remaining arguments in the parsed event.
+     * @return                                  The Command to be executed.
+     * @throws StoreControllerServiceException  If parameters are missing in the event, or
+     *                                          an exception with retrieving Store Model objects.
+     */
     private Command createMicrophoneCommand(String authToken,
                                             StoreModelServiceInterface storeModel,
                                             Device device,
                                             String event,
                                             List<String> eventArgs)
-            throws StoreControllerServiceException, StoreModelServiceException {
-        Command command = null;
-
-        if (event.toLowerCase().contains("can you help me find")) {
-            String customerName = eventArgs.get(3);
-            command = new MissingPersonCommand(authToken, storeModel, device, customerName);
-        } else if (event.toLowerCase().contains("sound of breaking glass")) {
-            Aisle aisle = this.storeModel.getAisle(authToken, device.getStore() + ":" + eventArgs.get(3));
-            command = new BrokenGlassCommand(authToken, storeModel, device, aisle);
-        } else {
-            throw new StoreControllerServiceException("mic event", "Unknown command.");
+            throws StoreControllerServiceException {
+        try {
+            if (event.toLowerCase().contains("sound of breaking glass")) {
+                // Construct fully qualified aisle location
+                String aisleLocation = device.getStore() + ":" + eventArgs.get(3);
+                Aisle aisle = this.storeModel.getAisle(authToken, aisleLocation);
+                return new BrokenGlassCommand(authToken, storeModel, device, aisle);
+            } else if (event.toLowerCase().contains("can you help me find")) {
+                String customerName = eventArgs.get(3);
+                return new MissingPersonCommand(authToken, storeModel, device, customerName);
+            } else {
+                throw new StoreControllerServiceException(event, "Unknown command.");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new StoreControllerServiceException(event, "Missing event parameters.");
+        } catch (StoreModelServiceException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
         }
+    }
 
-        return command;
+    /**
+     * Creates a Command referring to a Product.
+     *
+     * There are two Product commands, the CleaningCommand and RestockCommand.
+     *
+     * CleaningCommand has an expected event string formatted as:
+     *      product <product> on floor <store>:<aisle>
+     *
+     * RestockCommand has an expected event string formatted as:
+     *      product <product> inventory <inventory> restock
+     *
+     * The <product> id for both Commands is extracted in the createCommand()
+     * method. The CleaningCommand event contains the fully qualified Aisle ID
+     * and the RestockCommand contains an <inventory> id, that are extracted
+     * and have their corresponding Store objects passed in to the Command
+     * constructor.
+     *
+     * @param   authToken                       Token to authenticate with StoreModel API
+     * @param   storeModel                      StoreModel to get/update state.
+     * @param   device                          The Device which detected the event.
+     * @param   event                           The full event message emitted by the Device.
+     * @param   eventArgs                       The remaining arguments in the parsed event.
+     * @param   productId                       The Product id.
+     * @return                                  The Command to be executed.
+     * @throws StoreControllerServiceException  If parameters are missing in the event, or
+     *                                          an exception with retrieving Store Model objects.
+     */
+    private Command createProductCommand(String authToken,
+                                          StoreModelServiceInterface storeModel,
+                                          Device device,
+                                          String event,
+                                          List<String> eventArgs,
+                                          String productId)
+            throws StoreControllerServiceException {
+        try {
+            // Retrieve the product referenced
+            Product product = this.storeModel.getProduct(authToken, productId);
+
+            if (event.toLowerCase().contains("on floor")) {
+                // Retrieve the Aisle referenced
+                Aisle aisle = this.storeModel.getAisle(authToken, eventArgs.get(2));
+                return new CleaningCommand(authToken, storeModel, device, product, aisle);
+            } else if (event.toLowerCase().contains("restock")) {
+                // Retrieve the Inventory location
+                String inventoryLocation = eventArgs.get(1);
+
+                // Retrieve the Inventory object
+                Inventory inventory = this.storeModel.getInventory(authToken, inventoryLocation);
+                return new RestockCommand(authToken, storeModel, device, product, inventory, inventoryLocation);
+            } else {
+                throw new StoreControllerServiceException(event, "Unknown command.");
+            }
+        } catch (IndexOutOfBoundsException e) {
+            throw new StoreControllerServiceException(event, "Missing event parameters.");
+        } catch (StoreModelServiceException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        }
     }
 
 

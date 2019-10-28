@@ -6,7 +6,9 @@ import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.StoreModelServiceInterface;
 
 /**
- * StoreControllerService.
+ * StoreControllerService - concrete class
+ *
+ * {@inheritDoc}
  *
  * @author Matthew Thomas
  */
@@ -67,9 +69,10 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
         return;
     }
 
-    /** Returns the StoreModelService associated with the Controller. */
-    public StoreModelServiceInterface getStoreModel() {
-        return this.storeModel;
+    /** Returns the authentication token from the Controller - forthcoming in
+     * assingment 4. */
+    public String getAuthToken() {
+        return this.authToken;
     }
 
     /** Returns the Ledger associated with the Controller. */
@@ -77,9 +80,8 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
         return this.ledger;
     }
 
-    /** Returns the authentication token from the Controller - forthcoming in
-     * assingment 4. */
-    public String getAuthToken() {
-        return this.authToken;
+    /** Returns the StoreModelService associated with the Controller. */
+    public StoreModelServiceInterface getStoreModel() {
+        return this.storeModel;
     }
 }

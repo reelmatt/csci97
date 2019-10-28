@@ -9,6 +9,8 @@ package com.cscie97.store.model;
  *
  * An Appliance differs from a Sensor, or general Device, in that it can respond
  * to commands and be controlled.
+ *
+ * @author Matthew Thomas
  */
 public class Appliance extends Device {
     /** The type of Appliance. */

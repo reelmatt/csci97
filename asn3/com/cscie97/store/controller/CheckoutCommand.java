@@ -63,11 +63,11 @@ public class CheckoutCommand extends AbstractCommand {
             System.out.println("Processed transaction #" + transactionId);
 
 
-            // Assist Customer to Car command
+            // Check if Customer needs assistance to car
             Double basketWeight = this.customer.calculateBasketWeight();
             if (basketWeight > 10.0) {
-                Appliance robot = super.getOneAppliance(ApplianceType.ROBOT);
-                super.sendCommand(robot, "Basket weighs " + basketWeight + " lbs. Assist customer " + this.customer.customerName() + " to car");
+                String event = String.format("customer %s assistance", this.customer.getId());
+                super.getStoreModel().receiveEvent(super.getAuthToken(), super.getSource().getId(), event);
             }
 
 

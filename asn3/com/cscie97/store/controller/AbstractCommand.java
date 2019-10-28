@@ -48,6 +48,30 @@ public abstract class AbstractCommand implements Command {
     public abstract void execute() throws StoreControllerServiceException;
 
     /**
+     * Retrieve all Appliances of a given type.
+     *
+     * @param   type                        The type of Appliance to retrieve.
+     * @return                              An list of Appliances matching the type.
+     * @throws  StoreModelServiceException  The call to the StoreModel API fails.
+     */
+    public List<Appliance> getAppliances(ApplianceType type) throws StoreModelServiceException {
+        return this.storeModel.getAppliances(this.authToken, type, this.source.getStore());
+    }
+
+    /**
+     * Retrieve a single Appliance of a given type.
+     *
+     * @param   type                        The type of Appliance to retrieve.
+     * @return                              An appliance matching the type.
+     * @throws  StoreModelServiceException  The call to the StoreModel API fails.
+     */
+    public Appliance getOneAppliance(ApplianceType type) throws StoreModelServiceException {
+        List<Appliance> appliances = getAppliances(type);
+
+        return appliances.remove(0);
+    }
+
+    /**
      * Send a command to a list of Appliances.
      *
      * @param   appliances                  The list of appliances to command.
@@ -80,30 +104,6 @@ public abstract class AbstractCommand implements Command {
      */
     public void sendCommand(String applianceId, String commandMessage) throws StoreModelServiceException {
         this.storeModel.receiveCommand(this.authToken, applianceId, commandMessage);
-    }
-
-    /**
-     * Retrieve a single Appliance of a given type.
-     *
-     * @param   type                        The type of Appliance to retrieve.
-     * @return                              An appliance matching the type.
-     * @throws  StoreModelServiceException  The call to the StoreModel API fails.
-     */
-    public Appliance getOneAppliance(ApplianceType type) throws StoreModelServiceException {
-        List<Appliance> appliances = getAppliances(type);
-
-        return appliances.remove(0);
-    }
-
-    /**
-     * Retrieve all Appliances of a given type.
-     *
-     * @param   type                        The type of Appliance to retrieve.
-     * @return                              An list of Appliances matching the type.
-     * @throws  StoreModelServiceException  The call to the StoreModel API fails.
-     */
-    public List<Appliance> getAppliances(ApplianceType type) throws StoreModelServiceException {
-        return this.storeModel.getAppliances(this.authToken, type, this.source.getStore());
     }
 
     /** Returns the authentication token. */

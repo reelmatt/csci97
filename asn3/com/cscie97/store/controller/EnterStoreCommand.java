@@ -28,7 +28,7 @@ public class EnterStoreCommand implements Command {
 
     private Ledger ledger;
 
-    public EnterStoreCommand(Device source, StoreModelServiceInterface storeModel, Ledger ledger, String customerId) throws StoreModelServiceException{
+    public EnterStoreCommand(String authToken, StoreModelServiceInterface storeModel, Ledger ledger,  Device source, String customerId) throws StoreModelServiceException{
         this.source = source;
         this.storeModel = storeModel;
         this.ledger = ledger;

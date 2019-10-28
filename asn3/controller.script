@@ -143,19 +143,19 @@ Validate
 # create event <turnstile> event "customer <customer> waiting to enter at the turnstile <turnstile>"
 ################################################################################
 
-create event turn_a1 event "customer cust_1 waiting to enter at the turnstile turn_a1"
+create event turn_a1 event "customer cust_1 waiting to enter"
 
-create event turn_a2 event "customer cust_2 waiting to enter at the turnstile turn_a2"
+create event turn_a2 event "customer cust_2 waiting to enter"
 
-create event turn_a3 event "customer cust_3 waiting to enter at the turnstile turn_a3"
+create event turn_a3 event "customer cust_3 waiting to enter"
 
-create event turn_a1 event "customer cust_4 waiting to enter at the turnstile turn_a1"
+create event turn_a1 event "customer cust_4 waiting to enter"
 
-create event turn_a2 event "customer cust_5 waiting to enter at the turnstile turn_a2"
+create event turn_a2 event "customer cust_5 waiting to enter"
 
-create event turn_a3 event "customer cust_6 waiting to enter at the turnstile turn_a3"
+create event turn_a3 event "customer cust_6 waiting to enter"
 
-create event turn_a1 event "customer cust_7 waiting to enter at the turnstile turn_a1"
+create event turn_a1 event "customer cust_7 waiting to enter"
 
 ################################################################################
 # Customer seen
@@ -200,6 +200,8 @@ create event cam_B2 event "emergency flood in aisle_A1"
 create event cam_A1 event "customer cust_1 adds prod10 from aisle_A1:shelf_q1"
 
 create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q3"
+
+create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q4"
 
 ################################################################################
 # Cleaning Event

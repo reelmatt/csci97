@@ -83,6 +83,20 @@ public class Shelf {
         return this.inventoryList;
     }
 
+    /**
+     * Returns the Inventory on the Shelf which contains the Product.
+     * @param   productId   The product to look search for.
+     */
+    public Inventory getProductInventory(String productId) {
+        for (Inventory inventory : getInventoryList()) {
+            if ( inventory.getProductId().equals(productId) ) {
+                return inventory;
+            }
+        }
+
+        return null;
+    }
+
     /** Returns the Shelf temperature. */
     public Temperature getTemperature() {
         return temperature;

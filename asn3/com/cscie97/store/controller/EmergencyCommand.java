@@ -49,6 +49,9 @@ public class EmergencyCommand extends AbstractCommand {
         this.aisle = aisle;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void execute() {
         try {
             // Open turnstiles
