@@ -24,34 +24,55 @@ this submission.
 # Source code
 + com/cscie97/
     + ledger/
-        +
+        + Account.java
+        + Block.java
+        + Ledger.java
+        + LedgerException.java
+        + Transaction.java
     + store/
         + controller/
-            + 
-            + 
-            + 
+            + AbstractCommand.java
+            + AssistCustomerCommand.java
+            + BasketEventCommand.java
+            + BrokenGlassCommand.java
+            + CheckAccountBalanceCommand.java
+            + CheckoutCommand.java
+            + CleaningCommand.java
+            + Command.java
+            + CommandFactory.java
+            + CommandProcessor.java
+            + CommandProcessorException.java
+            + CustomerSeenCommand.java
+            + EmergencyCommand.java
+            + EnterStoreCommand.java
+            + FetchProductCommand.java
+            + MissingPersonCommand.java
+            + RestockCommand.java
+            + StoreControllerService.java
+        	+ StoreControllerServiceException.java
+            + StoreControllerServiceInterface.java
         + model/
             + Aisle.java
             + Appliance.java
             + ApplianceType.java
             + Basket.java
-            + CommandProcessor.java
-            + CommandProcessorException.java
             + Customer.java
             + CustomerType.java
             + Device.java
             + Inventory.java
             + Level.java
             + Location.java
+            + Observer.java (new in Assignment 3)
             + Product.java
             + ProductAssociation.java
             + Sensor.java
             + SensorType.java
             + Shelf.java
             + Store.java
-            + StoreModelService.java
+            + StoreModelService.java (modified in assignment 3)
             + StoreModelServiceException.java
-            + StoreModelServiceInteface.java
+            + StoreModelServiceInteface.java (modified in assignment 3)
+            + Subject.java (new in Assignment 3)
             + Temperature.java
         + test/
             + TestDriver.java
@@ -61,11 +82,13 @@ this submission.
     + script that mostly test error cases
 + errors.script.out
     + results of running errors.script
-+ store.script
-    + Written by Adaeze Ezeh and provided as part of assignment files. Modified slightly
-    by myself to accomodate command syntax changes.
-+ store.script.out
-    + results of running store.script
++ controller.script
+    + Modified from the store.script file written by Adaeze Ezeh and provided as part 
+    of assignment 2 files. Modified by myself to accomodate command syntax changes (for
+    Store Model Service). All Controller-specific tests were written by me and noted in
+    the test file.
++ controller.script.out
+    + results of running controller.script
 
 # Other files
 + matthew_thomas_asn3_design.pdf        -- My design document

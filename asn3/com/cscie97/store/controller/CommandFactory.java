@@ -271,7 +271,10 @@ public class CommandFactory {
 
                 // Retrieve the Product
                 Product product = this.storeModel.getProduct(authToken, eventArgs.get(5));
-                return new FetchProductCommand(authToken, storeModel, device, customer, amount, product);
+
+                // Retrieve location
+                String location = eventArgs.get(7);
+                return new FetchProductCommand(authToken, storeModel, device, customer, amount, product, location);
             } else {
                 throw new StoreControllerServiceException(event, "Unknown event");
             }

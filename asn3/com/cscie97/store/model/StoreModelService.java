@@ -870,6 +870,16 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
 
     }
 
+    /**
+     * Construct a list of Devices currently located in the Store specified by
+     * 'storeId' and that match the given ApplianceType.
+     *
+     * @param   authToken   Authentication token to validate with the service.
+     * @param   type        The ApplianceType to filter by.
+     * @param   storeId     The store whose Devices to search for.
+     * @return              List of Devices currently located in the Store.
+     * @throws StoreModelServiceException
+     */
     public List<Appliance> getAppliances(String authToken, ApplianceType type, String storeId) throws StoreModelServiceException{
         Store store = getStore(authToken, storeId);
 
@@ -877,10 +887,11 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
 
         for (Device device : this.deviceMap.values()) {
             Appliance appliance = null;
+
             try {
                 appliance = (Appliance) device;
             } catch (ClassCastException e) {
-//                System.err.println(e);
+                // ignore, Appliance will remain null and not be added below
             }
 
             String deviceStoreId = device.getStore();
@@ -898,7 +909,9 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
         return location.split(":");
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     public void register(Observer observer) {
         if (observer != null) {
             this.observerList.add(observer);
@@ -906,6 +919,10 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
 
         return;
     };
+
+    /**
+     * {@inheritDoc}
+     */
     public void deregister(Observer observer) {
         if (observer != null) {
             this.observerList.remove(observer);
@@ -914,6 +931,9 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
         return;
     };
 
+    /**
+     * {@inheritDoc}
+     */
     public void notifyObservers(Device device, String event) {
         for (Observer observer : this.observerList) {
             observer.update(device, event);

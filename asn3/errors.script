@@ -13,7 +13,6 @@
 # Store Commands
 # define  store  <identifier> name <name> address <address>
 define  store  store_123 name RelianceMart  address  ahmedabad
-define  store  store_456 name KwikEMary  address  springfield
 
 # Aisle Commands
 # Define an aisle within the store
@@ -72,11 +71,11 @@ define  shelf  store_123:aisle_B3:shelf_q5  name  Shelf_Q5  level  medium   desc
 
 # Define a new product
 # define  product  <product_id>        name  <name>  description  <description>  size <size>  category  <category>  unit_price  <unit_price>        [temperature  (frozen  | refrigerated  |  ambient  |  warm  |  hot  )]
-define  product  prod10        name  bournvita  description  bournvita  size 12  category  Food  unit_price  2        temperature  frozen
-define  product  prod11        name  tea  description  green_tea  size 0.5  category  Food  unit_price  1        temperature  ambient
-define  product  prod12        name  coffee  description  coffee  size 1.5  category  Food  unit_price  3        temperature  refrigerated
-define  product  prod13        name  goggles  description  spectacles  size 1  category  Men_accessories  unit_price  5        temperature  ambient
-define  product  prod14        name  sun_glass  description  spectacles  size 2  category  Fashion  unit_price  7        temperature  ambient
+define  product  prod10 name  bournvita  description  bournvita   size 12   category  Food  	   unit_price  2  temperature  frozen
+define  product  prod11 name  tea  		 description  green_tea   size 0.5  category  Food  	   unit_price  1  temperature  ambient
+define  product  prod12 name  coffee  	 description  coffee	  size 1.5  category  Food  	   unit_price  3  temperature  refrigerated
+define  product  prod13 name  goggles  	 description  spectacles  size 1  	category  accessories  unit_price  5  temperature  ambient
+define  product  prod14 name  sun_glass  description  spectacles  size 2  	category  Fashion  	   unit_price  7  temperature  ambient
 
 
 # Inventory Commands
@@ -86,7 +85,7 @@ define  inventory  inv_u21  location  store_123:aisle_A1:shelf_q1 capacity  1500
 define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q2 capacity  1500  count  1000  product  prod11
 define  inventory  inv_u23  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod11
 define  inventory  inv_u24  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod13
-define  inventory  inv_u25  location  store_123:aisle_A2:shelf_q2 capacity  200  count  100  product  prod14
+define  inventory  inv_u25  location  store_123:aisle_A2:shelf_q1 capacity  200  count  100  product  prod14
 define  inventory  inv_u26  location  store_123:aisle_A2:shelf_q3 capacity  300  count  100  product  prod12
 define  inventory  inv_u27  location  store_123:aisle_A2:shelf_q3 capacity  200  count  50   product  prod12
 
@@ -148,6 +147,7 @@ Validate
 
 ################################################################################
 # Controller commands - written by Matthew Thomas
+# Displays error conditions
 ################################################################################
 
 ################################################################################
@@ -155,117 +155,76 @@ Validate
 # create event <turnstile> event "customer <customer> waiting to enter at the turnstile <turnstile>"
 ################################################################################
 
-# Welcome JASON WALLACE to the store
+# turnstile does not exist
+create event turn_foobar event "customer cust_1 waiting to enter"
+
+# customer does not exist
+create event turn_a1 event "customer cust_foobar waiting to enter"
+
+# misformatted command
+create event turn_a1 event "customer cust_3 blah blah"
+
+# succesfully detect customers entering
 create event turn_a1 event "customer cust_1 waiting to enter"
-
-# Welcome BILL ROSE to the store
 create event turn_a2 event "customer cust_2 waiting to enter"
-
-# Welcome MARY KELVIN to the store
 create event turn_a3 event "customer cust_3 waiting to enter"
 
-# Welcome SILVER HAWK to the store
-create event turn_a1 event "customer cust_4 waiting to enter"
-
-# Welcome MEGON FOX to the store
-create event turn_a2 event "customer cust_5 waiting to enter"
-
-# Welcome MARIA WILIAMSON to the store
-create event turn_a3 event "customer cust_6 waiting to enter"
-
-# Welcome SALINA GOMEZ to the store
-create event turn_a1 event "customer cust_7 waiting to enter"
 
 ################################################################################
 # Customer seen
 # create event <camera> event "customer <customer> enters <aisle>"
 ################################################################################
 
-create event cam_A1 event "customer cust_1 enters aisle_A1"
+# camera does not exist
+create event cam_foobar event "customer cust_1 enters aisle_A1"
 
-create event cam_A1 event "customer cust_2 enters aisle_A1"
+# misformatted command
+create event cam_A1 event "customer cust_3 was seen over there in aisle_A1"
 
-create event cam_B2 event "customer cust_3 enters aisle_B2"
-create event cam_B2 event "customer cust_3 enters aisle_B3"
-create event cam_B2 event "customer cust_3 enters aisle_A1"
-
-create event cam_A1 event "customer cust_4 enters aisle_B1"
-
-create event cam_A1 event "customer cust_5 enters aisle_B1"
-
-create event cam_A1 event "customer cust_6 enters aisle_B2"
-
-create event cam_A2 event "customer cust_7 enters aisle_A3"
-
-# RelianceMart, aisle_A1
-show customer cust_1
-
-# RelianceMart, aisle_A1 (last seen location)
-show customer cust_3
-
-# RelianceMart, aisle_B2
-show customer cust_6
 
 ########################################################################################
 # Emergency Command
 # create event <camera> event "emergency <emergency> in <aisle>"
 # 
-# <emergency> can have one of the values: (fire | flood | earthquake | armed_intruder)
+# <emergency> can have one of the values: (fire | flood | earthquake | 'armed intruder')
 ########################################################################################
 
-# For all emergencies - open 3 turnstiles, announce on 2 speakers, 1 robot address, 4 robots assist
+# unknown emergency
+create event cam_A1 event "emergency tsunami in aisle_A1"
 
-create event cam_A1 event "emergency fire in aisle_A1"
-
-create event cam_B2 event "emergency flood in aisle_A1"
-
-create event cam_B2 event "emergency armed_intruder in aisle_A1"
 
 ################################################################################
 # Basket Event
 # create event <camera> event "customer <customer> (adds|removes) <product> from <aisle:shelf>"
 ################################################################################
 
-# Add 1 bournvita to customer's basket
-create event cam_A1 event "customer cust_1 adds prod10 from aisle_A1:shelf_q1"
-
-# Removes 1 bournvita from customer's basket
-create event cam_A1 event "customer cust_1 removes prod10 from aisle_A1:shelf_q1"
-
-# Add 1 sunglass to customer's basket
-create event cam_A1 event "customer cust_3 adds prod13 from aisle_B2:shelf_q2"
-
-################################################################################
-# Restock Event
-# create event <camera> event "customer <customer> (adds|removes) <product> from <aisle:shelf>"
-################################################################################
-
-# Add 1 coffee to customer's basket. Inventory 100 -> 99 (capacity of 300).
-# Generate restock command to bring Inventory count from 99 -> 300.
-create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q3"
+# shelf does not contain product detected
+create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q4"
 
 ################################################################################
 # Cleaning Event
 # create event <camera> event "product <product> on floor <store:aisle>"
 ################################################################################
 
-# clean up bournvita
-create event cam_A1 event "product prod10 on floor store_123:aisle_A1"
+# product does not exist
+create event cam_A1 event "product product_unknown on floor store_123:aisle_A1"
 
-# clean up tea
-create event cam_A1 event "product prod11 on floor store_123:aisle_A2"
+# location does not exist
+create event cam_A1 event "product prod11 on floor store_123:aisle_foobar"
 
-# clean up goggles
-create event cam_A1 event "product prod13 on floor store_123:aisle_B1"
+# camera does not exist in the store given
+create event cam_A1 event "product prod11 on floor store_456:aisle_A1"
 
 ################################################################################
 # Broken glass
 # create event <microphone> event "sound of breaking glass in <aisle>"
 ################################################################################
 
-# task a robot with cleaning up broken glass
-
 create event mic_A1 event "sound of breaking glass in aisle_A1"
+
+create event mic_A1 event "sound of breaking glass in aisle_A2"
+
+create event mic_A1 event "sound of breaking glass in aisle_B1"
 
 create event mic_A1 event "sound of breaking glass in aisle_B3"
 
@@ -274,32 +233,27 @@ create event mic_A1 event "sound of breaking glass in aisle_B3"
 # create event <microphone> event "can you help me find <customer name>"
 ################################################################################
 
-# RelianceMart, aisle_B2
-create event mic_A1 event "can you help me find 'cust_6'"
+# customer does not exist
+create event mic_A1 event "can you help me find 'cust_foobar'"
 
-# RelianceMart, aisle_A1 (last seen location)
-create event mic_A1 event "can you help me find 'MARY KELVIN'"
+# customer does not exist
+create event mic_A1 event "can you help me find 'MARY NOT_HERE'"
 
-# RelianceMart, aisle_A3
+# customer not in store
 create event mic_A1 event "can you help me find 'cust_7'"
 
 ################################################################################
 # Fetch product
-# create event <camera> event "customer <customer> says please get me <number> of <product> from <store:aisle:shelf:inventory>"
+# create event <camera> event "customer <customer> says please get me <number> of <product>"
 ################################################################################
 
-# Reduce inventory from 50 -> 45. Basket count 0 -> 5. Generate restock command
-# to bring Inventory from 45 -> 200.
+create event mic_A1 event "customer cust_1 says please get me 3 of prod10"
 
-create event mic_A1 event "customer cust_1 says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
+create event mic_A1 event "customer cust_2 says please get me 3 of prod13"
 
-# Reduce inventory from 100 -> 90. Basket count 0 -> 10. Generate restock command
-# to bring Inventory from 90 -> 200.
-create event mic_A1 event "customer cust_2 says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25"
+create event mic_A1 event "customer cust_3 says please get me 3 of prod13"
 
-# Reduce inventory from 300 -> 296. Basket count 1 -> 5.
-create event mic_A1 event "customer cust_3 says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24"
-
+create event mic_A1 event "customer cust_4 says please get me 3 of prod11"
 
 ################################################################################
 # Check account balance

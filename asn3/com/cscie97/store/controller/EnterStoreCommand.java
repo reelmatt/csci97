@@ -59,6 +59,9 @@ public class EnterStoreCommand extends AbstractCommand {
      * @throws StoreControllerServiceException
      */
     public void execute() throws StoreControllerServiceException {
+        StoreModelServiceInterface storeModel = super.getStoreModel();
+        String authToken = super.getAuthToken();
+
         try {
             // Check for positive account balance
             Integer balance = this.ledger.getAccountBalance(this.customer.getAccountAddress());
@@ -70,14 +73,14 @@ public class EnterStoreCommand extends AbstractCommand {
             // Assign customer a basket
             Basket basket;
             try {
-                basket = this.storeModel.getBasket(authToken, customer.getId());
+                basket = storeModel.getBasket(authToken, customer.getId());
             } catch (StoreModelServiceException e) {
-                basket = this.storeModel.defineBasket(authToken, customer.getId());
+                basket = storeModel.defineBasket(authToken, customer.getId());
             }
 
             // Open turnstile and send hello message through Turnstile display
-            this.storeModel.receiveCommand(authToken, this.source.getId(), "open");
-            this.storeModel.receiveCommand(authToken, this.source.getId(), "Hello, " + this.customer.customerName() + ", welcome to " + this.source.getStore());
+            storeModel.receiveCommand(authToken, super.getSource().getId(), "open");
+            storeModel.receiveCommand(authToken, super.getSource().getId(), "Hello, " + this.customer.customerName() + ", welcome to " + super.getSource().getStore());
         } catch (LedgerException e) {
             System.err.println(e);
         } catch (StoreModelServiceException e) {

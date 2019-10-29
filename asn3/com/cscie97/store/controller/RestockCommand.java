@@ -17,7 +17,11 @@ import com.cscie97.store.model.StoreModelServiceInterface;
 /**
  * RestockCommand.
  *
- *
+ * A RestockCommand is created after a BasketEventCommand if the Inventory where
+ * a Product was removed contains less than half of its capacity. If the
+ * Inventory is at less than half of its capacity when a Product is removed,
+ * the BasketEventCommand will trigger a Store Model Event that the Inventory
+ * needs to be restocked, back to its full capacity.
  *
  * @author Matthew Thomas
  */
@@ -70,7 +74,11 @@ public class RestockCommand extends AbstractCommand {
 
             // Send Robot to get Product for Inventory
             Appliance robot = super.getOneAppliance(ApplianceType.ROBOT);
-            super.sendCommand(robot.getId(), "Restock " + toRestock + " of " + this.product.getName() + " on shelf ");
+            String message = String.format(
+                "Restock %d of %s in inventory %s",
+                toRestock, this.product.getName(), this.inventory.getId()
+            );
+            super.sendCommand(robot.getId(), message);
 
             // Put Product into shelf Inventory
             super.getStoreModel().updateInventory(super.getAuthToken(), this.location, toRestock);

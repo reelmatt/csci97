@@ -124,19 +124,20 @@ public class BasketEventCommand extends AbstractCommand {
                 storeModel.updateInventory(authToken, inventoryLocation, -1);
             } else if (this.action.equals("removes")){
                 // Remove item from basket
-                basketItem = storeModel.removeItemFromBasket(authToken, this.customer.getId(), this.product.getId(), -1);
+                basketItem = storeModel.removeItemFromBasket(authToken, this.customer.getId(), this.product.getId(), 1);
 
-                // Print result and current count
-                System.out.println(String.format(
-                    "Removed 1 of %s from the basket. Current count is %d.",
-                    this.product.getName(), basketItem.getCount()
-                ));
+                // Format and print the amount remaining
+                System.out.println("Removed 1 " + this.product.getName() + " from the basket.");
+                if (basketItem == null) {
+                    System.out.println("No more of this item remains in the basket.");
+                }
 
                 // Reflect change in inventory
                 storeModel.updateInventory(authToken, inventoryLocation, 1);
             } else {
                 throw new StoreControllerServiceException(
-                        "basket event", "The action '" + this.action + "' is unsupported. Only 'adds' and 'removes' are allowed."
+                    "basket event",
+                    "The action '" + this.action + "' is unsupported. Only 'adds' and 'removes' are allowed."
                 );
             }
 
