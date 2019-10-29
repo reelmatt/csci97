@@ -1,16 +1,21 @@
 package com.cscie97.store.controller;
 
-import com.cscie97.store.model.Device;
-import com.cscie97.store.model.Appliance;
-import com.cscie97.store.model.Aisle;
-import com.cscie97.store.model.StoreModelServiceInterface;
-import com.cscie97.store.model.ApplianceType;
-import com.cscie97.store.model.StoreModelServiceException;
 import java.util.List;
-import java.util.ArrayList;
+import com.cscie97.store.model.Aisle;
+import com.cscie97.store.model.Appliance;
+import com.cscie97.store.model.ApplianceType;
+import com.cscie97.store.model.Device;
+import com.cscie97.store.model.StoreModelServiceException;
+import com.cscie97.store.model.StoreModelServiceInterface;
 
 /**
  * EmergencyCommand.
+ *
+ * An EmergencyCommand is created when a Camera detects an emergency in a store
+ * Aisle. When execute() is called, the Command opens all turnstiles, announces
+ * the emergency through all all speakers in the Store, selects the first
+ * unoccupied Robot to send to the Aisle the emergency was detected, and
+ * commands all other Robots to assist Customers.
  *
  * @author Matthew Thomas
  */
@@ -25,6 +30,7 @@ public class EmergencyCommand extends AbstractCommand {
     private Aisle aisle;
 
     /**
+     * EmergencyCommand Constructor.
      *
      * @param authToken
      * @param storeModel
@@ -36,21 +42,27 @@ public class EmergencyCommand extends AbstractCommand {
     public EmergencyCommand(String authToken,
                             StoreModelServiceInterface storeModel,
                             Device source,
-                            String emergencyType, Aisle aisle) throws StoreControllerServiceException {
+                            String emergencyType,
+                            Aisle aisle) throws StoreControllerServiceException {
         super(authToken, storeModel, source);
 
+        this.aisle = aisle;
         this.emergency = getType(emergencyType);
 
+        // Check the emergency is recognized by the Controller
         if (this.emergency == null) {
             throw new StoreControllerServiceException(
                 "create emergency command",
                 "Emergency of type " + emergencyType + " is not recognized.");
         }
-        this.aisle = aisle;
     }
 
     /**
      * {@inheritDoc}
+     *
+     * Open all turnstiles and announce the emergency over all speakers. Task
+     * one Robot to handle the emergency and task all others to assist Customers
+     * out of the Store.
      */
     public void execute() {
         try {
@@ -64,7 +76,6 @@ public class EmergencyCommand extends AbstractCommand {
                 "There is a %s in aisle %s, please leave %s immediately",
                 this.emergency, super.getSource().getStore(), this.aisle.getId()
             );
-
             super.sendCommands(speakers, emergencyAnnouncement);
 
             // Send robot to address

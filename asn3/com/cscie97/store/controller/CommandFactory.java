@@ -218,9 +218,9 @@ public class CommandFactory {
                 case "assistance":
                     return new AssistCustomerCommand(authToken, storeModel, device, customer);
                 case "approaches":
-                    return new CheckoutCommand(authToken, storeModel, this.ledger, device, customer);
+                    return new CheckoutCommand(authToken, storeModel, device, this.ledger,  customer);
                 case "waiting":
-                    return new EnterStoreCommand(authToken, storeModel, this.ledger, device, customerId);
+                    return new EnterStoreCommand(authToken, storeModel, device, this.ledger, customer);
                 default:
                     throw new StoreControllerServiceException(event, "Unknown event");
             }

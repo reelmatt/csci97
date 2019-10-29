@@ -38,7 +38,7 @@ public class BasketEventCommand extends AbstractCommand {
     /** The action the Customer took ('adds' or 'removes'). */
     private String action;
 
-    /** The location... */
+    /** The fully qualified shelf location. */
     private String shelfLocation;
 
     /** Formatted result message. */
@@ -75,10 +75,17 @@ public class BasketEventCommand extends AbstractCommand {
     /**
      * {@inheritDoc}
      *
-     *
+     * Check that the shelf contains an inventory which tracks the specified
+     * product. If one exists, check the action for 'adds' or 'removes'. If 'adds',
+     * add 1 of the item to the Customer's basket, print the result, and remove 1
+     * of the item from the inventory. If 'removes', do the reverse (remove from
+     * basket, add to inventory). After the operation, if the inventory contains
+     * less than half of its capacity, generate a RestockCommand to have a
+     * Robot add more Product back to the shelf.
      *
      * @throws StoreControllerServiceException  If the Shelf does not contain an Inventory
-     *                                          which tracks the Product.
+     *                                          which tracks the Product, or the action
+     *                                          is unsupported.
      */
     public void execute() throws StoreControllerServiceException {
         StoreModelServiceInterface storeModel = super.getStoreModel();
@@ -103,7 +110,7 @@ public class BasketEventCommand extends AbstractCommand {
             ProductAssociation basketItem;
 
             // Add or remove from basket
-            if (action.equals("adds")) {
+            if (this.action.equals("adds")) {
                 // Add item to basket
                 basketItem = storeModel.addItemToBasket(authToken, this.customer.getId(), this.product.getId(), 1);
 
@@ -115,7 +122,7 @@ public class BasketEventCommand extends AbstractCommand {
 
                 // Reflect change in inventory
                 storeModel.updateInventory(authToken, inventoryLocation, -1);
-            } else {
+            } else if (this.action.equals("removes")){
                 // Remove item from basket
                 basketItem = storeModel.removeItemFromBasket(authToken, this.customer.getId(), this.product.getId(), -1);
 
@@ -127,6 +134,10 @@ public class BasketEventCommand extends AbstractCommand {
 
                 // Reflect change in inventory
                 storeModel.updateInventory(authToken, inventoryLocation, 1);
+            } else {
+                throw new StoreControllerServiceException(
+                        "basket event", "The action '" + this.action + "' is unsupported. Only 'adds' and 'removes' are allowed."
+                );
             }
 
             // If Inventory is at less than half capacity, generate restock command
