@@ -72,6 +72,11 @@ public class RestockCommand extends AbstractCommand {
             // Determine how much product is need to reach full capacity
             Integer toRestock = capacity - this.inventory.getCount();
 
+            if (toRestock <= 0) {
+                System.out.println("Inventory already at maximum capacity, " + capacity + ".");
+                return;
+            }
+
             // Send Robot to get Product for Inventory
             Appliance robot = super.getOneAppliance(ApplianceType.ROBOT);
             String message = String.format(

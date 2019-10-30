@@ -19,7 +19,7 @@ public class TestDriver {
         // Require only one command line argument (command file)
         if (args.length == 0 || args.length > 1) {
             System.err.println(
-                "usage: java -cp . com.cscie97.ledger.test.TestDriver <command file>"
+                "usage: java -cp . com.cscie97.store.test.TestDriver <test script file>"
             );
             return;
         }

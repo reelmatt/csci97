@@ -13,113 +13,184 @@
 # Store Commands
 # define  store  <identifier> name <name> address <address>
 define  store  store_123 name RelianceMart  address  ahmedabad
+Defined new store: 'store_123'.
 define  store  store_456 name KwikEMary  address  springfield
+Defined new store: 'store_456'.
 
 # Aisle Commands
 # Define an aisle within the store
 # define  aisle  <store_id>:<aisle_number>  name  <name>  description  <description> location  (floor  |  stock_room)
 define  aisle  store_123:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  stock_room
+Defined new aisle: 'aisle_A1'.
 define  aisle  store_123:aisle_A2  name  AISLE_A2  description  AISLE_A2_desc location  floor
+Defined new aisle: 'aisle_A2'.
 define  aisle  store_123:aisle_A3  name  AISLE_A3  description  AISLE_A3_desc location  floor
+Defined new aisle: 'aisle_A3'.
 define  aisle  store_123:aisle_B1  name  AISLE_B1  description  AISLE_B1_desc location  stock_room
+Defined new aisle: 'aisle_B1'.
 define  aisle  store_123:aisle_B2  name  AISLE_B2  description  AISLE_B2_desc location  floor
+Defined new aisle: 'aisle_B2'.
 define  aisle  store_123:aisle_B3  name  AISLE_B3  description  AISLE_B3_desc location  floor
+Defined new aisle: 'aisle_B3'.
 
 #Shelf Commands
 # Define a new shelf within the store
 # define  shelf  <store_id>:<aisle_number>:<shelf_id>  name  <name>  level  (high  | medium  |  low)  description  <description>  [temperature  (frozen  |  refrigerated  | ambient  |  warm  |  hot  )]
 define  shelf  store_123:aisle_A1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
 define  shelf  store_123:aisle_A1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
 define  shelf  store_123:aisle_A1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
 define  shelf  store_123:aisle_A1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
 define  shelf  store_123:aisle_A1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
 
 
 define  shelf  store_123:aisle_A2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
 define  shelf  store_123:aisle_A2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
 define  shelf  store_123:aisle_A2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
 define  shelf  store_123:aisle_A2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
 define  shelf  store_123:aisle_A2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
 
 
 define  shelf  store_123:aisle_A3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
 define  shelf  store_123:aisle_A3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
 define  shelf  store_123:aisle_A3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
 define  shelf  store_123:aisle_A3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
 define  shelf  store_123:aisle_A3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
 
 
 define  shelf  store_123:aisle_B1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
 define  shelf  store_123:aisle_B1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
 define  shelf  store_123:aisle_B1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
 define  shelf  store_123:aisle_B1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
 define  shelf  store_123:aisle_B1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
 
 
 define  shelf  store_123:aisle_B2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
 define  shelf  store_123:aisle_B2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
 define  shelf  store_123:aisle_B2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
 define  shelf  store_123:aisle_B2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
 define  shelf  store_123:aisle_B2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
 
 
 define  shelf  store_123:aisle_B3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+Defined new shelf: 'shelf_q1'.
 define  shelf  store_123:aisle_B3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+Defined new shelf: 'shelf_q2'.
 define  shelf  store_123:aisle_B3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+Defined new shelf: 'shelf_q3'.
 define  shelf  store_123:aisle_B3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+Defined new shelf: 'shelf_q4'.
 define  shelf  store_123:aisle_B3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+Defined new shelf: 'shelf_q5'.
 
 
 # Define a new product
 # define  product  <product_id>        name  <name>  description  <description>  size <size>  category  <category>  unit_price  <unit_price>        [temperature  (frozen  | refrigerated  |  ambient  |  warm  |  hot  )]
 define  product  prod10        name  bournvita  description  bournvita  size 12  category  Food  unit_price  2        temperature  frozen
+Defined new product: 'prod10'.
 define  product  prod11        name  tea  description  green_tea  size 1.5  category  Food  unit_price  1        temperature  ambient
+Defined new product: 'prod11'.
 define  product  prod12        name  coffee  description  coffee  size 1.5  category  Food  unit_price  3        temperature  refrigerated
+Defined new product: 'prod12'.
 define  product  prod13        name  goggles  description  spectacles  size 1  category  Men_accessories  unit_price  5        temperature  ambient
+Defined new product: 'prod13'.
 define  product  prod14        name  sun_glass  description  spectacles  size 2  category  Fashion  unit_price  7        temperature  ambient
+Defined new product: 'prod14'.
 
 
 # Inventory Commands
 # Define a new inventory item within the store
 # define  inventory  <inventory_id>  location  <store_id>:<aisle_number>:<shelf_id> capacity  <capacity>  count  <count>  product  <product_id>
 define  inventory  inv_u21  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  1000  product  prod10
+Defined new inventory: 'inv_u21'.
 define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q2 capacity  1500  count  1000  product  prod11
+Defined new inventory: 'inv_u22'.
 define  inventory  inv_u23  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod11
+Defined new inventory: 'inv_u23'.
 define  inventory  inv_u24  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod13
+Defined new inventory: 'inv_u24'.
 define  inventory  inv_u25  location  store_123:aisle_A2:shelf_q2 capacity  200  count  100  product  prod14
+Defined new inventory: 'inv_u25'.
 define  inventory  inv_u26  location  store_123:aisle_A2:shelf_q3 capacity  300  count  100  product  prod12
+Defined new inventory: 'inv_u26'.
 define  inventory  inv_u27  location  store_123:aisle_A2:shelf_q3 capacity  200  count  50   product  prod12
+Defined new inventory: 'inv_u27'.
 
 #Customer Commands
 # Define a new customer
 # define  customer  <customer_id>        first_name  <first_name>  last_name  <last_name> type  (registered|guest)  email_address  <email>  account  <account_address>
 define  customer  cust_1        first_name  JASON  last_name  WALLACE type  guest  email_address  jason.wallace@ymail.com  account  jason
+Defined new customer: 'cust_1'.
 define  customer  cust_2        first_name  BILL  last_name  ROSE type  registered  email_address  bill.rose@gmail.com  account  bill
+Defined new customer: 'cust_2'.
 define  customer  cust_3        first_name  MARY last_name  KELVIN type  registered  email_address  mary.kevin@yahoomail.com  account  mary
+Defined new customer: 'cust_3'.
 define  customer  cust_4        first_name  SILVER  last_name  HAWK type  guest  email_address  silver.hawk@rocketmail.com  account  silver
+Defined new customer: 'cust_4'.
 define  customer  cust_5        first_name  MEGON  last_name  FOX type  guest  email_address  megonfox@testmail.com  account  megon
+Defined new customer: 'cust_5'.
 define  customer  cust_6        first_name  MARIA last_name  WILIAMSON type  registered  email_address  maria4567@ymail.com  account  maria
+Defined new customer: 'cust_6'.
 define  customer  cust_7        first_name  SALINA  last_name  GOMEZ type  registered  email_address  salina@gmail.com  account  salina
+Defined new customer: 'cust_7'.
 
 # Create Sensors
 # define  device  <device_id>  name  <name>  type  (microphone|camera)  location <store>:<aisle>
 define  device  mic_A1  name  MicrophoneA1  type  microphone  location store_123:aisle_A2
+Defined new device: 'mic_A1'.
 define  device  cam_A1  name  CameraA1  type  camera  location store_123:aisle_A1
+Defined new device: 'cam_A1'.
 define  device  cam_A2  name  CameraA2  type  camera  location store_123:aisle_A2
+Defined new device: 'cam_A2'.
 define  device  cam_B2  name  CameraB1  type  camera  location store_123:aisle_B2
+Defined new device: 'cam_B2'.
 
 # Create Appliances
 # define  device  <device_id>  name  <name>  type  (speaker  |  robot  |  turnstile) location  <store>:<aisle>
 define  device  rob_1  name  ROBOT_1  type  robot location  store_123:aisle_A1
+Defined new device: 'rob_1'.
 define  device  rob_2  name  ROBOT_2  type  robot location  store_123:aisle_A2
+Defined new device: 'rob_2'.
 define  device  rob_3  name  ROBOT_3  type  robot location  store_123:aisle_A3
+Defined new device: 'rob_3'.
 define  device  rob_4  name  ROBOT_4  type  robot location  store_123:aisle_B1
+Defined new device: 'rob_4'.
 define  device  rob_5  name  ROBOT_5  type  robot location  store_123:aisle_B2
+Defined new device: 'rob_5'.
 define  device  spk_1  name  SPEAKER_1  type  speaker location  store_123:aisle_A1
+Defined new device: 'spk_1'.
 define  device  spk_2  name  SPEAKER_2  type  speaker location  store_123:aisle_A2
+Defined new device: 'spk_2'.
 define  device  turn_a1  name  TURNSTILE_A1  type  turnstile location  store_123:aisle_A2
+Defined new device: 'turn_a1'.
 define  device  turn_a2  name  TURNSTILE_A2  type  turnstile location  store_123:aisle_A2
+Defined new device: 'turn_a2'.
 define  device  turn_a3  name  TURNSTILE_A3  type  turnstile location  store_123:aisle_A2
+Defined new device: 'turn_a3'.
 
 #########################################################################################
 # Ledger configuration
@@ -127,24 +198,39 @@ define  device  turn_a3  name  TURNSTILE_A3  type  turnstile location  store_123
 
 # create-account <account-id>
 create-account jason
+Created account 'jason'
 create-account bill
+Created account 'bill'
 create-account mary
+Created account 'mary'
 create-account silver
+Created account 'silver'
 create-account megon
+Created account 'megon'
 create-account maria
+Created account 'maria'
 create-account salina
+Created account 'salina'
 
 # process-transaction <transaction-id> amount <amount> fee <fee> payload <payload> payer <account-address> receiver <account-address>
 process-transaction 1 amount 20 fee 10 payload "fund account" payer master receiver jason
+Processed transaction #1
 process-transaction 2 amount 200 fee 10 payload "fund account" payer master receiver bill
+Processed transaction #2
 process-transaction 3 amount 300 fee 10 payload "fund account" payer master receiver mary
+Processed transaction #3
 process-transaction 4 amount 400 fee 10 payload "fund account" payer master receiver silver
+Processed transaction #4
 process-transaction 5 amount 500 fee 10 payload "fund account" payer master receiver megon
+Processed transaction #5
 process-transaction 6 amount 600 fee 10 payload "fund account" payer master receiver maria
+Processed transaction #6
 process-transaction 7 amount 700 fee 10 payload "fund account" payer master receiver salina
+Processed transaction #7
 
 # validate the state of the blockchain
 Validate
+Blockchain successfully validated.
 
 ################################################################################
 # Controller commands - written by Matthew Thomas
@@ -158,17 +244,31 @@ Validate
 
 # turnstile does not exist
 create event turn_foobar event "customer cust_1 waiting to enter"
+get device: A device with id 'turn_foobar' does not exist.
 
 # customer does not exist
 create event turn_a1 event "customer cust_foobar waiting to enter"
+Device 'turn_a1' emitted event: customer cust_foobar waiting to enter
+customer cust_foobar waiting to enter: A Customer with id 'cust_foobar' is not registered with the StoreModelService.
 
 # misformatted command
 create event turn_a1 event "customer cust_3 blah blah"
+Device 'turn_a1' emitted event: customer cust_3 blah blah
+customer cust_3 blah blah: Unknown event
 
 # succesfully detect customers entering
 create event turn_a1 event "customer cust_1 waiting to enter"
+Device 'turn_a1' emitted event: customer cust_1 waiting to enter
+Appliance 'turn_a1' received command 'open'.
+Appliance 'turn_a1' received command 'Hello, JASON WALLACE, welcome to store_123'.
 create event turn_a2 event "customer cust_2 waiting to enter"
+Device 'turn_a2' emitted event: customer cust_2 waiting to enter
+Appliance 'turn_a2' received command 'open'.
+Appliance 'turn_a2' received command 'Hello, BILL ROSE, welcome to store_123'.
 create event turn_a3 event "customer cust_3 waiting to enter"
+Device 'turn_a3' emitted event: customer cust_3 waiting to enter
+Appliance 'turn_a3' received command 'open'.
+Appliance 'turn_a3' received command 'Hello, MARY KELVIN, welcome to store_123'.
 
 
 ################################################################################
@@ -178,9 +278,12 @@ create event turn_a3 event "customer cust_3 waiting to enter"
 
 # camera does not exist
 create event cam_foobar event "customer cust_1 enters aisle_A1"
+get device: A device with id 'cam_foobar' does not exist.
 
 # misformatted command
 create event cam_A1 event "customer cust_3 was seen over there in aisle_A1"
+Device 'cam_A1' emitted event: customer cust_3 was seen over there in aisle_A1
+customer cust_3 was seen over there in aisle_A1: Unknown event
 
 ########################################################################################
 # Emergency Command
@@ -191,6 +294,8 @@ create event cam_A1 event "customer cust_3 was seen over there in aisle_A1"
 
 # unknown emergency
 create event cam_A1 event "emergency tsunami in aisle_A1"
+Device 'cam_A1' emitted event: emergency tsunami in aisle_A1
+create emergency command: Emergency of type tsunami is not recognized.
 
 
 ################################################################################
@@ -200,12 +305,18 @@ create event cam_A1 event "emergency tsunami in aisle_A1"
 
 # shelf does not contain product detected
 create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q4"
+Device 'cam_A2' emitted event: customer cust_5 adds prod12 from aisle_A2:shelf_q4
+basket event: The shelf shelf_q4 does not contain product prod12
 
 # action is not 'adds' or 'removes'
 create event cam_A2 event "customer cust_5 throws prod12 from aisle_A2:shelf_q4"
+Device 'cam_A2' emitted event: customer cust_5 throws prod12 from aisle_A2:shelf_q4
+customer cust_5 throws prod12 from aisle_A2:shelf_q4: Unknown event
 
 # product does not exist
 create event cam_A2 event "customer cust_5 adds prod_noexist from aisle_A2:shelf_q4"
+Device 'cam_A2' emitted event: customer cust_5 adds prod_noexist from aisle_A2:shelf_q4
+customer cust_5 adds prod_noexist from aisle_A2:shelf_q4: A product with id 'prod_noexist' does not exist.
 
 ################################################################################
 # Restock Event
@@ -214,9 +325,15 @@ create event cam_A2 event "customer cust_5 adds prod_noexist from aisle_A2:shelf
 
 # Restock 'bournvita' in Inventory, 1000 -> 1500
 create event cam_A1 event "product prod10 inventory store_123:aisle_A1:shelf_q1:inv_u21 restock"
+Device 'cam_A1' emitted event: product prod10 inventory store_123:aisle_A1:shelf_q1:inv_u21 restock
+Appliance 'rob_4' received command 'Restock 500 of bournvita in inventory inv_u21'.
+Inventory 'inv_u21' updated count of 'prod10' from 1000 to 1500.
+Inventory restocked. Now has 1500 on shelf out of capacity of 1500.
 
 # Inventory already at maximum capacity
 create event cam_A1 event "product prod10 inventory store_123:aisle_A1:shelf_q1:inv_u21 restock"
+Device 'cam_A1' emitted event: product prod10 inventory store_123:aisle_A1:shelf_q1:inv_u21 restock
+Inventory already at maximum capacity, 1500.
 
 ################################################################################
 # Cleaning Event
@@ -225,12 +342,18 @@ create event cam_A1 event "product prod10 inventory store_123:aisle_A1:shelf_q1:
 
 # product does not exist
 create event cam_A1 event "product product_unknown on floor store_123:aisle_A1"
+Device 'cam_A1' emitted event: product product_unknown on floor store_123:aisle_A1
+product product_unknown on floor store_123:aisle_A1: A product with id 'product_unknown' does not exist.
 
 # location does not exist
 create event cam_A1 event "product prod11 on floor store_123:aisle_foobar"
+Device 'cam_A1' emitted event: product prod11 on floor store_123:aisle_foobar
+product prod11 on floor store_123:aisle_foobar: An aisle with id 'aisle_foobar' does not exist in store 'store_123'.
 
 # camera does not exist in the store given
 create event cam_A1 event "product prod11 on floor store_456:aisle_A1"
+Device 'cam_A1' emitted event: product prod11 on floor store_456:aisle_A1
+product prod11 on floor store_456:aisle_A1: An aisle with id 'aisle_A1' does not exist in store 'store_456'.
 
 ################################################################################
 # Broken glass
@@ -239,6 +362,8 @@ create event cam_A1 event "product prod11 on floor store_456:aisle_A1"
 
 # unknown sound
 create event mic_A1 event "sound of crying in aisle_A1"
+Device 'mic_A1' emitted event: sound of crying in aisle_A1
+sound of crying in aisle_A1: Unknown command.
 
 ################################################################################
 # Missing person
@@ -247,12 +372,18 @@ create event mic_A1 event "sound of crying in aisle_A1"
 
 # customer does not exist
 create event mic_A1 event "can you help me find 'cust_foobar'"
+Device 'mic_A1' emitted event: can you help me find 'cust_foobar'
+Appliance 'spk_2' received command 'A Customer with name 'cust_foobar' is not located in store store_123.'.
 
 # customer does not exist
 create event mic_A1 event "can you help me find 'MARY NOT_HERE'"
+Device 'mic_A1' emitted event: can you help me find 'MARY NOT_HERE'
+Appliance 'spk_2' received command 'A Customer with name 'mary not_here' is not located in store store_123.'.
 
 # customer not in store
 create event mic_A1 event "can you help me find 'cust_7'"
+Device 'mic_A1' emitted event: can you help me find 'cust_7'
+Appliance 'spk_2' received command 'Customer cust_7 is located Currently located @ N/a'.
 
 ################################################################################
 # Fetch product
@@ -261,16 +392,31 @@ create event mic_A1 event "can you help me find 'cust_7'"
 
 # cannot fetch negative amount
 create event mic_A1 event "customer cust_1 says please get me -3 of prod10 from store_123:aisle_A2:shelf_q3:inv_u27"
+Device 'mic_A1' emitted event: customer cust_1 says please get me -3 of prod10 from store_123:aisle_A2:shelf_q3:inv_u27
+fetch product: amount must be > 0
 
 # cannot fetch 0 either
 create event mic_A1 event "customer cust_2 says please get me 0 of prod13 from store_123:aisle_A2:shelf_q3:inv_u27"
+Device 'mic_A1' emitted event: customer cust_2 says please get me 0 of prod13 from store_123:aisle_A2:shelf_q3:inv_u27
+fetch product: amount must be > 0
 
 # more product than exists (inventory has count of 50)
 create event mic_A1 event "customer cust_3 says please get me 1000 of prod13 from store_123:aisle_A2:shelf_q3:inv_u27"
+Device 'mic_A1' emitted event: customer cust_3 says please get me 1000 of prod13 from store_123:aisle_A2:shelf_q3:inv_u27
+Appliance 'rob_4' received command 'Fetch 1000 of store_123:aisle_A2:shelf_q3:inv_u27 from goggles and bring to customer.'.
+update inventory: Count change would be less than 0.
 
 # successfully fetch some product to get items in Customer's baskets
 
 create event mic_A1 event "customer cust_1 says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
+Device 'mic_A1' emitted event: customer cust_1 says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27
+Appliance 'rob_4' received command 'Fetch 5 of store_123:aisle_A2:shelf_q3:inv_u27 from coffee and bring to customer.'.
+Inventory 'inv_u27' updated count of 'prod12' from 50 to 45.
+Added 5 of coffee to the basket. Current count is 5.
+Device 'mic_A1' emitted event: product prod12 inventory store_123:aisle_A2:shelf_q3:inv_u27 restock
+Appliance 'rob_4' received command 'Restock 155 of coffee in inventory inv_u27'.
+Inventory 'inv_u27' updated count of 'prod12' from 45 to 200.
+Inventory restocked. Now has 200 on shelf out of capacity of 200.
 
 
 ################################################################################
@@ -280,10 +426,16 @@ create event mic_A1 event "customer cust_1 says please get me 5 of prod12 from s
 
 # Customer does not exist
 create event mic_A1 event "customer cust_foobar says 'What is the total basket value?'"
+Device 'mic_A1' emitted event: customer cust_foobar says 'What is the total basket value?'
+customer cust_foobar says 'What is the total basket value?': A Customer with id 'cust_foobar' is not registered with the StoreModelService.
 
 create event mic_A1 event "customer cust_5 says 'What is the total basket value?'"
+Device 'mic_A1' emitted event: customer cust_5 says 'What is the total basket value?'
+check account balance: MEGON FOX does not have a basket.
 
 create event mic_A1 event "customer cust_6 says 'What is the total basket value?'"
+Device 'mic_A1' emitted event: customer cust_6 says 'What is the total basket value?'
+check account balance: MARIA WILIAMSON does not have a basket.
 
 ################################################################################
 # Checkout
@@ -292,9 +444,16 @@ create event mic_A1 event "customer cust_6 says 'What is the total basket value?
 
 # Customer not in store and does not have basket
 create event turn_a3 event "customer cust_5 approaches turnstile"
+Device 'turn_a3' emitted event: customer cust_5 approaches turnstile
+checkout: MEGON FOX does not have a basket.
 
 # Misformatted command
 create event turn_a1 event "customer cust_1 wants to exit"
+Device 'turn_a1' emitted event: customer cust_1 wants to exit
+customer cust_1 wants to exit: Unknown event
 
 # Basket total exceeds Customer's account balance
 create event turn_a2 event "customer cust_1 approaches turnstile"
+Device 'turn_a2' emitted event: customer cust_1 approaches turnstile
+JASON WALLACE basket total is 15
+checkout: The basket total (with fee) exceeds your account balance. Please remove some items.

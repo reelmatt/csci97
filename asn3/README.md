@@ -1,25 +1,24 @@
 # Submission:
 
 As per the assignment handout, my assignment 3 submission includes the source
-code, data files, test results, design document, and a document describing the results
-of my implementation. This README file provides some additional information regarding
-my submission.
+code, data files, test results, design document, and a document describing the
+results of my implementation. This README file provides some additional 
+information regarding my submission.
 
-All files are contained within the zip file “matthew_thomas_assignment3.zip”. The commands
-to compile and run the assignment are:
+All files are contained within the zip file “matthew_thomas_assignment3.zip”.
+The commands to compile and run the assignment are:
 
-    javac com/cscie97/store/model/*.java com/cscie97/store/controller/*.java com/cscie97/ledger/*.java com/cscie97/store/test/*.java
-    java -cp . com.cscie97.store.test.TestDriver <test script file>
+// Compile program
+javac com/cscie97/store/model/*.java com/cscie97/store/controller/*.java com/cscie97/ledger/*.java com/cscie97/store/test/*.java
+
+// Run test script
+java -cp . com.cscie97.store.test.TestDriver <test script file>
 
 
-where `<test file name>` is the name of the test script file. My test run
+where `<test script file>` is the name of the test script file. My test run
 outputs can also be found in the root level, with “.out” appended to the test
 file’s name. As per post @67 on Piazza, the TestDriver passes both the input and
 formatted output data to stdout and into the resulting file.
-
-Note: I made a few minor modifications to the command syntax. The updated syntax can be
-seen in comment lines in the scripts themselves, as well as in the results PDF as part of
-this submission.
 
 # Source code
 + com/cscie97/
@@ -83,14 +82,24 @@ this submission.
 + errors.script.out
     + results of running errors.script
 + controller.script
-    + Modified from the store.script file written by Adaeze Ezeh and provided as part 
-    of assignment 2 files. Modified by myself to accomodate command syntax changes (for
-    Store Model Service). All Controller-specific tests were written by me and noted in
-    the test file.
+    + Modified from the store.script file written by Adaeze Ezeh and provided
+    as part of assignment 2 files. Modified by myself to accomodate command
+    syntax changes (for Store Model Service). All Controller-specific tests were
+    written by me and noted in the test file.
 + controller.script.out
     + results of running controller.script
 
 # Other files
++ Diagrams
+	+ Architecture.png					-- Component diagram from class handouts
+	+ CheckAccountBalance.png			-- Sequence diagram
+	+ Class Diagram-Full.png			-- Full class diagram, with Controller
+										   and Model packages
+	+ Class Diagram-StoreController.png	-- Subset of Class diagram, showing only
+										   Controller classes
+	+ EmergencyCommand.png				-- Sequence diagram
+	+ UseCase Diagram.png				-- Use Case diagram
 + matthew_thomas_asn3_design.pdf        -- My design document
++ matthew_thomas_asn2_design.pdf        -- My assignment 2 design (for reference)
 + matthew_thomas_asn3_results.pdf       -- Design changes and results document
 + README.md                             -- This file

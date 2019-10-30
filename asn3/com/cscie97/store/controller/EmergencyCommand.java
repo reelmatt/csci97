@@ -74,7 +74,7 @@ public class EmergencyCommand extends AbstractCommand {
             List<Appliance> speakers = super.getAppliances(ApplianceType.SPEAKER);
             String emergencyAnnouncement = String.format(
                 "There is a %s in aisle %s, please leave %s immediately",
-                this.emergency, super.getSource().getStore(), this.aisle.getId()
+                this.emergency, this.aisle.getId(), super.getSource().getStore()
             );
             super.sendCommands(speakers, emergencyAnnouncement);
 
