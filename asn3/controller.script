@@ -73,7 +73,7 @@ define  shelf  store_123:aisle_B3:shelf_q5  name  Shelf_Q5  level  medium   desc
 # Define a new product
 # define  product  <product_id>        name  <name>  description  <description>  size <size>  category  <category>  unit_price  <unit_price>        [temperature  (frozen  | refrigerated  |  ambient  |  warm  |  hot  )]
 define  product  prod10        name  bournvita  description  bournvita  size 12  category  Food  unit_price  2        temperature  frozen
-define  product  prod11        name  tea  description  green_tea  size 0.5  category  Food  unit_price  1        temperature  ambient
+define  product  prod11        name  tea  description  green_tea  size 1.5  category  Food  unit_price  1        temperature  ambient
 define  product  prod12        name  coffee  description  coffee  size 1.5  category  Food  unit_price  3        temperature  refrigerated
 define  product  prod13        name  goggles  description  spectacles  size 1  category  Men_accessories  unit_price  5        temperature  ambient
 define  product  prod14        name  sun_glass  description  spectacles  size 2  category  Fashion  unit_price  7        temperature  ambient
@@ -135,7 +135,7 @@ create-account maria
 create-account salina
 
 # process-transaction <transaction-id> amount <amount> fee <fee> payload <payload> payer <account-address> receiver <account-address>
-process-transaction 1 amount 100 fee 10 payload "fund account" payer master receiver jason
+process-transaction 1 amount 20 fee 10 payload "fund account" payer master receiver jason
 process-transaction 2 amount 200 fee 10 payload "fund account" payer master receiver bill
 process-transaction 3 amount 300 fee 10 payload "fund account" payer master receiver mary
 process-transaction 4 amount 400 fee 10 payload "fund account" payer master receiver silver
@@ -232,9 +232,6 @@ create event cam_A1 event "customer cust_1 adds prod10 from aisle_A1:shelf_q1"
 # Removes 1 bournvita from customer's basket
 create event cam_A1 event "customer cust_1 removes prod10 from aisle_A1:shelf_q1"
 
-# Add 1 sunglass to customer's basket
-create event cam_A1 event "customer cust_3 adds prod13 from aisle_B2:shelf_q2"
-
 ################################################################################
 # Restock Event
 # create event <camera> event "customer <customer> (adds|removes) <product> from <aisle:shelf>"
@@ -243,6 +240,10 @@ create event cam_A1 event "customer cust_3 adds prod13 from aisle_B2:shelf_q2"
 # Add 1 coffee to customer's basket. Inventory 100 -> 99 (capacity of 300).
 # Generate restock command to bring Inventory count from 99 -> 300.
 create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q3"
+
+# Add 1 sunglass to customer's basket. Inventory 200 -> 199 (capacity of 500).
+# Generate restock command to bring Inventory count from 199 -> 500.
+create event cam_A1 event "customer cust_3 adds prod13 from aisle_B2:shelf_q2"
 
 ################################################################################
 # Cleaning Event
@@ -290,7 +291,6 @@ create event mic_A1 event "can you help me find 'cust_7'"
 
 # Reduce inventory from 50 -> 45. Basket count 0 -> 5. Generate restock command
 # to bring Inventory from 45 -> 200.
-
 create event mic_A1 event "customer cust_1 says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
 
 # Reduce inventory from 100 -> 90. Basket count 0 -> 10. Generate restock command
@@ -306,24 +306,36 @@ create event mic_A1 event "customer cust_3 says please get me 4 of prod13 from s
 # create event <microphone> event "customer <customer> says 'What is the total basket value?'"
 ################################################################################
 
+# Customer 1 (Jason) has 5 'coffee' (from Fetch Product).
+# Unit price = 3 * 5 = basket total of 15
+# Total (15 + 10 min fee) is more than Jason's account balance of 20
 create event mic_A1 event "customer cust_1 says 'What is the total basket value?'"
 
+# Customer 5 has 1 'coffee' (from Restock Command).
+# Unit price = 3 * 1 = basket total of 3
+# Total (3 + 10 min fee) is less than Megon's account balance of 500
 create event mic_A1 event "customer cust_5 says 'What is the total basket value?'"
 
-create event mic_A1 event "customer cust_6 says 'What is the total basket value?'"
+# Customer 2 has 10 'tea' (from Fetch Product).
+# Unit price = 1 * 10 = basket total of 10
+# Total (10 + 10 min fee) is less than Bill's account balance of 200
+create event mic_A1 event "customer cust_2 says 'What is the total basket value?'"
 
 ################################################################################
 # Checkout
 # create event <turnstile> event "customer <customer> approaches turnstile"
 ################################################################################
 
-create event turn_a1 event "customer cust_1 approaches turnstile"
-
-create event turn_a2 event "customer cust_3 approaches turnstile"
+# Customer 5 (Megon) basket total is 3 + 10 min fee (against balance of 500
+# Transaction successful, assigned ID of 8 (there are 7 initial transactions)
+create event turn_a3 event "customer cust_5 approaches turnstile"
 
 ################################################################################
 # Assist customer to car
 # checkout: total weight of products in basket exceeds 10lbs
 ################################################################################
 
-create event turn_a3 event "customer cust_5 approaches turnstile"
+# Bill's basket total is 10 + 10 min fee (against balance of 200)
+# Transaction successful, with ID of 8 (7 initial transactions above)
+# Triggers assistance command -- basket has 10 items of size 1.5 lbs > 10 lbs max
+create event turn_a2 event "customer cust_2 approaches turnstile"

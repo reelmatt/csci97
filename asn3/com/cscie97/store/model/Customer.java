@@ -162,7 +162,6 @@ public class Customer {
         }
 
         List<ProductAssociation> items = this.basket.getBasketItems();
-
         Integer cost = 0;
 
         for (ProductAssociation item : items) {

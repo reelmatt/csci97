@@ -50,9 +50,13 @@ public class FetchProductCommand extends AbstractCommand {
                                Customer customer,
                                Integer amount,
                                Product product,
-                               String location) {
+                               String location) throws StoreControllerServiceException {
         super(authToken, storeModel, source);
         this.customer = customer;
+
+        if (amount <= 0) {
+            throw new StoreControllerServiceException("fetch product", "amount must be > 0");
+        }
         this.amount = amount;
         this.product = product;
         this.location = location;

@@ -266,6 +266,9 @@ public class CommandFactory {
             if (event.toLowerCase().contains("what is the total basket value")) {
                 return new CheckAccountBalanceCommand(authToken, storeModel, device, this.ledger, customer);
             } else if (event.toLowerCase().contains("please get me ")) {
+//                System.out.println("FETCH PRODUCT");
+//                eventArgs.forEach(arg -> System.out.println(arg));
+
                 // Retrieve the amount
                 Integer amount = Integer.parseInt(eventArgs.get(3));
 
