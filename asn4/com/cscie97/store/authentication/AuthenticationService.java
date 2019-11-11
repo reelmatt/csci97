@@ -47,7 +47,7 @@ public class AuthenticationService implements AuthenticationServiceInterface, Si
 
     }
 
-    public static getInstance() {
+    public static AuthenticationService getInstance() {
         if (this.instance == null) {
             this.instance = new AuthenticationService();
         }
@@ -88,7 +88,7 @@ public class AuthenticationService implements AuthenticationServiceInterface, Si
             throw new AuthenticationException(
                     "define permission",
                     "A Permission with id " + id + " already exists."
-            )
+            );
         }
 
         // Create new User
@@ -113,7 +113,7 @@ public class AuthenticationService implements AuthenticationServiceInterface, Si
             throw new AuthenticationException(
                 "define resource",
                 "A Resource with id " + id + " already exists."
-            )
+            );
         }
 
         // Create new User
@@ -139,7 +139,7 @@ public class AuthenticationService implements AuthenticationServiceInterface, Si
             throw new AuthenticationException(
                 "define resource role",
                 "A Role with id " + id + " already exists."
-            )
+            );
         }
 
         Resource resource = this.resourceMap.get(resourceId);
@@ -148,7 +148,7 @@ public class AuthenticationService implements AuthenticationServiceInterface, Si
             throw new AuthenticationException(
                 "define resource role",
                 "The Resource with id " + id + " does not exist."
-            )
+            );
         }
 
         // Create new User
@@ -174,7 +174,7 @@ public class AuthenticationService implements AuthenticationServiceInterface, Si
             throw new AuthenticationException(
                 "define role",
                 "A Role with id " + id + " already exists."
-            )
+            );
         }
 
         // Create new User
@@ -200,7 +200,7 @@ public class AuthenticationService implements AuthenticationServiceInterface, Si
             throw new AuthenticationException(
                 "define user",
                 "A User with id " + id + " already exists."
-            )
+            );
         }
 
         // Create new User
