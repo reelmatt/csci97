@@ -4,6 +4,7 @@ import com.cscie97.ledger.Ledger;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthenticationServiceInterface;
 
 /**
  * StoreControllerService - concrete class
@@ -13,6 +14,9 @@ import com.cscie97.store.model.StoreModelServiceInterface;
  * @author Matthew Thomas
  */
 public class StoreControllerService implements StoreControllerServiceInterface, Observer {
+    /** Authentication Service to use authenticate requests to public API. */
+    private AuthenticationServiceInterface authService;
+
     /** The StoreModelService that provides API to update state. */
     private StoreModelServiceInterface storeModel;
 
@@ -34,7 +38,8 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
      * @param storeModel    The StoreModelService that provides API to update state.
      * @param ledger        The Ledger which processes transactions.
      */
-    public StoreControllerService(StoreModelServiceInterface storeModel, Ledger ledger) {
+    public StoreControllerService(AuthenticationServiceInterface authService, StoreModelServiceInterface storeModel, Ledger ledger) {
+        this.authService = authService;
         this.storeModel = storeModel;
         this.ledger = ledger;
         this.authToken = "authToken implemented in assignment 4";

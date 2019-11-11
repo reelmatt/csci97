@@ -5,11 +5,15 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Date;
+import com.cscie97.store.authentication.AuthenticationServiceInterface;
 
 /**
  * {@inheritDoc}
  */
 public class StoreModelService implements StoreModelServiceInterface, Subject {
+    /** Authentication Service to use authenticate requests to public API. */
+    private AuthenticationServiceInterface authService;
+
     /** A list of all Customers registered with the Model Service. */
     private Map<String, Customer> customerMap;
 
@@ -38,7 +42,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * Creates an instance of the Store Model Service to provision stores and
      * perform commands.
      */
-    public StoreModelService() {
+    public StoreModelService(AuthenticationServiceInterface authService) {
+        this.authService = authService;
         this.customerMap = new HashMap<String, Customer>();
         this.deviceMap = new HashMap<String, Device>();
         this.productMap = new HashMap<String, Product>();

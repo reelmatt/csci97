@@ -1,6 +1,7 @@
 package com.cscie97.store.controller;
 
 import com.cscie97.store.model.*;
+import com.cscie97.store.authentication.*;
 import com.cscie97.ledger.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -27,13 +28,26 @@ import java.util.HashMap;
  */
 public class CommandProcessor {
     /** StoreControllerService to monitor store state and control appliances. */
-    private StoreControllerService storeControllerService = null;
+    private StoreControllerServiceInterface storeControllerService = null;
 
     /** StoreModelService to create, read, and update Store objects. */
     private StoreModelServiceInterface storeModelService = null;
 
+    private AuthenticationServiceInterface authenticationService = null;
+
     /** Ledger to manage accounts and process transactions. */
     private Ledger ledger = null;
+
+    public CommandProcessor(StoreControllerServiceInterface controller,
+                            StoreModelServiceInterface model,
+                            AuthenticationServiceInterface auth,
+                            Ledger ledger) {
+        this.storeModelService = model;
+        this.storeControllerService = controller;
+        this.ledger = ledger;
+        this.authenticationService = auth;
+
+    }
 
     /**
      * Process a set of commands provided within the given 'commandFile'.
@@ -63,18 +77,18 @@ public class CommandProcessor {
             throw new CommandProcessorException("open file", e.toString(), currentLineNumber);
         }
 
-        // Create Store Model Service
-        this.storeModelService = new StoreModelService();
-
-        // Create Ledger
-        try {
-            this.ledger = new Ledger("test", "test ledger", "cambridge");
-        } catch (LedgerException e) {
-            System.err.println(e);
-        }
-
-        // Create Store Controller Service with Model and Ledger
-        this.storeControllerService = new StoreControllerService(this.storeModelService, this.ledger);
+//        // Create Store Model Service
+//        this.storeModelService = new StoreModelService();
+//
+//        // Create Ledger
+//        try {
+//            this.ledger = new Ledger("test", "test ledger", "cambridge");
+//        } catch (LedgerException e) {
+//            System.err.println(e);
+//        }
+//
+//        // Create Store Controller Service with Model and Ledger
+//        this.storeControllerService = new StoreControllerService(this.storeModelService, this.ledger);
 
         // Read file
         try {
