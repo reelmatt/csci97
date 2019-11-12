@@ -23,6 +23,6 @@ public class Role extends Entitlement {
     }
 
     public boolean hasResource(Permission permission, Resource resource) {
-
+        return false;
     };
 }

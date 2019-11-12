@@ -236,7 +236,7 @@ public class CommandProcessor {
      *                                      processing the command line received
      *                                      from the input file.
      */
-    private void processStoreModelCommand(String authToken, String command, String storeObject, String id, List<String> args, Integer lineNumber) throws CommandProcessorException{
+    private void processStoreModelCommand(String authToken, String command, String storeObject, String id, List<String> args, Integer lineNumber) throws CommandProcessorException {
         // Pass remaining args into helper methods
         try {
             switch (command.toLowerCase()) {
@@ -268,6 +268,8 @@ public class CommandProcessor {
                     throw new CommandProcessorException(command, "Unknown command", lineNumber);
             }
         } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
             System.err.println(e);
         }
     }
@@ -542,10 +544,13 @@ public class CommandProcessor {
      *                                      method.
      */
     private void define(String authToken, String command, String object, String id, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException {
         switch (object.toLowerCase()) {
             case "aisle":
                 defineAisle(authToken, command, id, args);
+                break;
+            case "credential":
+                defineCredential(authToken, command, id, args);
                 break;
             case "customer":
                 defineCustomer(authToken, command, id, args);
@@ -556,14 +561,26 @@ public class CommandProcessor {
             case "inventory":
                 defineInventory(authToken, command, id, args);
                 break;
+            case "permission":
+                break;
             case "product":
                 defineProduct(authToken, command, id, args);
+                break;
+            case "resource":
+                defineResource(authToken, command, id, args);
+                break;
+            case "resource_role":
+                break;
+            case "role":
                 break;
             case "shelf":
                 defineShelf(authToken, command, id, args);
                 break;
             case "store":
                 defineStore(authToken, command, id, args);
+                break;
+            case "user":
+                defineUser(authToken, command, id, args);
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command");
@@ -617,6 +634,27 @@ public class CommandProcessor {
 //        }
 
     }
+
+    private void defineCredential(String authToken, String command, String userId, List<String> args)
+            throws CommandProcessorException, AuthenticationException {
+
+        String credentialType;
+        String credentialValue;
+        try {
+            credentialType = args.get(0);
+            credentialValue = args.get(1);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(
+                "define credential",
+                "Missing parameters"
+            );
+        }
+
+        Credential credential = this.authenticationService.addUserCredential(userId, credentialType, credentialValue);
+        System.out.println("COMMAND: created credential " + credential + " for user " + userId);
+    }
+
+
 
     /**
      * Define a new Customer.
@@ -833,6 +871,20 @@ public class CommandProcessor {
         printCreatedEntity("product", product.getId());
     }
 
+    private void defineResource(String authToken, String command, String resourceId, List<String> args)
+            throws CommandProcessorException, AuthenticationException {
+        String description = null;
+        try {
+            description = args.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(
+                "define resource",
+                "Missing resource description."
+            );
+        }
+        Resource resource = this.authenticationService.defineResource(resourceId, args.get(0));
+        System.out.println("COMMAND: created resource" + resource);
+    }
     /**
      * Define a new Shelf.
      *
@@ -915,6 +967,12 @@ public class CommandProcessor {
         );
 
         printCreatedEntity("store", store.getId());
+    }
+
+    private void defineUser(String authToken, String command, String userId, List<String> args)
+            throws CommandProcessorException, AuthenticationException {
+        User user = this.authenticationService.defineUser(userId, args.get(0));
+        System.out.println("COMMAND: created user " + user);
     }
 
     /**

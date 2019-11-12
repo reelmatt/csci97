@@ -7,7 +7,7 @@ public class User {
 
     private AuthToken token;
 
-    private Credential login;
+    private Credential password;
 
     private Credential facePrint;
 
@@ -28,8 +28,16 @@ public class User {
         return this.facePrint;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public Credential getLogin() {
-        return this.login;
+        return this.password;
     }
 
     public Credential getVoicePrint() {
@@ -48,7 +56,11 @@ public class User {
         this.voicePrint = voicePrint;
     }
 
-    public void setLogin(Credential login) {
-        this.login = login;
+    public void setPassword(Credential password) {
+        this.password = password;
+    }
+
+    public String toString() {
+        return this.id + ": " + this.name;
     }
 }

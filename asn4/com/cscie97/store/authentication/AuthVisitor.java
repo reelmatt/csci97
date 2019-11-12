@@ -2,11 +2,19 @@ package com.cscie97.store.authentication;
 
 
 public class AuthVisitor implements Visitor {
-    public void visitRole(Role role);
+    public void visitRole(Role role) {
+        return;
+    };
 
-    public void visitPermission(Permission permission);
+    public void visitPermission(Permission permission) {
+        return;
+    };
 
-    public void visitResourceRole(ResourceRole role);
+    public void visitResourceRole(ResourceRole role) {
+        return;
+    };
 
-    public void visitUser(User user);
+    public void visitUser(User user) {
+        return;
+    };
 }

@@ -15,6 +15,6 @@ public class ResourceRole extends Role {
     };
 
     public boolean hasResource(Permission permission, Resource resource) {
-
+        return false;
     };
 }

@@ -12,6 +12,6 @@ public class Permission extends Entitlement {
     };
 
     public boolean hasResource(Permission permission, Resource resource) {
-
+        return false;
     };
 }

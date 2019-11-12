@@ -15,10 +15,10 @@ public abstract class Entitlement implements EntitlementInterface {
     }
 
     public void acceptVisitor(Visitor visitor) {
-
+        return;
     };
 
     public boolean hasResource(Permission permission, Resource resource) {
-
+        return false;
     };
 }

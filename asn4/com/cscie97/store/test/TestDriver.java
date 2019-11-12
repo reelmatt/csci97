@@ -3,10 +3,14 @@ package com.cscie97.store.test;
 import com.cscie97.store.controller.CommandProcessor;
 import com.cscie97.store.controller.CommandProcessorException;
 
+import com.cscie97.store.controller.StoreControllerService;
 import com.cscie97.store.controller.StoreControllerServiceInterface;
+import com.cscie97.store.model.StoreModelService;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthenticationService;
 import com.cscie97.store.authentication.AuthenticationServiceInterface;
 import com.cscie97.ledger.Ledger;
+import com.cscie97.ledger.LedgerException;
 
 /**
  * Main program to run test scripts for Ledger Service.
@@ -31,12 +35,12 @@ public class TestDriver {
 
 
 
-        AuthenticationServiceInterface authenticationService = AuthenticationService.getInstance();
+        AuthenticationServiceInterface auth = AuthenticationService.getInstance();
 
         /** Ledger to manage accounts and process transactions. */
         Ledger ledger = null;
         try {
-            this.ledger = new Ledger("test", "test ledger", "cambridge");
+            ledger = new Ledger("test", "test ledger", "cambridge");
         } catch (LedgerException e) {
             // Failed to create Ledger. Cannot proceed further, so print error and return
             System.err.println(e);
@@ -44,14 +48,14 @@ public class TestDriver {
         }
 
         /** StoreModelService to create, read, and update Store objects. */
-        StoreModelServiceInterface storeModelService = new StoreModelService(authenticationService);
+        StoreModelServiceInterface model = new StoreModelService(auth);
 
         /** StoreControllerService to monitor store state and control appliances. */
-        StoreControllerServiceInterface storeControllerService = new StoreControllerService(authenticationService, storeModelService, ledger);
+        StoreControllerServiceInterface controller = new StoreControllerService(auth, model, ledger);
 
         // Process file
         try {
-            CommandProcessor processor = new CommandProcessor();
+            CommandProcessor processor = new CommandProcessor(controller, model, auth, ledger);
             processor.processCommandFile(args[0]);
         } catch (CommandProcessorException e) {
             System.err.println(e);

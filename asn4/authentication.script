@@ -1,0 +1,21 @@
+# define user
+# define user <user_id> <user_name>
+
+define user user1 "john"
+define user user2 "jane"
+define user user3 "alex"
+
+# define user credential
+# define credential <user_id> (voice_print | face_print | password) <value>
+
+define credential user1 voice_print --voice:john--
+define credential user1 face_print --face:john--
+define credential user1 password "hello world"
+
+define credential user2 voice_print --voice:jane--
+
+# define resource
+# define resource <resource_id> <resource_description>
+
+define resource store_123 "Store 123"
+define resource turn_A1 "Turnstile A1"
