@@ -33,11 +33,22 @@ public class CommandProcessor {
     /** StoreModelService to create, read, and update Store objects. */
     private StoreModelServiceInterface storeModelService = null;
 
+    /** AuthenticationService to manage auth tokens and restrict access. */
     private AuthenticationServiceInterface authenticationService = null;
 
     /** Ledger to manage accounts and process transactions. */
     private Ledger ledger = null;
 
+    private AuthToken token = null;
+
+    /**
+     * CommandProcessor Constructor.
+     *
+     * @param controller
+     * @param model
+     * @param auth
+     * @param ledger
+     */
     public CommandProcessor(StoreControllerServiceInterface controller,
                             StoreModelServiceInterface model,
                             AuthenticationServiceInterface auth,
@@ -76,19 +87,6 @@ public class CommandProcessor {
         } catch (FileNotFoundException e) {
             throw new CommandProcessorException("open file", e.toString(), currentLineNumber);
         }
-
-//        // Create Store Model Service
-//        this.storeModelService = new StoreModelService();
-//
-//        // Create Ledger
-//        try {
-//            this.ledger = new Ledger("test", "test ledger", "cambridge");
-//        } catch (LedgerException e) {
-//            System.err.println(e);
-//        }
-//
-//        // Create Store Controller Service with Model and Ledger
-//        this.storeControllerService = new StoreControllerService(this.storeModelService, this.ledger);
 
         // Read file
         try {
@@ -241,7 +239,7 @@ public class CommandProcessor {
         try {
             switch (command.toLowerCase()) {
                 case "add":
-                    addBasketItem(authToken, command, id, args);
+                    add(authToken, command, storeObject, id, args);
                     break;
                 case "clear":
                     clearBasket(authToken, id);
@@ -253,7 +251,17 @@ public class CommandProcessor {
                     define(authToken, command, storeObject, id, args);
                     break;
                 case "get":
-                    getBasket(authToken, command, id, args);
+                    get(authToken, command, storeObject, id, args);
+                    break;
+                case "login":
+                    System.out.println(String.format("command: %s\nobject: %s\nid: %s\n", command, storeObject, id));
+                    this.token = this.authenticationService.login(id, "password", args.get(1));
+                    break;
+                case "logout":
+                    System.out.println("Logging out " + this.token);
+                    this.authenticationService.logout(this.token);
+                    this.token = null;
+                    System.out.println("Logout successful.");
                     break;
                 case "remove":
                     removeItem(authToken, command, id, args);
@@ -270,6 +278,10 @@ public class CommandProcessor {
         } catch (StoreModelServiceException e) {
             System.err.println(e);
         } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
             System.err.println(e);
         }
     }
@@ -348,6 +360,22 @@ public class CommandProcessor {
         }
     }
 
+    /**
+     * Helper function to retrieve information.
+     */
+    private void add(String authToken, String command, String object, String id, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException {
+        switch (object.toLowerCase()) {
+            case "basket_item":
+                addBasketItem(authToken, command, id, args);
+                break;
+            case "permission_to_role":
+                System.out.println("TK");
+                break;
+            default:
+                throw new CommandProcessorException(command, "Unknown command");
+        }
+    }
 
     /**
      * Add a Product item to a Basket.
@@ -429,8 +457,11 @@ public class CommandProcessor {
      *                                      method.
      */
     private void create(String authToken, String command, String object, String id, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         switch (object.toLowerCase()) {
+            case "auth_root_user":
+                createAuthRootUser(command, id, args);
+                break;
             case "command":
                 createCommand(authToken, command, id, args);
                 break;
@@ -443,6 +474,20 @@ public class CommandProcessor {
 
     }
 
+    /**
+     * See: Piazza post @267 on Bootstrapping Authentication Service
+     */
+    private void createAuthRootUser(String command, String userId, List<String> args) throws CommandProcessorException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        String password = null;
+        try {
+            password = args.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing root password.");
+        }
+
+        // Create root user
+        this.authenticationService.createRootUser(userId, password);
+    }
     /**
      * Send a command to an Appliance.
      *
@@ -544,13 +589,13 @@ public class CommandProcessor {
      *                                      method.
      */
     private void define(String authToken, String command, String object, String id, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException, AuthenticationException {
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         switch (object.toLowerCase()) {
             case "aisle":
                 defineAisle(authToken, command, id, args);
                 break;
             case "credential":
-                defineCredential(authToken, command, id, args);
+                defineCredential(this.token, command, id, args);
                 break;
             case "customer":
                 defineCustomer(authToken, command, id, args);
@@ -562,16 +607,18 @@ public class CommandProcessor {
                 defineInventory(authToken, command, id, args);
                 break;
             case "permission":
+                definePermission(this.token, command, id, args);
                 break;
             case "product":
                 defineProduct(authToken, command, id, args);
                 break;
             case "resource":
-                defineResource(authToken, command, id, args);
+                defineResource(this.token, command, id, args);
                 break;
             case "resource_role":
                 break;
             case "role":
+                defineRole(this.token, command, id, args);
                 break;
             case "shelf":
                 defineShelf(authToken, command, id, args);
@@ -580,7 +627,7 @@ public class CommandProcessor {
                 defineStore(authToken, command, id, args);
                 break;
             case "user":
-                defineUser(authToken, command, id, args);
+                defineUser(this.token, command, id, args);
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command");
@@ -619,23 +666,19 @@ public class CommandProcessor {
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
 
         // Add the Aisle to the ModelService
-//        try {
-            Aisle aisle = this.storeModelService.defineAisle(
-                    authToken,
-                    aisleId,
-                    entityInfo.get("name"),
-                    entityInfo.get("description"),
-                    (Location) getEnum(Location.values(), entityInfo.get("location"))
-            );
+        Aisle aisle = this.storeModelService.defineAisle(
+                authToken,
+                aisleId,
+                entityInfo.get("name"),
+                entityInfo.get("description"),
+                (Location) getEnum(Location.values(), entityInfo.get("location"))
+        );
 
-            printCreatedEntity("aisle", aisle.getId());
-//        } catch (NullPointerException e) {
-//            throw new CommandProcessorException(command, "Location type unknown.");
-//        }
+        printCreatedEntity("aisle", aisle.getId());
 
     }
 
-    private void defineCredential(String authToken, String command, String userId, List<String> args)
+    private void defineCredential(AuthToken token, String command, String userId, List<String> args)
             throws CommandProcessorException, AuthenticationException {
 
         String credentialType;
@@ -651,7 +694,7 @@ public class CommandProcessor {
         }
 
         Credential credential = this.authenticationService.addUserCredential(userId, credentialType, credentialValue);
-        System.out.println("COMMAND: created credential " + credential + " for user " + userId);
+        printCreatedEntity("credential", credential.toString());
     }
 
 
@@ -809,6 +852,25 @@ public class CommandProcessor {
         printCreatedEntity("inventory", inventory.getId());
     }
 
+    private void definePermission(AuthToken token, String command, String permissionId, List<String> args)
+            throws CommandProcessorException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+
+        String name;
+        String description;
+        try {
+            name = args.get(0);
+            description = args.get(1);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(
+                "define permission",
+                "Missing parameters"
+            );
+        }
+
+        Permission permission = this.authenticationService.definePermission(token, permissionId, name, description);
+        printCreatedEntity("permission", permission.toString());
+    }
+
     /**
      * Define a new Product.
      *
@@ -871,7 +933,7 @@ public class CommandProcessor {
         printCreatedEntity("product", product.getId());
     }
 
-    private void defineResource(String authToken, String command, String resourceId, List<String> args)
+    private void defineResource(AuthToken token, String command, String resourceId, List<String> args)
             throws CommandProcessorException, AuthenticationException {
         String description = null;
         try {
@@ -882,7 +944,7 @@ public class CommandProcessor {
                 "Missing resource description."
             );
         }
-        Resource resource = this.authenticationService.defineResource(resourceId, args.get(0));
+        Resource resource = this.authenticationService.defineResource(token, resourceId, args.get(0));
         System.out.println("COMMAND: created resource" + resource);
     }
     /**
@@ -969,10 +1031,59 @@ public class CommandProcessor {
         printCreatedEntity("store", store.getId());
     }
 
-    private void defineUser(String authToken, String command, String userId, List<String> args)
-            throws CommandProcessorException, AuthenticationException {
-        User user = this.authenticationService.defineUser(userId, args.get(0));
+    private void defineUser(AuthToken token, String command, String userId, List<String> args)
+            throws CommandProcessorException, AuthenticationException, InvalidAuthTokenException {
+        User user = this.authenticationService.defineUser(token, userId, args.get(0));
         System.out.println("COMMAND: created user " + user);
+    }
+
+    private void defineRole(AuthToken token, String command, String roleId, List<String> args)
+            throws CommandProcessorException, AuthenticationException {
+
+        String name;
+        String description;
+        try {
+            name = args.get(0);
+            description = args.get(1);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(
+                "define role",
+                "Missing parameters"
+            );
+        }
+
+        Role role = this.authenticationService.defineRole(token, roleId, name, description);
+        printCreatedEntity("role", role.toString());
+    }
+
+    /**
+     * Helper function to retrieve information.
+     */
+    private void get(String authToken, String command, String object, String id, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException {
+        switch (object.toLowerCase()) {
+            case "auth_inventory":
+                getAuthInventory(authToken, command, id, args);
+                break;
+            case "customer_basket":
+                getBasket(authToken, command, id, args);
+                break;
+            default:
+                throw new CommandProcessorException(command, "Unknown command");
+        }
+    }
+
+    /**
+     * Retrieve the basket associated with the specified Customer. If one does not
+     * exist, create the basket and associate with the Customer.
+     */
+    private void getAuthInventory (String authToken, String command, String customerId, List<String> args)
+            throws CommandProcessorException, AuthenticationException {
+        // Check to see if the Customer already has a basket
+
+       this.authenticationService.getInventory(authToken);
+//       System.out.println(inventory);
+        return;
     }
 
     /**

@@ -1,21 +1,106 @@
+################################################################################
+# create root user
+# create auth_root_user <user_id> <password>
+################################################################################
+
+
+create auth_root_user root root
+
+
+define user user1 "john"
+
+################################################################################
+# login
+# login user <user_id> password <credential>
+################################################################################
+login user root password root
+
+################################################################################
 # define user
 # define user <user_id> <user_name>
-
+################################################################################
 define user user1 "john"
 define user user2 "jane"
 define user user3 "alex"
 
+
+
+################################################################################
 # define user credential
 # define credential <user_id> (voice_print | face_print | password) <value>
-
+################################################################################
 define credential user1 voice_print --voice:john--
 define credential user1 face_print --face:john--
 define credential user1 password "hello world"
 
+define credential foobar password "hello world"
+
 define credential user2 voice_print --voice:jane--
 
+################################################################################
 # define resource
 # define resource <resource_id> <resource_description>
-
+################################################################################
 define resource store_123 "Store 123"
 define resource turn_A1 "Turnstile A1"
+
+################################################################################
+# define permission
+# define permission <permission_id> <permission_name> <permission_description>
+################################################################################
+# define permission user_admin "User administrator" "Create, Update, Delete Users"
+define permission checkout "Checkout of store" "Permission to checkout of store"
+define permission enter_store "Enter store" "Permission to enter store"
+
+################################################################################
+# logout
+# login user <user_id> password <credential>
+################################################################################
+logout foobar foobar
+
+
+define permission control_robot "Control robot" "Full control of robots"
+define permission control_speaker "Control speaker" "Full control of speakers"
+define permission control_turnstile "Control turnstile" "Full control of turnstiles"
+
+################################################################################
+# define role
+# define role <role_id> <role_name> <role_description>
+################################################################################
+define role adult_consumer "Adult consumer role" "Has all permissions of an adult consumer"
+define role child_consumer "Child consumer role" "Has all permissions of an child consumer"
+define role guest "Guest role" "Has all permissions of a guest"
+define role admin "Admin role" "Has all permissions of an administator"
+
+
+
+################################################################################
+# define resource role
+# define resource_role <role_id> <role_name> <role_description> <resource_id>
+################################################################################
+# define resource_role role_1 store_123_child <role_description> <resource_id>
+
+
+################################################################################
+# add permission to role
+# add permission_to_role <permission_id> <role_id>
+################################################################################
+add permission_to_role user_admin admin
+add permission_to_role control_robot admin
+add permission_to_role control_speaker admin
+add permission_to_role control_turnstile admin
+
+
+add permission_to_role checkout adult_consumer
+add permission_to_role enter_store adult_consumer
+add permission_to_role control_robot adult_consumer
+
+add permission_to_role enter_store child_consumer
+add permission_to_role checkout child_consumer
+
+add permission_to_role enter_store guest
+
+################################################################################
+# Run InventoryVisitor
+################################################################################
+get auth_inventory foobar

@@ -22,6 +22,7 @@ public class User {
     public User(String id, String name) {
         this.id = id;
         this.name = name;
+        this.entitlementList = new ArrayList<Entitlement>();
     }
 
     public Credential getFacePrint() {
@@ -48,6 +49,10 @@ public class User {
         return this.token;
     }
 
+    public void addEntitlement(Entitlement entitlement) {
+        entitlementList.add(entitlement);
+    }
+
     public void setFacePrint(Credential facePrint) {
         this.facePrint = facePrint;
     }
@@ -58,6 +63,14 @@ public class User {
 
     public void setPassword(Credential password) {
         this.password = password;
+    }
+
+    public List<Entitlement> getEntitlementList() {
+        return entitlementList;
+    }
+
+    public void setToken(AuthToken token) {
+        this.token = token;
     }
 
     public String toString() {

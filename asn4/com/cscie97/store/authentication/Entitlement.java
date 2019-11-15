@@ -21,4 +21,12 @@ public abstract class Entitlement implements EntitlementInterface {
     public boolean hasResource(Permission permission, Resource resource) {
         return false;
     };
+
+    public String getId() {
+        return id;
+    }
+
+    public String toString() {
+        return this.id + ": " + this.name;
+    }
 }

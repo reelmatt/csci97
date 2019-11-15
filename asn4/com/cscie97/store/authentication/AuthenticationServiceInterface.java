@@ -1,14 +1,15 @@
 package com.cscie97.store.authentication;
-
+import java.util.Map;
+import java.util.Iterator;
 /**
  *
  */
 public interface AuthenticationServiceInterface {
 //    public AuthenticationServiceInterface getInstance();
 
-    public void acceptVisitor();
+    public void acceptVisitor(Visitor visitor);
 
-    public void addEntitlementToUser(String userId, Entitlement entitlement);
+    public void addEntitlementToUser(String userId, Entitlement entitlement) throws AuthenticationException;
 
     public void addPermissionToRole(Permission permission, Role role);
 
@@ -16,17 +17,26 @@ public interface AuthenticationServiceInterface {
 
     public AuthToken authenticateCredential(String user, String credential);
 
-    public Permission definePermission(String id, String name, String description) throws AuthenticationException;
+    public void createRootUser(String userId, String password) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
-    public Resource defineResource(String id, String description) throws AuthenticationException;
+    public Permission definePermission(AuthToken token, String id, String name, String description) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
-    public ResourceRole defineResourceRole(String id, String name, String description, String resourceId) throws AuthenticationException;
+    public Resource defineResource(AuthToken token, String id, String description) throws AuthenticationException;
 
-    public Role defineRole(String id, String name, String description) throws AuthenticationException;
+    public ResourceRole defineResourceRole(AuthToken token, String id, String name, String description, String resourceId) throws AuthenticationException;
 
-    public User defineUser(String id, String name) throws AuthenticationException;
+    public Role defineRole(AuthToken token, String id, String name, String description) throws AuthenticationException;
 
-    public void invalidateToken(AuthToken authToken);
+    public User defineUser(AuthToken token, String id, String name) throws AuthenticationException, InvalidAuthTokenException;
 
-    public User validateToken(AuthToken authToken);
+    public void getInventory(String authToken) throws AuthenticationException;
+
+    public boolean hasPermission(AuthToken token, Permission permission, Resource resource) throws AuthenticationException, AccessDeniedException;
+
+    public AuthToken login(String userId, String credentialType, String credential) throws AuthenticationException, AccessDeniedException;
+
+    public void logout(AuthToken authToken);
+
+
+    public User validateToken(AuthToken authToken) throws InvalidAuthTokenException;
 }

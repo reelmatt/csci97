@@ -9,6 +9,7 @@ import com.cscie97.store.model.Device;
 import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.StoreModelServiceInterface;
 
+import java.util.Iterator;
 import java.util.Base64;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,9 +25,11 @@ import java.security.NoSuchAlgorithmException;
 public class AuthenticationService implements AuthenticationServiceInterface {
     private static AuthenticationService instance = null;
 
-    private Map<String, Visitor> visitorMap;
+    private boolean rootUser = false;
 
     private Map<String, User> userMap;
+
+    private Map<Integer, AuthToken> tokenMap;
 
     private Map<String, Permission> permissionMap;
 
@@ -34,20 +37,15 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     private Map<String, Resource> resourceMap;
 
+    private static final String ADMIN_ACCESS = "user_admin";
 
 
     private AuthenticationService() {
-        this.visitorMap = new HashMap<String, Visitor>();
-
-        Visitor access = new AuthVisitor();
-        Visitor inventory = new InventoryVisitor();
-        this.visitorMap.put("access", access);
-        this.visitorMap.put("inventory", inventory);
-
         this.userMap = new HashMap<String, User>();
         this.permissionMap = new HashMap<String, Permission>();
         this.roleMap = new HashMap<String, Role>();
         this.resourceMap = new HashMap<String, Resource>();
+        this.tokenMap = new HashMap<Integer, AuthToken>();
 
     }
 
@@ -70,11 +68,15 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         return user;
     }
-    public void acceptVisitor() {
+    public void acceptVisitor(Visitor visitor) {
+        visitor.visitAuthenticationService(this);
         return;
     };
 
-    public void addEntitlementToUser(String userId, Entitlement entitlement) {
+    public void addEntitlementToUser(String userId, Entitlement entitlement) throws AuthenticationException {
+        User user = getUser(userId);
+        user.addEntitlement(entitlement);
+
         return;
     };
 
@@ -127,6 +129,30 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newCredential;
     };
 
+    public void createRootUser(String userId, String password) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        if (this.rootUser) {
+            throw new AuthenticationException("create root user", "A root user has already been created.");
+        }
+
+        User root = defineUser(null, userId, "root");
+        Credential credential = addUserCredential(userId, "password", password);
+        this.rootUser = true;
+
+//        Permission admin_permission = getPermission("user_admin");
+        // Create new Permission
+        Permission admin_permission = new Permission("user_admin", "User administrator", "Create, Update, Delete Users");
+
+        // Add to map
+        this.permissionMap.put("user_admin", admin_permission);
+//        if (admin_permission == null) {
+//            admin_permission = definePermission(null, "user_admin", "User administrator", "Create, Update, Delete Users");
+//        }
+
+        System.out.println("CREATE ROOT, perm == " + admin_permission);
+        addEntitlementToUser(userId, admin_permission);
+
+        return;
+    }
     /**
      * Generate a hash and convert to a String. Use SHA-256.
      *
@@ -155,10 +181,16 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     }
 
     public AuthToken authenticateCredential(String user, String credential) {
-        return new AuthToken();
+        return new AuthToken("id");
     };
 
-    public Permission definePermission(String id, String name, String description) throws AuthenticationException {
+    public Permission definePermission(AuthToken token, String id, String name, String description) throws AuthenticationException, InvalidAuthTokenException, AccessDeniedException {
+        validateToken(token);
+
+        if (! hasPermission(token, getPermission(ADMIN_ACCESS), null)) {
+            throw new AccessDeniedException("define permission", "no admin access");
+        }
+
         // All User information must be present
         if (id == null || name == null || description == null) {
             throw new AuthenticationException(
@@ -175,7 +207,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             );
         }
 
-        // Create new User
+        // Create new Permission
         Permission newPermission = new Permission(id, name, description);
 
         // Add to map
@@ -183,7 +215,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newPermission;
     };
 
-    public Resource defineResource(String id, String description) throws AuthenticationException {
+    public Resource defineResource(AuthToken token, String id, String description) throws AuthenticationException {
         // All User information must be present
         if (id == null || description == null) {
             throw new AuthenticationException(
@@ -209,7 +241,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newResource;
     };
 
-    public ResourceRole defineResourceRole(String id, String name, String description, String resourceId) throws AuthenticationException {
+    public ResourceRole defineResourceRole(AuthToken token, String id, String name, String description, String resourceId) throws AuthenticationException {
         // All User information must be present
         if (id == null || name == null || description == null || resourceId == null) {
             throw new AuthenticationException(
@@ -244,7 +276,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newResourceRole;
     };
 
-    public Role defineRole(String id, String name, String description) throws AuthenticationException {
+    public Role defineRole(AuthToken token, String id, String name, String description) throws AuthenticationException {
         // All User information must be present
         if (id == null || name == null || description == null) {
             throw new AuthenticationException(
@@ -270,8 +302,15 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newRole;
     };
 
-    public User defineUser(String id, String name) throws AuthenticationException {
-        System.out.println("AUTH: define user - " + id + " " + name);
+    public User defineUser(AuthToken token, String id, String name) throws AuthenticationException, InvalidAuthTokenException {
+
+
+
+        // If a root user has been created, a token is required
+        if (this.rootUser && token == null) {
+            throw new InvalidAuthTokenException("define user", "No token provided.");
+        }
+
         // All User information must be present
         if (id == null || name == null) {
             throw new AuthenticationException(
@@ -297,14 +336,100 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newUser;
     };
 
-    public void invalidateToken(AuthToken authToken) {
+    public AuthToken login(String userId, String credentialType, String credential) throws AuthenticationException, AccessDeniedException {
+        User user = getUser(userId);
+
+        if (credentialType.equals("password")) {
+            Credential login = user.getLogin();
+
+            byte[] toHash = credential.getBytes();
+
+            String hashedPassword = hashToString(toHash);
+
+            if (login.getValue().equals(hashedPassword)) {
+                Integer tokenId = this.tokenMap.size() + 1;
+                AuthToken newToken = new AuthToken(String.valueOf(tokenId));
+
+                user.setToken(newToken);
+                this.tokenMap.put(tokenId, newToken);
+
+                return newToken;
+
+            }
+        }
+
+        throw new AccessDeniedException("login", "password is not recognized for " + userId);
+    }
+
+    public void logout(AuthToken authToken) {
         if (authToken != null) {
             authToken.invalidate();
         }
         return;
     };
 
-    public User validateToken(AuthToken authToken) {
-        return this.userMap.get("userId");
+    public void getInventory(String authToken) throws AuthenticationException {
+        Visitor inventory = new InventoryVisitor();
+        acceptVisitor(inventory);
+
+
+        return;
+    }
+
+    public Iterator<Map.Entry<String, User>> listUsers() {
+        return userMap.entrySet().iterator();
+    }
+
+    public Iterator<Map.Entry<String, Resource>> listResources() {
+        return resourceMap.entrySet().iterator();
+    }
+
+    public Permission getPermission(String id) {
+        return permissionMap.get(id);
+    }
+
+    public Iterator<Map.Entry<String, Permission>> listPermissions() {
+        return permissionMap.entrySet().iterator();
+    }
+
+    public Iterator<Map.Entry<String, Role>> listRoles() {
+        return roleMap.entrySet().iterator();
+    }
+
+    public boolean hasPermission(AuthToken authToken, Permission permission, Resource resource) throws AuthenticationException, AccessDeniedException {
+        if (authToken == null) {
+            throw new AuthenticationException("has permission", "Missing auth token.");
+        }
+
+        if (permission == null) {
+            throw new AuthenticationException("has permission", "Missing required permission.");
+        }
+
+        Visitor access = new AuthVisitor(authToken, permission, resource);
+        acceptVisitor(access);
+
+        return access.isHasPermission();
+    }
+
+    public User validateToken(AuthToken authToken) throws InvalidAuthTokenException {
+        if ( authToken == null ) {
+            throw new InvalidAuthTokenException("auth token", "none exists");
+        }
+
+        if ( ! authToken.isActive() ) {
+            throw new InvalidAuthTokenException("auth token", "no longer active");
+        }
+
+        // check token hasn't timed out
+
+        // find user
+
+
+
+
+
+
+        return null;
+//        return this.userMap.get("userId");
     };
 }
