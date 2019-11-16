@@ -4,6 +4,7 @@ import com.cscie97.ledger.Ledger;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthToken;
 import com.cscie97.store.authentication.AuthenticationServiceInterface;
 
 /**
@@ -24,7 +25,8 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
     private Ledger ledger;
 
     /** Token to authenticate actions - forthcoming in assignment 4. */
-    private String authToken;
+//    private String authToken = null;
+    private AuthToken authToken = null;
 
     /** Factory to generate Command objects to execute. */
     private CommandFactory factory;
@@ -42,10 +44,10 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
         this.authService = authService;
         this.storeModel = storeModel;
         this.ledger = ledger;
-        this.authToken = "authToken implemented in assignment 4";
+//        this.authToken = "authToken implemented in assignment 4";
 
         // Initialize a CommandFactory to create commands to execute
-        this.factory = new CommandFactory(storeModel, ledger);
+        this.factory = new CommandFactory(storeModel, authService, ledger);
 
         // Register with Store Model as an Observer
         this.storeModel.register(this);
@@ -76,7 +78,7 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
 
     /** Returns the authentication token from the Controller - forthcoming in
      * assingment 4. */
-    public String getAuthToken() {
+    public AuthToken getAuthToken() {
         return this.authToken;
     }
 

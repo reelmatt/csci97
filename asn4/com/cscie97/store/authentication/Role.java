@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Role extends Entitlement {
 
-    private List<Permission> permissionList;
+//    private List<Permission> permissionList;
 
     private List<Entitlement> entitlementList;
 
@@ -15,24 +15,38 @@ public class Role extends Entitlement {
     public Role (String id, String name, String description) {
         super(id, name, description);
         this.entitlementList = new ArrayList<Entitlement>();
-        this.permissionList = new ArrayList<Permission>();
+//        this.permissionList = new ArrayList<Permission>();
     }
 
     public void acceptVisitor(Visitor visitor) {
 
     };
 
-    public void addPermission(Permission permission) {
+    public void addEntitlement(Entitlement newEntitlement) {
+        // If no entitlement, don't add
+        if (newEntitlement == null) {
+            return;
+        }
 
+        // Don't add a duplicate Permission
+        for (Entitlement entitlement : getEntitlementList()) {
+            if (entitlement.getId().equals(newEntitlement.getId())) {
+                return;
+            }
+        }
+
+        // Add Permission to the list
+        this.entitlementList.add(newEntitlement);
+        return;
     }
 
     public List<Entitlement> getEntitlementList() {
         return entitlementList;
     }
 
-    public List<Permission> getPermissionList() {
-        return permissionList;
-    }
+//    public List<Permission> getPermissionList() {
+//        return permissionList;
+//    }
 
     public boolean hasResource(Permission permission, Resource resource) {
         return false;

@@ -6,7 +6,10 @@ import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
-
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * AssistCustomerCommand.
@@ -33,7 +36,7 @@ public class AssistCustomerCommand extends AbstractCommand {
      * @param source        The Device which detected the event.
      * @param customer      The Customer that needs assistance.
      */
-    public AssistCustomerCommand(String authToken,
+    public AssistCustomerCommand(AuthToken authToken,
                                  StoreModelServiceInterface storeModel,
                                  Device source,
                                  Customer customer) {

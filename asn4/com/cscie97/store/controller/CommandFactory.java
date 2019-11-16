@@ -16,6 +16,11 @@ import com.cscie97.store.model.Shelf;
 import com.cscie97.store.model.StoreModelService;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthenticationServiceInterface;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
+import com.cscie97.store.authentication.AuthToken;
 
 /**
  * A CommandFactory works in conjuction with a StoreModelServiceInterface and a
@@ -29,6 +34,9 @@ public class CommandFactory {
     /** The StoreModelService that provides API to update state. */
     private StoreModelServiceInterface storeModel;
 
+    /** The AuthenticationService to verify restricted access. */
+    private AuthenticationServiceInterface authService;
+
     /** The Ledger which processes transactions. */
     private Ledger ledger;
 
@@ -41,9 +49,10 @@ public class CommandFactory {
      * @param storeModel    The StoreModelService that provides API to update state.
      * @param ledger        The Ledger which processes transactions.
      */
-    public CommandFactory(StoreModelServiceInterface storeModel, Ledger ledger) {
+    public CommandFactory(StoreModelServiceInterface storeModel, AuthenticationServiceInterface authService, Ledger ledger) {
         this.storeModel = storeModel;
         this.ledger = ledger;
+        this.authService = authService;
     }
 
     /**
@@ -61,23 +70,28 @@ public class CommandFactory {
      *                                          different Exception is thrown while creating
      *                                          the Command (such as missing parameters).
      */
-    public Command createCommand(String authToken, String event, Device device)
+    public Command createCommand(AuthToken token, String event, Device device)
             throws StoreControllerServiceException {
-        // Standardize event as lower case
-//        String event = message.toLowerCase();
-
         // Break stimulus into a list of arguments
         List<String> eventArgs = parseCommand(event);
 
         // Key syntax variables
+        String userId = null;
+        String credential = null;
         String eventCommand = null;
         String id = null;
 
         try {
-            // First argument is the keyword of the stimulus
+            // First argument is the user id
+            userId = eventArgs.remove(0);
+
+            // First argument is the auth credential
+            credential = eventArgs.remove(0);
+
+            // Second argument is the keyword of the stimulus
             eventCommand = eventArgs.remove(0);
 
-            // Second argument is often an id (customer, product)
+            // Third argument is often an id (customer, product)
             // Natural language commands check full event for substring, so OK
             // to remove from parse list
             id = eventArgs.remove(0);
@@ -85,6 +99,20 @@ public class CommandFactory {
             throw new StoreControllerServiceException(event, "Missing arguments.");
         }
 
+        // Check user Credential and retireve authToken
+        AuthToken authToken;
+        try {
+            authToken = this.authService.login(userId, credential);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+            return null;
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+            return null;
+        }
+
+
+        System.out.println("FACTORY: token == " + authToken.toString());
         // Command to create
         Command storeCommand = null;
 
@@ -182,7 +210,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createCustomerCommand(String authToken,
+    private Command createCustomerCommand(AuthToken authToken,
                                          StoreModelServiceInterface storeModel,
                                          Ledger ledger,
                                          Device device,
@@ -228,6 +256,12 @@ public class CommandFactory {
             throw new StoreControllerServiceException(event, "Missing event parameters.");
         } catch (StoreModelServiceException e) {
             throw new StoreControllerServiceException(event, e.getReason());
+        } catch (AccessDeniedException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (AuthenticationException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (InvalidAuthTokenException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
         }
     }
 
@@ -255,7 +289,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createCustomerRequestCommand(String authToken,
+    private Command createCustomerRequestCommand(AuthToken authToken,
                                                  StoreModelServiceInterface storeModel,
                                                  Device device,
                                                  String event,
@@ -287,6 +321,12 @@ public class CommandFactory {
             throw new StoreControllerServiceException(event, "Amount must be a valid Integer.");
         } catch (StoreModelServiceException e) {
             throw new StoreControllerServiceException(event, e.toString());
+        } catch (AccessDeniedException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (AuthenticationException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (InvalidAuthTokenException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
         }
     }
 
@@ -310,7 +350,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createEmergencyCommand(String authToken,
+    private Command createEmergencyCommand(AuthToken authToken,
                                            StoreModelServiceInterface storeModel,
                                            Device device,
                                            List<String> eventArgs,
@@ -324,6 +364,12 @@ public class CommandFactory {
         } catch (IndexOutOfBoundsException e) {
             throw new StoreControllerServiceException("emergency event", "Missing aisle location.");
         } catch (StoreModelServiceException e) {
+            throw new StoreControllerServiceException("emergency event", e.getReason());
+        } catch (AccessDeniedException e) {
+            throw new StoreControllerServiceException("emergency event", e.getReason());
+        } catch (AuthenticationException e) {
+            throw new StoreControllerServiceException("emergency event", e.getReason());
+        } catch (InvalidAuthTokenException e) {
             throw new StoreControllerServiceException("emergency event", e.getReason());
         }
     }
@@ -358,7 +404,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createMicrophoneCommand(String authToken,
+    private Command createMicrophoneCommand(AuthToken authToken,
                                             StoreModelServiceInterface storeModel,
                                             Device device,
                                             String event,
@@ -379,6 +425,12 @@ public class CommandFactory {
         } catch (IndexOutOfBoundsException e) {
             throw new StoreControllerServiceException(event, "Missing event parameters.");
         } catch (StoreModelServiceException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (AccessDeniedException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (AuthenticationException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (InvalidAuthTokenException e) {
             throw new StoreControllerServiceException(event, e.getReason());
         }
     }
@@ -410,7 +462,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createProductCommand(String authToken,
+    private Command createProductCommand(AuthToken authToken,
                                           StoreModelServiceInterface storeModel,
                                           Device device,
                                           String event,
@@ -438,6 +490,12 @@ public class CommandFactory {
         } catch (IndexOutOfBoundsException e) {
             throw new StoreControllerServiceException(event, "Missing event parameters.");
         } catch (StoreModelServiceException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (AccessDeniedException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (AuthenticationException e) {
+            throw new StoreControllerServiceException(event, e.getReason());
+        } catch (InvalidAuthTokenException e) {
             throw new StoreControllerServiceException(event, e.getReason());
         }
     }

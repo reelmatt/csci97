@@ -5,6 +5,10 @@ import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * CustomerSeenCommand.
@@ -30,7 +34,7 @@ public class CustomerSeenCommand extends AbstractCommand {
      * @param   customer    The Customer that was detected.
      * @param   aisle       The Aisle the mess is located in.
      */
-    public CustomerSeenCommand(String authToken,
+    public CustomerSeenCommand(AuthToken authToken,
                                StoreModelServiceInterface storeModel,
                                Device source,
                                Customer customer,
@@ -51,6 +55,12 @@ public class CustomerSeenCommand extends AbstractCommand {
             String location = super.getSource().getStore() + ":" + this.aisle.getId();
             super.getStoreModel().updateCustomer(super.getAuthToken(), this.customer.getId(), location);
         } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
             System.err.println(e);
         }
 

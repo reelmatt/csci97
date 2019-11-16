@@ -1,6 +1,11 @@
 package com.cscie97.store.model;
 
 import java.util.List;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
+
 
 /**
  * Interface for a Store Model Service.
@@ -18,7 +23,7 @@ import java.util.List;
  */
 public interface StoreModelServiceInterface extends Subject {
 
-    public List<Appliance> getAppliances(String authToken, ApplianceType type, String storeId) throws StoreModelServiceException;
+    public List<Appliance> getAppliances(AuthToken authToken, ApplianceType type, String storeId) throws StoreModelServiceException;
 
     /**
      * Add a given count of a Product to a Customer's Basket.
@@ -39,10 +44,10 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      The Exception is also thrown if getBasket() fails to
      *                                      retrieve a basket.
      */
-    public ProductAssociation addItemToBasket(String authToken,
+    public ProductAssociation addItemToBasket(AuthToken authToken,
                                               String customerId,
                                               String productId,
-                                              Integer itemCount) throws StoreModelServiceException;
+                                              Integer itemCount) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException;
 
     /**
      * Clear a Basket of all ProductAssociations and remove from the Customer.
@@ -52,8 +57,8 @@ public interface StoreModelServiceInterface extends Subject {
      * @param   customerId                  The customer id.
      * @throws  StoreModelServiceException  If the Customer does not exist.
      */
-    public void clearBasket(String authToken,
-                            String customerId) throws StoreModelServiceException;
+    public void clearBasket(AuthToken authToken,
+                            String customerId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Create a new Aisle.
@@ -73,11 +78,11 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      does not exist, or if an Aisle with the requested ID already
      *                                      exists in that Store.
      */
-    public Aisle defineAisle(String authToken,
+    public Aisle defineAisle(AuthToken authToken,
                              String fullyQualifiedAisleId,
                              String name,
                              String description,
-                             Location location) throws StoreModelServiceException;
+                             Location location) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Create a Basket associated with a Customer.
@@ -90,8 +95,8 @@ public interface StoreModelServiceInterface extends Subject {
      * @return                              The Basket created by the Store Model Service.
      * @throws  StoreModelServiceException  If the Customer does not exist.
      */
-    public Basket defineBasket(String authToken,
-                               String customerId) throws StoreModelServiceException;
+    public Basket defineBasket(AuthToken authToken,
+                               String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException;
 
     /**
      * Create a new Customer.
@@ -110,13 +115,13 @@ public interface StoreModelServiceInterface extends Subject {
      * @throws  StoreModelServiceException  If parameters are missing or the Customer already
      *                                      exists within the Store Model Service.
      */
-    public Customer defineCustomer(String authToken,
+    public Customer defineCustomer(AuthToken authToken,
                                    String customerId,
                                    String firstName,
                                    String lastName,
                                    CustomerType type,
                                    String email,
-                                   String account) throws StoreModelServiceException;
+                                   String account) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Create a new Device.
@@ -138,11 +143,11 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      if the Store or Aisle requested do not exist. The Device
      *                                      type must also match a valid SensorType or ApplianceType.
      */
-    public Device defineDevice(String authToken,
+    public Device defineDevice(AuthToken authToken,
                                String deviceId,
                                String name,
                                String type,
-                               String fullyQualifiedAisleId) throws StoreModelServiceException;
+                               String fullyQualifiedAisleId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
 
     /**
@@ -164,12 +169,12 @@ public interface StoreModelServiceInterface extends Subject {
      * @return                              The Inventory created by the Store Model Service.
      * @throws StoreModelServiceException   If...
      */
-    public Inventory defineInventory(String authToken,
+    public Inventory defineInventory(AuthToken authToken,
                                 String inventoryId,
                                 String location,
                                 Integer capacity,
                                 Integer count,
-                                String productId) throws StoreModelServiceException;
+                                String productId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Create a new Product.
@@ -190,14 +195,14 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      Exception is also thrown if the Product already exists
      *                                      in the Store Model Service.
      */
-    public Product defineProduct(String authToken,
+    public Product defineProduct(AuthToken authToken,
                               String productId,
                               String name,
                               String description,
                               Double size,
                               String category,
                               Integer price,
-                              Temperature temperature) throws StoreModelServiceException;
+                              Temperature temperature) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
 
     /**
@@ -220,12 +225,12 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      Aisle do not exist, or if a Shelf with the requested ID already
      *                                      exists in that location.
      */
-    public Shelf defineShelf(String authToken,
+    public Shelf defineShelf(AuthToken authToken,
                             String fullyQualifiedShelfId,
                             String name,
                             Level level,
                             String description,
-                            Temperature temperature) throws StoreModelServiceException;
+                            Temperature temperature) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Create a new Store.
@@ -241,10 +246,10 @@ public interface StoreModelServiceInterface extends Subject {
      * @throws  StoreModelServiceException  If parameters are missing, or if a Store with
      *                                      the same id already exists.
      */
-    public Store defineStore(String authToken,
+    public Store defineStore(AuthToken authToken,
                              String storeId,
                              String name,
-                             String address) throws StoreModelServiceException;
+                             String address) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Inventory specified by 'locationId'.
@@ -257,8 +262,8 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      Aisle, or Shelf do not exist, or if the Inventory
      *                                      is not found.
      */
-    public Aisle getAisle(String authToken,
-                          String locationId) throws StoreModelServiceException;
+    public Aisle getAisle(AuthToken authToken,
+                          String locationId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Basket associated with the Customer specified by 'customerId'.
@@ -269,8 +274,8 @@ public interface StoreModelServiceInterface extends Subject {
      * @throws  StoreModelServiceException  If the Customer with the given id does not exist, or
      *                                      they do not have a Basket.
      */
-    public Basket getBasket(String authToken,
-                            String customerId) throws StoreModelServiceException;
+    public Basket getBasket(AuthToken authToken,
+                            String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Customer specified by 'customerId'.
@@ -280,12 +285,12 @@ public interface StoreModelServiceInterface extends Subject {
      * @return                              Customer on success. Otherwise, raise Exception.
      * @throws  StoreModelServiceException  If the Customer does not exist with the given id.
      */
-    public Customer getCustomer(String authToken,
-                                String customerId) throws StoreModelServiceException;
+    public Customer getCustomer(AuthToken authToken,
+                                String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException;
 
-    public Customer getCustomerByName(String authToken,
+    public Customer getCustomerByName(AuthToken authToken,
                                       String storeId,
-                                      String name) throws StoreModelServiceException;
+                                      String name) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Device specified by 'deviceId'.
@@ -295,8 +300,8 @@ public interface StoreModelServiceInterface extends Subject {
      * @return                              Device on success. Otherwise, raise Exception.
      * @throws  StoreModelServiceException  If the Device does not exist with the given id.
      */
-    public Device getDevice(String authToken,
-                            String deviceId) throws StoreModelServiceException;
+    public Device getDevice(AuthToken authToken,
+                            String deviceId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Inventory specified by 'locationId'.
@@ -309,8 +314,8 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      Aisle, or Shelf do not exist, or if the Inventory
      *                                      is not found.
      */
-    public Inventory getInventory(String authToken,
-                                  String locationId) throws StoreModelServiceException;
+    public Inventory getInventory(AuthToken authToken,
+                                  String locationId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Product specified by 'productId'.
@@ -320,8 +325,8 @@ public interface StoreModelServiceInterface extends Subject {
      * @return                              Product on success. Otherwise, raise Exception.
      * @throws  StoreModelServiceException  If the Product does not exist with the given id.
      */
-    public Product getProduct(String authToken,
-                              String productId) throws StoreModelServiceException;
+    public Product getProduct(AuthToken authToken,
+                              String productId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Shelf specified by 'locationId'.
@@ -333,8 +338,8 @@ public interface StoreModelServiceInterface extends Subject {
      * @throws  StoreModelServiceException  If the locationId is incomplete, the parent Store or
      *                                      Aisle does not exist, or if the Shelf is not found.
      */
-    public Shelf getShelf(String authToken,
-                          String locationId) throws StoreModelServiceException;
+    public Shelf getShelf(AuthToken authToken,
+                          String locationId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Retrieve the Store specified by 'storeId'.
@@ -344,14 +349,14 @@ public interface StoreModelServiceInterface extends Subject {
      * @return                              Store on success. Otherwise, raise Exception.
      * @throws  StoreModelServiceException  If the Store does not exist with the given id.
      */
-    public Store getStore(String authToken,
-                          String storeId) throws StoreModelServiceException;
+    public Store getStore(AuthToken authToken,
+                          String storeId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
 
-    public List<Customer> getStoreCustomers(String authToken, String storeId);
+    public List<Customer> getStoreCustomers(AuthToken authToken, String storeId);
 
-    public List<Device> getStoreDevices(String authToken,
-                                        String storeId) throws StoreModelServiceException;
+    public List<Device> getStoreDevices(AuthToken authToken,
+                                        String storeId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Receive a command to forward to an Appliance.
@@ -370,7 +375,7 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      does not exist, or the Device is not an Appliance
      *                                      (only Appliances can receive commands).
      */
-    public void receiveCommand(String authToken,
+    public void receiveCommand(AuthToken authToken,
                                String deviceId,
                                String message) throws StoreModelServiceException;
 
@@ -387,7 +392,7 @@ public interface StoreModelServiceInterface extends Subject {
      * @param   event                       The event that was created.
      * @throws  StoreModelServiceException  If the 'event' is not provided.
      */
-    public void receiveEvent(String authToken,
+    public void receiveEvent(AuthToken authToken,
                              String deviceId,
                              String event) throws StoreModelServiceException;
 
@@ -413,10 +418,10 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      Exception is also thrown if the Product is found, but
      *                                      cannot be removed from the Basket.
      */
-    public ProductAssociation removeItemFromBasket(String authToken,
+    public ProductAssociation removeItemFromBasket(AuthToken authToken,
                                                    String customerId,
                                                    String productId,
-                                                   Integer itemCount) throws StoreModelServiceException;
+                                                   Integer itemCount) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Update a customer's location.
@@ -433,9 +438,9 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      is also thrown if calls to getCustomer(), getStore(),
      *                                      or getAisle() fail.
      */
-    public void updateCustomer(String authToken,
+    public void updateCustomer(AuthToken authToken,
                                String customerId,
-                               String location) throws StoreModelServiceException;
+                               String location) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Update an inventory's product count.
@@ -452,7 +457,7 @@ public interface StoreModelServiceInterface extends Subject {
      *                                      would exceed capacity. The Exception is also thrown if
      *                                      the call to getInventory() fails.
      */
-    public void updateInventory(String authToken,
+    public void updateInventory(AuthToken authToken,
                                 String fullyQualifiedInventoryId,
-                                Integer updateCount) throws StoreModelServiceException;
+                                Integer updateCount) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 }

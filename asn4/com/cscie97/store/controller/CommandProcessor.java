@@ -157,7 +157,8 @@ public class CommandProcessor {
         // Key syntax variables for Model service
         String storeObject = null;
         String id = null;
-        String authToken = "authToken is part of Assignment 4";
+//        String authToken = "authToken is part of Assignment 4";
+//        AuthToken authToken = this.token;
 
         // Extract additional key arguments
         try {
@@ -171,7 +172,7 @@ public class CommandProcessor {
         }
 
         // Process Store Model Command
-        processStoreModelCommand(authToken, command, storeObject, id, args, lineNumber);
+        processStoreModelCommand(this.token, command, storeObject, id, args, lineNumber);
         return;
     }
 
@@ -234,7 +235,7 @@ public class CommandProcessor {
      *                                      processing the command line received
      *                                      from the input file.
      */
-    private void processStoreModelCommand(String authToken, String command, String storeObject, String id, List<String> args, Integer lineNumber) throws CommandProcessorException {
+    private void processStoreModelCommand(AuthToken authToken, String command, String storeObject, String id, List<String> args, Integer lineNumber) throws CommandProcessorException {
         // Pass remaining args into helper methods
         try {
             switch (command.toLowerCase()) {
@@ -255,11 +256,11 @@ public class CommandProcessor {
                     break;
                 case "login":
                     System.out.println(String.format("command: %s\nobject: %s\nid: %s\n", command, storeObject, id));
-                    this.token = this.authenticationService.login(id, "password", args.get(1));
+                    this.token = this.authenticationService.login(id, args.get(1));
                     break;
                 case "logout":
-                    System.out.println("Logging out " + this.token);
-                    this.authenticationService.logout(this.token);
+                    System.out.println("Logging out " + authToken);
+                    this.authenticationService.logout(authToken);
                     this.token = null;
                     System.out.println("Logout successful.");
                     break;
@@ -363,14 +364,17 @@ public class CommandProcessor {
     /**
      * Helper function to retrieve information.
      */
-    private void add(String authToken, String command, String object, String id, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException, AuthenticationException {
+    private void add(AuthToken authToken, String command, String object, String id, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         switch (object.toLowerCase()) {
             case "basket_item":
                 addBasketItem(authToken, command, id, args);
                 break;
-            case "permission_to_role":
-                System.out.println("TK");
+            case "entitlement_to_role":
+                addEntitlementToRole(authToken, command, id, args);
+                break;
+            case "entitlement_to_user":
+                addEntitlementToUser(authToken, command, id, args);
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command");
@@ -395,8 +399,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void addBasketItem (String authToken, String command, String customerId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void addBasketItem (AuthToken authToken, String command, String customerId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to add basket item
         String productId = null;
         Integer itemCount = null;
@@ -419,6 +423,37 @@ public class CommandProcessor {
         return;
     }
 
+    private void addEntitlementToUser(AuthToken authToken, String command, String userId, List<String> args)
+            throws CommandProcessorException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        String entitlementId = null;
+
+        try {
+            entitlementId = args.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        }
+
+//        Permission permission = this.authenticationService.getPermission(permissionId);
+//        Role role = this.authenticationService.getRole(roleId);
+
+        this.authenticationService.addEntitlementToUser(authToken, userId, entitlementId);
+    }
+
+    private void addEntitlementToRole(AuthToken authToken, String command, String entitlementId, List<String> args)
+            throws CommandProcessorException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        String roleId = null;
+
+        try {
+            roleId = args.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            throw new CommandProcessorException(command, "Missing arguments.");
+        }
+
+//        Permission permission = this.authenticationService.getPermission(permissionId);
+//        Role role = this.authenticationService.getRole(roleId);
+
+        this.authenticationService.addEntitlementToRole(authToken, entitlementId, roleId);
+    }
     /**
      * Clear the contents of a basket and remove its association from the Customer.
      *
@@ -431,7 +466,7 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void clearBasket (String authToken, String customerId) throws StoreModelServiceException {
+    private void clearBasket (AuthToken authToken, String customerId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         this.storeModelService.clearBasket(authToken, customerId);
         System.out.println("Customer '" + customerId + "' basket cleared and removed.");
     }
@@ -456,7 +491,7 @@ public class CommandProcessor {
      *                                      up to by handled and printed in the processCommand()
      *                                      method.
      */
-    private void create(String authToken, String command, String object, String id, List<String> args)
+    private void create(AuthToken authToken, String command, String object, String id, List<String> args)
             throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         switch (object.toLowerCase()) {
             case "auth_root_user":
@@ -509,7 +544,7 @@ public class CommandProcessor {
      *                                      Service will throw an Exception, which is handled and
      *                                      printed in the processCommand() method.
      */
-    private void createCommand(String authToken, String command, String deviceId, List<String> args)
+    private void createCommand(AuthToken authToken, String command, String deviceId, List<String> args)
             throws CommandProcessorException, StoreModelServiceException {
         // Get information needed to add basket item
         String message = null;
@@ -546,8 +581,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void createEvent (String authToken, String command, String deviceId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void createEvent (AuthToken authToken, String command, String deviceId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get the opaque event string
         String event = null;
 
@@ -588,14 +623,14 @@ public class CommandProcessor {
      *                                      up to by handled and printed in the processCommand()
      *                                      method.
      */
-    private void define(String authToken, String command, String object, String id, List<String> args)
+    private void define(AuthToken authToken, String command, String object, String id, List<String> args)
             throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         switch (object.toLowerCase()) {
             case "aisle":
                 defineAisle(authToken, command, id, args);
                 break;
             case "credential":
-                defineCredential(this.token, command, id, args);
+                defineCredential(authToken, command, id, args);
                 break;
             case "customer":
                 defineCustomer(authToken, command, id, args);
@@ -607,18 +642,18 @@ public class CommandProcessor {
                 defineInventory(authToken, command, id, args);
                 break;
             case "permission":
-                definePermission(this.token, command, id, args);
+                definePermission(authToken, command, id, args);
                 break;
             case "product":
                 defineProduct(authToken, command, id, args);
                 break;
             case "resource":
-                defineResource(this.token, command, id, args);
+                defineResource(authToken, command, id, args);
                 break;
             case "resource_role":
                 break;
             case "role":
-                defineRole(this.token, command, id, args);
+                defineRole(authToken, command, id, args);
                 break;
             case "shelf":
                 defineShelf(authToken, command, id, args);
@@ -627,7 +662,7 @@ public class CommandProcessor {
                 defineStore(authToken, command, id, args);
                 break;
             case "user":
-                defineUser(this.token, command, id, args);
+                defineUser(authToken, command, id, args);
                 break;
             default:
                 throw new CommandProcessorException(command, "Unknown command");
@@ -659,8 +694,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void defineAisle(String authToken, String command, String aisleId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void defineAisle(AuthToken authToken, String command, String aisleId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to define an Aisle
         String[] keys = {"name", "description", "location"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
@@ -679,7 +714,7 @@ public class CommandProcessor {
     }
 
     private void defineCredential(AuthToken token, String command, String userId, List<String> args)
-            throws CommandProcessorException, AuthenticationException {
+            throws CommandProcessorException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
 
         String credentialType;
         String credentialValue;
@@ -693,8 +728,8 @@ public class CommandProcessor {
             );
         }
 
-        Credential credential = this.authenticationService.addUserCredential(userId, credentialType, credentialValue);
-        printCreatedEntity("credential", credential.toString());
+        String credential = this.authenticationService.addUserCredential(token, userId, credentialType, credentialValue);
+        printCreatedEntity("credential", credential);
     }
 
 
@@ -726,8 +761,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void defineCustomer(String authToken, String command, String customerId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void defineCustomer(AuthToken authToken, String command, String customerId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to define a Customer
         String[] keys = {"first_name", "last_name", "type", "email_address", "account"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
@@ -776,8 +811,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void defineDevice(String authToken, String command, String deviceId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void defineDevice(AuthToken authToken, String command, String deviceId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to define a Device
         String[] keys = {"name", "type", "location"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
@@ -824,8 +859,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void defineInventory(String authToken, String command, String inventoryId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void defineInventory(AuthToken authToken, String command, String inventoryId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to define an Inventory object
         String[] keys = {"location", "capacity", "count", "product"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
@@ -902,8 +937,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void defineProduct(String authToken, String command, String productId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void defineProduct(AuthToken authToken, String command, String productId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to define a Product
         String[] keys = {"name", "description", "size", "category", "unit_price", "temperature"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
@@ -934,7 +969,7 @@ public class CommandProcessor {
     }
 
     private void defineResource(AuthToken token, String command, String resourceId, List<String> args)
-            throws CommandProcessorException, AuthenticationException {
+            throws CommandProcessorException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         String description = null;
         try {
             description = args.get(0);
@@ -973,8 +1008,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void defineShelf(String authToken, String command, String shelfId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void defineShelf(AuthToken authToken, String command, String shelfId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to define a Shelf
         String[] keys = {"name", "description", "level", "temperature"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
@@ -1014,8 +1049,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void defineStore(String authToken, String command, String storeId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void defineStore(AuthToken authToken, String command, String storeId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to define a Store
         String[] keys = {"name", "address"};
         Map<String, String> entityInfo = getStoreEntityInfo(command, keys, args);
@@ -1032,16 +1067,17 @@ public class CommandProcessor {
     }
 
     private void defineUser(AuthToken token, String command, String userId, List<String> args)
-            throws CommandProcessorException, AuthenticationException, InvalidAuthTokenException {
+            throws CommandProcessorException, AuthenticationException,  AccessDeniedException, InvalidAuthTokenException {
         User user = this.authenticationService.defineUser(token, userId, args.get(0));
         System.out.println("COMMAND: created user " + user);
     }
 
     private void defineRole(AuthToken token, String command, String roleId, List<String> args)
-            throws CommandProcessorException, AuthenticationException {
+            throws CommandProcessorException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
 
         String name;
         String description;
+
         try {
             name = args.get(0);
             description = args.get(1);
@@ -1052,15 +1088,23 @@ public class CommandProcessor {
             );
         }
 
-        Role role = this.authenticationService.defineRole(token, roleId, name, description);
+        String resource = null;
+
+        try {
+            resource = args.get(2);
+        } catch (IndexOutOfBoundsException e) {
+            // ignore, Resource is allowed to be blank
+        }
+
+        Role role = this.authenticationService.defineRole(token, roleId, name, description, resource);
         printCreatedEntity("role", role.toString());
     }
 
     /**
      * Helper function to retrieve information.
      */
-    private void get(String authToken, String command, String object, String id, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException, AuthenticationException {
+    private void get(AuthToken authToken, String command, String object, String id, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         switch (object.toLowerCase()) {
             case "auth_inventory":
                 getAuthInventory(authToken, command, id, args);
@@ -1077,7 +1121,7 @@ public class CommandProcessor {
      * Retrieve the basket associated with the specified Customer. If one does not
      * exist, create the basket and associate with the Customer.
      */
-    private void getAuthInventory (String authToken, String command, String customerId, List<String> args)
+    private void getAuthInventory (AuthToken authToken, String command, String customerId, List<String> args)
             throws CommandProcessorException, AuthenticationException {
         // Check to see if the Customer already has a basket
 
@@ -1102,8 +1146,8 @@ public class CommandProcessor {
      *                                      throw an Exception, which is handled and printed in
      *                                      the processCommand() method.
      */
-    private void getBasket (String authToken, String command, String customerId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void getBasket (AuthToken authToken, String command, String customerId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Check to see if the Customer already has a basket
 
         Basket basket = null;
@@ -1181,8 +1225,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void removeItem (String authToken, String command, String customerId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void removeItem (AuthToken authToken, String command, String customerId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Get information needed to add basket item
         String productId = null;
         Integer itemCount = null;
@@ -1237,12 +1281,12 @@ public class CommandProcessor {
      *                                      up to by handled and printed in the processCommand()
      *                                      method.
      */
-    private void show(String authToken,
+    private void show(AuthToken authToken,
                       String command,
                       String object,
                       String id,
                       List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+            throws CommandProcessorException, StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
 
         switch (object.toLowerCase()) {
             case "aisle":
@@ -1293,8 +1337,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void showAisle(String authToken, String command, String location)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void showAisle(AuthToken authToken, String command, String location)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Parse the location String
         String[] ids = parseLocationIdentifier(location);
 
@@ -1312,7 +1356,7 @@ public class CommandProcessor {
         }
     }
 
-    private void showBasketItems(String authToken, String customerId) throws StoreModelServiceException {
+    private void showBasketItems(AuthToken authToken, String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         Basket basket = this.storeModelService.getBasket(authToken, customerId);
 
 
@@ -1346,8 +1390,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void showInventory(String authToken, String command, String location)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void showInventory(AuthToken authToken, String command, String location)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Parse the location String
         String[] ids = parseLocationIdentifier(location);
 
@@ -1392,8 +1436,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void showShelf(String authToken, String command, String location)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void showShelf(AuthToken authToken, String command, String location)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Parse the location String
         String[] ids = parseLocationIdentifier(location);
 
@@ -1433,8 +1477,8 @@ public class CommandProcessor {
      *                                      will throw an Exception, which is handled and printed
      *                                      in the processCommand() method.
      */
-    private void showStore(String authToken, String storeId)
-            throws StoreModelServiceException {
+    private void showStore(AuthToken authToken, String storeId)
+            throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
 
         Store store = this.storeModelService.getStore(authToken, storeId);
 
@@ -1453,8 +1497,8 @@ public class CommandProcessor {
         printDeviceList(devices);
     }
 
-    private void update(String token, String command, String object, String id, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void update(AuthToken token, String command, String object, String id, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
 
         switch (object.toLowerCase()) {
             case "inventory":
@@ -1481,8 +1525,8 @@ public class CommandProcessor {
      * @param args
      * @throws CommandProcessorException
      */
-    private void updateCustomer(String authToken, String command, String customerId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void updateCustomer(AuthToken authToken, String command, String customerId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         String location = null;
         try {
             location = getArgument("location", args);
@@ -1502,8 +1546,8 @@ public class CommandProcessor {
      * @param args
      * @throws CommandProcessorException
      */
-    private void updateInventory(String authToken, String command, String inventoryId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+    private void updateInventory(AuthToken authToken, String command, String inventoryId, List<String> args)
+            throws CommandProcessorException, StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         Integer updateCount = null;
 
         try {

@@ -12,7 +12,10 @@ import com.cscie97.store.model.Inventory;
 import com.cscie97.store.model.Product;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
-
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * RestockCommand.
@@ -45,7 +48,7 @@ public class RestockCommand extends AbstractCommand {
      * @param   inventory   The Inventory where Product needs to be restocked.
      * @param   location    The fully qualified inventory location.
      */
-    public RestockCommand(String authToken,
+    public RestockCommand(AuthToken authToken,
                           StoreModelServiceInterface storeModel,
                           Device source,
                           Product product,
@@ -95,6 +98,12 @@ public class RestockCommand extends AbstractCommand {
             ));
 
         } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
             System.err.println(e);
         }
         return;

@@ -9,6 +9,10 @@ import com.cscie97.store.model.Product;
 import com.cscie97.store.model.ProductAssociation;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * FetchProductCommand.
@@ -44,7 +48,7 @@ public class FetchProductCommand extends AbstractCommand {
      * @param product       The Product requested by the Customer.
      * @param location      The fully qualified Inventory location.
      */
-    public FetchProductCommand(String authToken,
+    public FetchProductCommand(AuthToken authToken,
                                StoreModelServiceInterface storeModel,
                                Device source,
                                Customer customer,
@@ -70,7 +74,7 @@ public class FetchProductCommand extends AbstractCommand {
      * that amount and increase the Customer basket by that amount.
      */
     public void execute() {
-        String authToken = super.getAuthToken();
+        AuthToken authToken = super.getAuthToken();
 
         try {
             Appliance robot = super.getOneAppliance(ApplianceType.ROBOT);
@@ -87,7 +91,7 @@ public class FetchProductCommand extends AbstractCommand {
 
             // Store the basket item
             ProductAssociation basketItem = super.getStoreModel().addItemToBasket(
-                    authToken, this.customer.getId(), this.product.getId(), amount
+                authToken, this.customer.getId(), this.product.getId(), amount
             );
 
             // Print result and current count
@@ -103,6 +107,12 @@ public class FetchProductCommand extends AbstractCommand {
             }
 
         } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
             System.err.println(e);
         }
 

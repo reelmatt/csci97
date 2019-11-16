@@ -14,5 +14,5 @@ public interface Visitor {
 
     public void visitUser(User user);
 
-    public boolean isHasPermission();
+    public boolean hasPermission();
 }

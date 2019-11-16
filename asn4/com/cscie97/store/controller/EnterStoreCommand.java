@@ -9,6 +9,11 @@ import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
+
 
 /**
  * EnterStoreCommand.
@@ -39,7 +44,7 @@ public class EnterStoreCommand extends AbstractCommand {
      * @param customer      The Customer that requested their account balance.
      * @throws StoreModelServiceException
      */
-    public EnterStoreCommand(String authToken,
+    public EnterStoreCommand(AuthToken authToken,
                              StoreModelServiceInterface storeModel,
                              Device source,
                              Ledger ledger,
@@ -60,7 +65,7 @@ public class EnterStoreCommand extends AbstractCommand {
      */
     public void execute() throws StoreControllerServiceException {
         StoreModelServiceInterface storeModel = super.getStoreModel();
-        String authToken = super.getAuthToken();
+        AuthToken authToken = super.getAuthToken();
 
         try {
             // Check for positive account balance
@@ -84,6 +89,12 @@ public class EnterStoreCommand extends AbstractCommand {
         } catch (LedgerException e) {
             System.err.println(e);
         } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
             System.err.println(e);
         }
 

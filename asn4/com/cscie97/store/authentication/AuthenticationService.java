@@ -23,23 +23,33 @@ import java.security.NoSuchAlgorithmException;
  */
 
 public class AuthenticationService implements AuthenticationServiceInterface {
+    /** Singleton instance of the Authentication Service. */
     private static AuthenticationService instance = null;
 
+    /** Boolean to indicated whether root user has been created. */
     private boolean rootUser = false;
 
+    /** A Map of all Users in the Authentication Service. */
     private Map<String, User> userMap;
 
+    /** A Map of all AuthTokens in the Authentication Service. */
     private Map<Integer, AuthToken> tokenMap;
 
+    /** A Map of all Permissions in the Authentication Service. */
     private Map<String, Permission> permissionMap;
 
+    /** A Map of all Roles in the Authentication Service. */
     private Map<String, Role> roleMap;
 
+    /** A Map of all Resources in the Authentication Service. */
     private Map<String, Resource> resourceMap;
 
+    /** ID for admin permissions to call Authentication Service. */
     private static final String ADMIN_ACCESS = "user_admin";
 
-
+    /**
+     * AuthenticationService Constructor.
+     */
     private AuthenticationService() {
         this.userMap = new HashMap<String, User>();
         this.permissionMap = new HashMap<String, Permission>();
@@ -49,12 +59,20 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     }
 
+    /**
+     * Returns the instance of the AuthenticationService.
+     *
+     * If an instance has not been instantiate, create a new one. Otherwise,
+     * return the instance already created. This follows the Singleton pattern
+     * from Head First Design, Chapter 5.
+     */
     public static AuthenticationService getInstance() {
         if (instance == null) {
             instance = new AuthenticationService();
         }
         return instance;
     }
+
 
     public User getUser(String userId) throws AuthenticationException {
         User user = this.userMap.get(userId);
@@ -68,65 +86,131 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         return user;
     }
+
     public void acceptVisitor(Visitor visitor) {
         visitor.visitAuthenticationService(this);
         return;
     };
 
-    public void addEntitlementToUser(String userId, Entitlement entitlement) throws AuthenticationException {
+    /**
+     * Add Entitlement to User.
+     *
+     *
+     *
+     * @param userId
+     * @param entitlementId
+     * @throws AuthenticationException
+     */
+    public void addEntitlementToUser(AuthToken token, String userId, String entitlementId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
+            throw new AccessDeniedException("add entitlement to user", "no admin access");
+        }
+
+
         User user = getUser(userId);
+        Entitlement entitlement = getEntitlement(entitlementId);
+
+        if (user == null) {
+            throw new AuthenticationException(
+                "add entitlement to User",
+                "User " + userId + " does not exist."
+            );
+        }
+        if (entitlement == null) {
+            throw new AuthenticationException(
+                "add entitlement to User",
+                "Entitlement " + entitlementId + " does not exist."
+            );
+        }
+
         user.addEntitlement(entitlement);
-
         return;
     };
 
-    public void addPermissionToRole(Permission permission, Role role) {
+    /**
+     * Add Entitlement to Role.
+     *
+     *
+     *
+     * @param entitlementId
+     * @param roleId
+     */
+    public void addEntitlementToRole(AuthToken token, String entitlementId, String roleId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
+            throw new AccessDeniedException("add entitlement to role", "no admin access");
+        }
+
+        Entitlement entitlement = getEntitlement(entitlementId);
+        Role role = getRole(roleId);
+
+        if (entitlement == null) {
+            throw new AuthenticationException(
+                "add entitlement to role",
+                "Entitlement " + entitlementId + " does not exist."
+            );
+        }
+        if (role == null) {
+            throw new AuthenticationException(
+                "add entitlement to role",
+                "Role " + roleId + " does not exist."
+            );
+        }
+
+        role.addEntitlement(entitlement);
         return;
     };
 
-    public Credential addUserCredential(String userId, String credentialType, String credential) throws AuthenticationException{
+
+    public String addUserCredential(AuthToken token, String userId, String credentialType, String credential) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
+            throw new AccessDeniedException("add user credential", "no admin access");
+        }
+
         User user = getUser(userId);
-        Credential newCredential = null;
+
+        // Check voice print
         if (credentialType.equals("voice_print")) {
+
             String voiceCheck = "--voice:" + user.getName() + "--";
 
-            if (credential.equals(voiceCheck)) {
-                newCredential = new Credential(credential);
-                user.setVoicePrint(newCredential);
-            } else {
+            if (! credential.equals(voiceCheck)) {
                 throw new AuthenticationException(
                     "define credential",
                     "Voice print does not match format --voice:<username>--"
                 );
             }
+
+            user.setVoicePrint(credential);
+            return credential;
         } else if (credentialType.equals("face_print")) {
+            // Check face print
             String faceCheck = "--face:" + user.getName() + "--";
 
-            if (credential.equals(faceCheck)) {
-                newCredential = new Credential(credential);
-                user.setFacePrint(newCredential);
-            } else {
+            if (! credential.equals(faceCheck)) {
                 throw new AuthenticationException(
                     "define credential",
                     "Face print does not match format --voice:<username>--"
                 );
             }
+
+            user.setFacePrint(credential);
+            return credential;
         } else if (credentialType.equals("password")) {
-            byte[] toHash = credential.getBytes();
+            // A password Credential, hash it before storing
+            String hashedPassword = hashToString(credential.getBytes());
 
-            String hashedPassword = hashToString(toHash);
-
-            newCredential = new Credential(hashedPassword);
-            user.setPassword(newCredential);
+            // Store the hashed password
+            user.setPassword(hashedPassword);
+            return hashedPassword;
         } else {
             throw new AuthenticationException(
                 "define credential",
                 "Unknown credential type"
             );
         }
-
-
-        return newCredential;
     };
 
     public void createRootUser(String userId, String password) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
@@ -135,8 +219,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         }
 
         User root = defineUser(null, userId, "root");
-        Credential credential = addUserCredential(userId, "password", password);
-        this.rootUser = true;
+
+        String credential = addUserCredential(null, userId, "password", password);
+
 
 //        Permission admin_permission = getPermission("user_admin");
         // Create new Permission
@@ -148,11 +233,11 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 //            admin_permission = definePermission(null, "user_admin", "User administrator", "Create, Update, Delete Users");
 //        }
 
-        System.out.println("CREATE ROOT, perm == " + admin_permission);
-        addEntitlementToUser(userId, admin_permission);
-
+        addEntitlementToUser(null, userId, "user_admin");
+        this.rootUser = true;
         return;
     }
+
     /**
      * Generate a hash and convert to a String. Use SHA-256.
      *
@@ -180,14 +265,50 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return Base64.getEncoder().encodeToString(encodedHash);
     }
 
-    public AuthToken authenticateCredential(String user, String credential) {
-        return new AuthToken("id");
+
+    public boolean authenticateCredential(User user, String credential) {
+        if (credential.equals(user.getVoicePrint())) {
+            return true;
+        }
+
+        if (credential.equals(user.getFacePrint())) {
+            return true;
+        }
+
+        String login = user.getPassword();
+        String hashedPassword = hashToString(credential.getBytes());
+
+        if (login != null && login.equals(hashedPassword)) {
+            return true;
+        }
+
+
+//        if (credentialType.equals("password")) {
+//            String login = user.getPassword();
+//            String hashedPassword = hashToString(credential.getBytes());
+//
+//            if (login.equals(hashedPassword)) {
+//
+//                return true;
+//
+//            }
+//        } else if (credentialType.equals("voice_print")) {
+//            if (credential.equals(user.getVoicePrint())) {
+//                return true;
+//            }
+//
+//        } else if (credentialType.equals("face_print")) {
+//            if (credential.equals(user.getFacePrint())) {
+//                return true;
+//            }
+//        }
+
+
+        return false;
     };
 
-    public Permission definePermission(AuthToken token, String id, String name, String description) throws AuthenticationException, InvalidAuthTokenException, AccessDeniedException {
-        validateToken(token);
-
-        if (! hasPermission(token, getPermission(ADMIN_ACCESS), null)) {
+    public Permission definePermission(AuthToken token, String id, String name, String description) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("define permission", "no admin access");
         }
 
@@ -215,7 +336,12 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newPermission;
     };
 
-    public Resource defineResource(AuthToken token, String id, String description) throws AuthenticationException {
+    public Resource defineResource(AuthToken token, String id, String description) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
+            throw new AccessDeniedException("define resource", "no admin access");
+        }
+
         // All User information must be present
         if (id == null || description == null) {
             throw new AuthenticationException(
@@ -241,47 +367,19 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newResource;
     };
 
-    public ResourceRole defineResourceRole(AuthToken token, String id, String name, String description, String resourceId) throws AuthenticationException {
-        // All User information must be present
-        if (id == null || name == null || description == null || resourceId == null) {
-            throw new AuthenticationException(
-                "define resource role",
-                "Required Resource Role information is missing."
-            );
+
+
+    public Role defineRole(AuthToken token, String id, String name, String description, String resourceId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
+            throw new AccessDeniedException("define role", "no admin access");
         }
 
-        // Check if User already exists
-        if (this.roleMap.containsKey(id)) {
-            throw new AuthenticationException(
-                "define resource role",
-                "A Role with id " + id + " already exists."
-            );
-        }
-
-        Resource resource = this.resourceMap.get(resourceId);
-
-        if (resource == null) {
-            throw new AuthenticationException(
-                "define resource role",
-                "The Resource with id " + id + " does not exist."
-            );
-        }
-
-        // Create new User
-        ResourceRole newResourceRole = new ResourceRole(id, name, description, resource);
-
-        // Add to map
-        this.roleMap.put(id, newResourceRole);
-
-        return newResourceRole;
-    };
-
-    public Role defineRole(AuthToken token, String id, String name, String description) throws AuthenticationException {
         // All User information must be present
         if (id == null || name == null || description == null) {
             throw new AuthenticationException(
-                    "define role",
-                    "Required Role information is missing."
+                "define role",
+                "Required Role information is missing."
             );
         }
 
@@ -293,8 +391,23 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             );
         }
 
-        // Create new User
-        Role newRole = new Role(id, name, description);
+        Role newRole;
+
+        // A Resource is provided, so associate Resource with Role
+        if (resourceId != null) {
+            Resource resource = getResource(resourceId);
+
+            if (resource == null) {
+                throw new AuthenticationException(
+                    "define resource role",
+                    "The resource " + resourceId + " does not exist. Cannot create resource role."
+                );
+            }
+
+            newRole = new ResourceRole(id, name, description, resource);
+        } else {
+            newRole = new Role(id, name, description);
+        }
 
         // Add to map
         this.roleMap.put(id, newRole);
@@ -302,13 +415,10 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newRole;
     };
 
-    public User defineUser(AuthToken token, String id, String name) throws AuthenticationException, InvalidAuthTokenException {
-
-
-
-        // If a root user has been created, a token is required
-        if (this.rootUser && token == null) {
-            throw new InvalidAuthTokenException("define user", "No token provided.");
+    public User defineUser(AuthToken token, String id, String name) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
+            throw new AccessDeniedException("define user", "no admin access");
         }
 
         // All User information must be present
@@ -336,29 +446,42 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newUser;
     };
 
-    public AuthToken login(String userId, String credentialType, String credential) throws AuthenticationException, AccessDeniedException {
+    public AuthToken login(String userId, String credential) throws AuthenticationException, AccessDeniedException {
+        System.out.println("AUTH: userId = " + userId + " && credential == " + credential);
         User user = getUser(userId);
 
-        if (credentialType.equals("password")) {
-            Credential login = user.getLogin();
+        if (authenticateCredential(user, credential)) {
+            Integer tokenId = this.tokenMap.size() + 1;
+            AuthToken newToken = new AuthToken(String.valueOf(tokenId));
 
-            byte[] toHash = credential.getBytes();
+            user.setToken(newToken);
+            this.tokenMap.put(tokenId, newToken);
 
-            String hashedPassword = hashToString(toHash);
-
-            if (login.getValue().equals(hashedPassword)) {
-                Integer tokenId = this.tokenMap.size() + 1;
-                AuthToken newToken = new AuthToken(String.valueOf(tokenId));
-
-                user.setToken(newToken);
-                this.tokenMap.put(tokenId, newToken);
-
-                return newToken;
-
-            }
+            System.out.println("AUTH: token == " + newToken);
+            return newToken;
         }
 
-        throw new AccessDeniedException("login", "password is not recognized for " + userId);
+
+//        if (credentialType.equals("password")) {
+//            String login = user.getPassword();
+//
+//            byte[] toHash = credential.getBytes();
+//
+//            String hashedPassword = hashToString(toHash);
+//
+//            if (login.equals(hashedPassword)) {
+//                Integer tokenId = this.tokenMap.size() + 1;
+//                AuthToken newToken = new AuthToken(String.valueOf(tokenId));
+//
+//                user.setToken(newToken);
+//                this.tokenMap.put(tokenId, newToken);
+//
+//                return newToken;
+//
+//            }
+//        }
+
+        throw new AccessDeniedException("login", "login credential is not recognized for " + userId);
     }
 
     public void logout(AuthToken authToken) {
@@ -368,7 +491,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return;
     };
 
-    public void getInventory(String authToken) throws AuthenticationException {
+    public void getInventory(AuthToken authToken) throws AuthenticationException {
         Visitor inventory = new InventoryVisitor();
         acceptVisitor(inventory);
 
@@ -376,12 +499,36 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return;
     }
 
+    public Entitlement getEntitlement(String entitlementId) {
+        Iterator<Map.Entry<String, Role>> roles = listRoles();
+        while (roles.hasNext()) {
+            Role role = roles.next().getValue();
+            if (entitlementId.equals(role.getId())) {
+                return role;
+            }
+        }
+
+        Iterator<Map.Entry<String, Permission>> permissions = listPermissions();
+        while (permissions.hasNext()) {
+            Permission permission = permissions.next().getValue();
+            if (entitlementId.equals(permission.getId())) {
+                return permission;
+            }
+        }
+
+
+        return null;
+    }
     public Iterator<Map.Entry<String, User>> listUsers() {
         return userMap.entrySet().iterator();
     }
 
     public Iterator<Map.Entry<String, Resource>> listResources() {
         return resourceMap.entrySet().iterator();
+    }
+
+    public Resource getResource(String id) {
+        return resourceMap.get(id);
     }
 
     public Permission getPermission(String id) {
@@ -396,38 +543,52 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return roleMap.entrySet().iterator();
     }
 
-    public boolean hasPermission(AuthToken authToken, Permission permission, Resource resource) throws AuthenticationException, AccessDeniedException {
-        if (authToken == null) {
-            throw new AuthenticationException("has permission", "Missing auth token.");
+    public Role getRole(String id) {
+        return roleMap.get(id);
+    }
+
+    public boolean hasPermission(AuthToken authToken, String permissionId, Resource resource) throws AuthenticationException, InvalidAuthTokenException {
+//        // If a root user has been created, a token is required
+//        if (this.rootUser && token == null) {
+//            throw new InvalidAuthTokenException("define user", "No token provided.");
+//        }
+        // If a root user has been created, permissions must be checked
+        if (this.rootUser) {
+            validateToken(authToken);
+
+            if (permissionId == null) {
+                throw new AuthenticationException("has permission", "Missing required permission.");
+            }
+
+            Permission permission = getPermission(permissionId);
+
+            Visitor access = new AuthVisitor(authToken, permission, resource);
+            acceptVisitor(access);
+
+            System.out.println("AUTH: visitor done, access is " + access.hasPermission());
+            return access.hasPermission();
         }
 
-        if (permission == null) {
-            throw new AuthenticationException("has permission", "Missing required permission.");
-        }
-
-        Visitor access = new AuthVisitor(authToken, permission, resource);
-        acceptVisitor(access);
-
-        return access.isHasPermission();
+        return true;
     }
 
     public User validateToken(AuthToken authToken) throws InvalidAuthTokenException {
-        if ( authToken == null ) {
-            throw new InvalidAuthTokenException("auth token", "none exists");
+
+
+        if (authToken == null) {
+            throw new InvalidAuthTokenException("validate token", "No token provided.");
         }
 
         if ( ! authToken.isActive() ) {
-            throw new InvalidAuthTokenException("auth token", "no longer active");
+            throw new InvalidAuthTokenException("validate token", "no longer active");
         }
 
         // check token hasn't timed out
 
+
+
+
         // find user
-
-
-
-
-
 
         return null;
 //        return this.userMap.get("userId");

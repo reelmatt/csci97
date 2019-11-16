@@ -6,8 +6,13 @@ import com.cscie97.store.model.Aisle;
 import com.cscie97.store.model.StoreModelServiceInterface;
 import com.cscie97.store.model.ApplianceType;
 import com.cscie97.store.model.StoreModelServiceException;
+import com.cscie97.store.authentication.AuthToken;
 import java.util.List;
 import java.util.ArrayList;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * AbstractCommand.
@@ -21,7 +26,7 @@ import java.util.ArrayList;
  */
 public abstract class AbstractCommand implements Command {
     /** Token to authenticate with StoreModel API. */
-    private String authToken;
+    private AuthToken authToken;
 
     /** The Store Model Service to interact with. */
     private StoreModelServiceInterface storeModel;
@@ -36,7 +41,7 @@ public abstract class AbstractCommand implements Command {
      * @param   storeModel  StoreModel to get/update state.
      * @param   source      The Device which detected the event.
      */
-    public AbstractCommand(String authToken,
+    public AbstractCommand(AuthToken authToken,
                            StoreModelServiceInterface storeModel,
                            Device source) {
         this.authToken = authToken;
@@ -107,7 +112,7 @@ public abstract class AbstractCommand implements Command {
     }
 
     /** Returns the authentication token. */
-    public String getAuthToken() {
+    public AuthToken getAuthToken() {
         return this.authToken;
     }
 

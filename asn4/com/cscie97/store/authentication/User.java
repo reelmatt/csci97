@@ -7,11 +7,11 @@ public class User {
 
     private AuthToken token;
 
-    private Credential password;
+    private String password;
 
-    private Credential facePrint;
+    private String facePrint;
 
-    private Credential voicePrint;
+    private String voicePrint;
 
     private List<Entitlement> entitlementList;
 
@@ -25,9 +25,6 @@ public class User {
         this.entitlementList = new ArrayList<Entitlement>();
     }
 
-    public Credential getFacePrint() {
-        return this.facePrint;
-    }
 
     public String getId() {
         return id;
@@ -37,11 +34,14 @@ public class User {
         return name;
     }
 
-    public Credential getLogin() {
+    public String getPassword() {
         return this.password;
     }
 
-    public Credential getVoicePrint() {
+    public String getFacePrint() {
+        return this.facePrint;
+    }
+    public String getVoicePrint() {
         return this.voicePrint;
     }
 
@@ -49,19 +49,33 @@ public class User {
         return this.token;
     }
 
-    public void addEntitlement(Entitlement entitlement) {
-        entitlementList.add(entitlement);
+    public void addEntitlement(Entitlement newEntitlement) {
+        // If no permission, don't add
+        if (newEntitlement == null) {
+            return;
+        }
+
+        // Don't add a duplicate Entitlement
+        for (Entitlement entitlement : getEntitlementList()) {
+            if (entitlement.getId().equals(newEntitlement.getId())) {
+                return;
+            }
+        }
+
+        // Add Entitlement to the list
+        this.entitlementList.add(newEntitlement);
+        return;
     }
 
-    public void setFacePrint(Credential facePrint) {
+    public void setFacePrint(String facePrint) {
         this.facePrint = facePrint;
     }
 
-    public void setVoicePrint(Credential voicePrint) {
+    public void setVoicePrint(String voicePrint) {
         this.voicePrint = voicePrint;
     }
 
-    public void setPassword(Credential password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 

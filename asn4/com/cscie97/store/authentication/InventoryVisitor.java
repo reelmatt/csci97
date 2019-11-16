@@ -15,6 +15,8 @@ public class InventoryVisitor implements Visitor {
 
     private Map<String, Resource> resourceMap;
 
+    private Integer indentLevel = 0;
+
     public InventoryVisitor() {
         this.inventory = "========================\n";
         this.inventory += "| Auth Service Inventory\n";
@@ -62,29 +64,101 @@ public class InventoryVisitor implements Visitor {
 
     public void visitRole(Role role) {
         this.inventory += role + "\n";
+
+        indentLevel++;
+        for (Entitlement entitlement : role.getEntitlementList()) {
+            visitEntitlement(entitlement);
+//            this.inventory += indent() + entitlement + "\n";
+        }
+        indentLevel--;
+
+//        for (Entitlement entitlement : role.getEntitlementList()) {
+//            this.inventory += "\t" + entitlement + "\n";
+//
+//            if (entitlement instanceof Permission) {
+//                continue;
+//            }
+//
+//            Role subRoleGroup = (Role) entitlement;
+//            for (Entitlement subEntitlement : subRoleGroup.getEntitlementList()) {
+//                if (subEntitlement instanceof Permission) {
+//                    visitPermission((Permission) subEntitlement);
+//                } else {
+//                    visitRole((Role) subEntitlement);
+//                }
+//
+//            }
+//        }
         return;
     };
 
+    public void visitEntitlement(Entitlement entitlement) {
+        if (entitlement instanceof Permission) {
+            visitPermission((Permission) entitlement);
+            return;
+        }
+
+        Role role = (Role) entitlement;
+        this.inventory += indent() + entitlement + "\n";
+
+        indentLevel++;
+        for (Entitlement subEntitlement : role.getEntitlementList()) {
+            visitEntitlement(subEntitlement);
+//            if (subEntitlement instanceof Permission) {
+//                visitPermission((Permission) subEntitlement);
+//            } else {
+//                visitRole((Role) subEntitlement);
+//            }
+        }
+        indentLevel--;
+    }
+
+
     public void visitPermission(Permission permission) {
-        this.inventory += permission + "\n";
+        this.inventory += indent() + permission + "\n";
         return;
     };
 
     public void visitResource(Resource resource) {
-        this.inventory += resource + "\n";
+        this.inventory += indent() + resource + "\n";
         return;
     };
 
     public void visitUser(User user) {
-        this.inventory += user + "\n";
+        this.inventory += indent() + user + "\n";
 
+        indentLevel++;
+        this.inventory += groupHeading("Entitlements");
+
+        indentLevel++;
         for (Entitlement entitlement : user.getEntitlementList()) {
-            this.inventory += "\t" + entitlement + "\n";
+            visitEntitlement(entitlement);
+//            this.inventory += indent() + entitlement + "\n";
         }
+        indentLevel--;
+
+        this.inventory += groupHeading("AuthToken");
+        indentLevel++;
+        this.inventory += indent() + user.getToken() + "\n";
+        indentLevel--;
+
+        indentLevel--;
         return;
     };
 
-    public boolean isHasPermission() {
+    public String groupHeading(String title) {
+        return (indent() + title + ":\n");
+    }
+    public String indent() {
+        String indent = "";
+
+        for (int i = 0; i < this.indentLevel; i++) {
+            indent += "\t";
+        }
+
+        return indent;
+    }
+    public boolean hasPermission() {
         return false;
     }
 

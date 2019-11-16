@@ -7,6 +7,10 @@ import com.cscie97.store.model.Device;
 import com.cscie97.store.model.Product;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * CleaningCommand.
@@ -35,7 +39,7 @@ public class CleaningCommand extends AbstractCommand {
      * @param   product     The Product to be cleaned.
      * @param   aisle       The Aisle the mess is located in.
      */
-    public CleaningCommand(String authToken,
+    public CleaningCommand(AuthToken authToken,
                            StoreModelServiceInterface storeModel,
                            Device source,
                            Product product,

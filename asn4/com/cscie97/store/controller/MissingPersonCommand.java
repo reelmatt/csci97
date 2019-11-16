@@ -6,8 +6,13 @@ import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.StoreModelServiceInterface;
 import com.cscie97.store.model.ApplianceType;
 import com.cscie97.store.model.StoreModelServiceException;
+import com.cscie97.store.authentication.AuthToken;
 import java.util.List;
 import java.util.ArrayList;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * MissingPersonCommand.
@@ -35,7 +40,7 @@ public class MissingPersonCommand extends AbstractCommand {
      * @param   product     The Product to be cleaned.
      * @param   aisle       The Aisle the mess is located in.
      */
-    public MissingPersonCommand(String authToken,
+    public MissingPersonCommand(AuthToken authToken,
                                 StoreModelServiceInterface storeModel,
                                 Device source,
                                 String customerName) {
@@ -62,6 +67,12 @@ public class MissingPersonCommand extends AbstractCommand {
         } catch (StoreModelServiceException e) {
             // handle error below
             error = e;
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
+            System.err.println(e);
         }
 
         // Try name as first name <space> last name
@@ -70,6 +81,12 @@ public class MissingPersonCommand extends AbstractCommand {
         } catch (StoreModelServiceException e) {
             // handle error below
             error = e;
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
+            System.err.println(e);
         }
 
         // report back to Customer the location, or error
@@ -89,6 +106,12 @@ public class MissingPersonCommand extends AbstractCommand {
 
         } catch (StoreModelServiceException e) {
             System.err.println(e);
+//        } catch (AccessDeniedException e) {
+//            System.err.println(e);
+//        } catch (AuthenticationException e) {
+//            System.err.println(e);
+//        } catch (InvalidAuthTokenException e) {
+//            System.err.println(e);
         }
 
         return;

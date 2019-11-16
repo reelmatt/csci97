@@ -6,6 +6,10 @@ import com.cscie97.store.model.ApplianceType;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * BrokenGlassCommand.
@@ -30,7 +34,7 @@ public class BrokenGlassCommand extends AbstractCommand {
      * @param   source      The Device which detected the event.
      * @param   aisle       The Aisle the broken glass is located in.
      */
-    public BrokenGlassCommand(String authToken,
+    public BrokenGlassCommand(AuthToken authToken,
                               StoreModelServiceInterface storeModel,
                               Device source,
                               Aisle aisle) {

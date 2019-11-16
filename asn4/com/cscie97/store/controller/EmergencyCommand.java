@@ -7,6 +7,10 @@ import com.cscie97.store.model.ApplianceType;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * EmergencyCommand.
@@ -39,7 +43,7 @@ public class EmergencyCommand extends AbstractCommand {
      * @param aisle
      * @throws StoreControllerServiceException
      */
-    public EmergencyCommand(String authToken,
+    public EmergencyCommand(AuthToken authToken,
                             StoreModelServiceInterface storeModel,
                             Device source,
                             String emergencyType,

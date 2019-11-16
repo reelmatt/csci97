@@ -37,6 +37,27 @@ public class AuthVisitor implements Visitor {
         return;
     };
 
+    public void visitEntitlement(Entitlement entitlement) {
+        if (entitlement instanceof Permission) {
+            visitPermission((Permission) entitlement);
+            return;
+        }
+
+        Role role = (Role) entitlement;
+        for(Entitlement subEntitlement : role.getEntitlementList()) {
+            visitEntitlement(subEntitlement);
+        }
+
+//        if (entitlement instanceof Role) {
+//            visitRole((Role) entitlement);
+//        }
+
+
+
+
+        return;
+    }
+
     public void visitRole(Role role) {
         for (Entitlement entitlement : role.getEntitlementList()) {
             if (entitlement instanceof Role) {
@@ -55,6 +76,7 @@ public class AuthVisitor implements Visitor {
             return;
         }
     };
+
 
     public void visitPermission(Permission permission) {
         if (this.permission.getId().equals(permission.getId())) {
@@ -82,13 +104,7 @@ public class AuthVisitor implements Visitor {
         }
 
         for (Entitlement entitlement : user.getEntitlementList()) {
-            if (entitlement instanceof Role) {
-                visitRole((Role) entitlement);
-            }
-
-            if (entitlement instanceof Permission) {
-                visitPermission((Permission) entitlement);
-            }
+            visitEntitlement(entitlement);
 
             if (hasPermission) {
                 break;
@@ -104,7 +120,8 @@ public class AuthVisitor implements Visitor {
         return;
     };
 
-    public boolean isHasPermission() {
+    public boolean hasPermission() {
+        System.out.println("VISITOR: authToken == " + this.foundAuthToken);
         return hasPermission;
     }
 }

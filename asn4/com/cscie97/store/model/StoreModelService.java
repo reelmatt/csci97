@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Date;
+import com.cscie97.store.authentication.AuthToken;
 import com.cscie97.store.authentication.AuthenticationServiceInterface;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
+import com.cscie97.store.authentication.AuthenticationException;
+
 
 /**
  * {@inheritDoc}
@@ -36,6 +41,9 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     private static final Integer DEVICE = 2;
     private static final Integer INVENTORY = 3;
 
+    /** Constants for access Permissions. */
+    private static final String OPEN_ACCESS = "open_access";
+
     /**
      * StoreModelService Constructor
      *
@@ -54,10 +62,10 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public ProductAssociation addItemToBasket(String authToken,
+    public ProductAssociation addItemToBasket(AuthToken authToken,
                                               String customerId,
                                               String productId,
-                                              Integer itemCount) throws StoreModelServiceException {
+                                              Integer itemCount) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException  {
         // All information must be present
         if (customerId == null || productId == null) {
             throw new StoreModelServiceException("add basket_item", "Required information is missing.");
@@ -89,8 +97,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public void clearBasket(String authToken,
-                            String customerId) throws StoreModelServiceException {
+    public void clearBasket(AuthToken authToken,
+                            String customerId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Throws exception if Customer does not exist
         Customer customer = getCustomer(authToken, customerId);
         customer.clearBasket();
@@ -100,7 +108,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Aisle defineAisle(String authToken,
+    public Aisle defineAisle(AuthToken authToken,
                              String fullyQualifiedAisleId,
                              String name,
                              String description,
@@ -143,8 +151,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Basket defineBasket(String authToken,
-                               String customerId) throws StoreModelServiceException {
+    public Basket defineBasket(AuthToken authToken,
+                               String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get basket", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // Throws Exception if Customer does not exist
         Customer customer = getCustomer(authToken, customerId);
 
@@ -159,7 +171,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Customer defineCustomer(String authToken,
+    public Customer defineCustomer(AuthToken authToken,
                                    String customerId,
                                    String firstName,
                                    String lastName,
@@ -201,7 +213,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Device defineDevice(String authToken,
+    public Device defineDevice(AuthToken authToken,
                                String deviceId,
                                String name,
                                String type,
@@ -252,7 +264,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Inventory defineInventory(String authToken,
+    public Inventory defineInventory(AuthToken authToken,
                                      String inventoryId,
                                      String location,
                                      Integer capacity,
@@ -306,7 +318,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Product defineProduct(String authToken,
+    public Product defineProduct(AuthToken authToken,
                                  String productId,
                                  String name,
                                  String description,
@@ -343,7 +355,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Shelf defineShelf(String authToken,
+    public Shelf defineShelf(AuthToken authToken,
                              String fullyQualifiedShelfId,
                              String name,
                              Level level,
@@ -402,7 +414,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Store defineStore(String authToken,
+    public Store defineStore(AuthToken authToken,
                              String storeId,
                              String name,
                              String address) throws StoreModelServiceException {
@@ -425,7 +437,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Aisle getAisle(String authToken,
+    public Aisle getAisle(AuthToken authToken,
                           String locationId) throws StoreModelServiceException {
         // Must include a location
         if (locationId == null) {
@@ -471,8 +483,14 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Basket getBasket(String authToken,
-                            String customerId) throws StoreModelServiceException {
+    public Basket getBasket(AuthToken authToken,
+                            String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get basket", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
+        System.out.println("STORE: looking for customer " + customerId);
         Customer customer = getCustomer(authToken, customerId);
         Basket basket = customer.getBasket();
 
@@ -483,14 +501,20 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
             );
         }
 
+        System.out.println("STORE: got basket " + basket);
         return basket;
     }
 
     /**
      * {@inheritDoc}
      */
-    public Customer getCustomer(String authToken,
-                                String customerId) throws StoreModelServiceException {
+    public Customer getCustomer(AuthToken authToken,
+                                String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException  {
+
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get customer", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         Customer customer = this.customerMap.get(customerId);
 
         if (customer == null) {
@@ -506,7 +530,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Customer getCustomerByName(String authToken,
+    public Customer getCustomerByName(AuthToken authToken,
                                       String storeId,
                                       String name) throws StoreModelServiceException {
 
@@ -533,7 +557,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Device getDevice(String authToken,
+    public Device getDevice(AuthToken authToken,
                             String deviceId) throws StoreModelServiceException {
         Device device = this.deviceMap.get(deviceId);
 
@@ -550,7 +574,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Inventory getInventory(String authToken,
+    public Inventory getInventory(AuthToken authToken,
                                   String locationId) throws StoreModelServiceException {
         // Must include a location
         if (locationId == null) {
@@ -598,7 +622,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Product getProduct(String authToken,
+    public Product getProduct(AuthToken authToken,
                               String productId) throws StoreModelServiceException  {
         Product product = this.productMap.get(productId);
 
@@ -615,7 +639,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Shelf getShelf(String authToken,
+    public Shelf getShelf(AuthToken authToken,
                           String locationId) throws StoreModelServiceException {
         // Must include a location
         if (locationId == null) {
@@ -659,7 +683,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public Store getStore(String authToken,
+    public Store getStore(AuthToken authToken,
                           String storeId) throws StoreModelServiceException {
         Store store = this.storeMap.get(storeId);
 
@@ -673,7 +697,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public void receiveCommand(String authToken,
+    public void receiveCommand(AuthToken authToken,
                                String deviceId,
                                String message) throws StoreModelServiceException {
         // Command message must be present
@@ -698,7 +722,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public void receiveEvent(String authToken,
+    public void receiveEvent(AuthToken authToken,
                              String deviceId,
                              String event) throws StoreModelServiceException {
         // Event string must be present
@@ -719,10 +743,10 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public ProductAssociation removeItemFromBasket(String authToken,
+    public ProductAssociation removeItemFromBasket(AuthToken authToken,
                                                    String customerId,
                                                    String productId,
-                                                   Integer itemCount) throws StoreModelServiceException {
+                                                   Integer itemCount) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // All information must be present
         if (customerId == null || productId == null) {
             throw new StoreModelServiceException("remove basket_item", "Required information is missing.");
@@ -761,9 +785,9 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public void updateCustomer(String authToken,
+    public void updateCustomer(AuthToken authToken,
                                  String customerId,
-                                 String location) throws StoreModelServiceException {
+                                 String location) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Must include a location
         if (location == null) {
             throw new StoreModelServiceException("update customer", "No location provided.");
@@ -800,7 +824,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     /**
      * {@inheritDoc}
      */
-    public void updateInventory(String authToken,
+    public void updateInventory(AuthToken authToken,
                                 String fullyQualifiedInventoryId,
                                 Integer amount) throws StoreModelServiceException {
         // Must include a location
@@ -840,7 +864,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * @param   storeId     The store whose Customers to search for.
      * @return              List of Customer currently located in the Store.
      */
-    public List<Customer> getStoreCustomers(String authToken, String storeId) {
+    public List<Customer> getStoreCustomers(AuthToken authToken, String storeId) {
         List<Customer> customersInStore = new ArrayList<Customer>();
         for (Customer customer : this.customerMap.values()) {
             if (storeId.equals(customer.getStore())) {
@@ -859,7 +883,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * @param   storeId     The store whose Devices to search for.
      * @return              List of Devices currently located in the Store.
      */
-    public List<Device> getStoreDevices(String authToken, String storeId) throws StoreModelServiceException {
+    public List<Device> getStoreDevices(AuthToken authToken, String storeId) throws StoreModelServiceException {
         Store store = getStore(authToken, storeId);
 
         List<Device> storeDeviceList = new ArrayList<Device>();
@@ -885,7 +909,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * @return              List of Devices currently located in the Store.
      * @throws StoreModelServiceException
      */
-    public List<Appliance> getAppliances(String authToken, ApplianceType type, String storeId) throws StoreModelServiceException{
+    public List<Appliance> getAppliances(AuthToken authToken, ApplianceType type, String storeId) throws StoreModelServiceException{
         Store store = getStore(authToken, storeId);
 
         List<Appliance> applianceList = new ArrayList<Appliance>();

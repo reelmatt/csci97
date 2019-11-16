@@ -10,7 +10,10 @@ import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
-
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * CheckoutCommand.
@@ -40,7 +43,7 @@ public class CheckoutCommand extends AbstractCommand {
      * @param ledger        The Ledger which stores Account information.
      * @param customer      The Customer that requested their account balance.
      */
-    public CheckoutCommand(String authToken,
+    public CheckoutCommand(AuthToken authToken,
                            StoreModelServiceInterface storeModel,
                            Device source,
                            Ledger ledger,

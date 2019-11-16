@@ -10,7 +10,10 @@ import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Inventory;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
-
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * BasketEventCommand.
@@ -56,7 +59,7 @@ public class BasketEventCommand extends AbstractCommand {
      * @param action
      * @param shelfLocation
      */
-    public BasketEventCommand(String authToken,
+    public BasketEventCommand(AuthToken authToken,
                               StoreModelServiceInterface storeModel,
                               Device source,
                               Customer customer,
@@ -89,7 +92,7 @@ public class BasketEventCommand extends AbstractCommand {
      */
     public void execute() throws StoreControllerServiceException {
         StoreModelServiceInterface storeModel = super.getStoreModel();
-        String authToken = super.getAuthToken();
+        AuthToken authToken = super.getAuthToken();
 
         try {
             // Get the inventory where the Product is located
@@ -147,6 +150,12 @@ public class BasketEventCommand extends AbstractCommand {
                 super.getStoreModel().receiveEvent(super.getAuthToken(), super.getSource().getId(), event);
             }
         } catch (StoreModelServiceException e) {
+            System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
             System.err.println(e);
         }
 

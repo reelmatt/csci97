@@ -8,7 +8,10 @@ import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Device;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
-
+import com.cscie97.store.authentication.AuthToken;
+import com.cscie97.store.authentication.AuthenticationException;
+import com.cscie97.store.authentication.AccessDeniedException;
+import com.cscie97.store.authentication.InvalidAuthTokenException;
 
 /**
  * CheckAccountBalanceCommand.
@@ -36,7 +39,7 @@ public class CheckAccountBalanceCommand extends AbstractCommand {
      * @param ledger        The Ledger which stores Account information.
      * @param customer      The Customer that requested their account balance.
      */
-    public CheckAccountBalanceCommand(String authToken,
+    public CheckAccountBalanceCommand(AuthToken authToken,
                                       StoreModelServiceInterface storeModel,
                                       Device source,
                                       Ledger ledger,
