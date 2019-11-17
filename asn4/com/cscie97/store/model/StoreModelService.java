@@ -42,7 +42,10 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     private static final Integer INVENTORY = 3;
 
     /** Constants for access Permissions. */
+    private static final String ADMIN = "user_admin";
     private static final String OPEN_ACCESS = "open_access";
+    private static final String CHECKOUT = "checkout";
+    private static final String CONTROL_APPLIANCE = "control_robot";
 
     /**
      * StoreModelService Constructor
@@ -417,7 +420,11 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     public Store defineStore(AuthToken authToken,
                              String storeId,
                              String name,
-                             String address) throws StoreModelServiceException {
+                             String address) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        if ( ! this.authService.hasPermission(authToken, ADMIN, null) ) {
+            throw new AccessDeniedException("define store", "Does not have '" + ADMIN + "' permission.");
+        }
+
         // All store information must be present
         if (storeId == null || name == null || address == null) {
             throw new StoreModelServiceException("define store", "Required store information is missing.");
@@ -486,8 +493,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     public Basket getBasket(AuthToken authToken,
                             String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
 
-        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("get basket", "Does not have '" + OPEN_ACCESS + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, CHECKOUT, null) ) {
+            throw new AccessDeniedException("get basket", "Does not have '" + CHECKOUT + "' permission.");
         }
 
         System.out.println("STORE: looking for customer " + customerId);
@@ -509,7 +516,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * {@inheritDoc}
      */
     public Customer getCustomer(AuthToken authToken,
-                                String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException  {
+                                String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
 
         if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
             throw new AccessDeniedException("get customer", "Does not have '" + OPEN_ACCESS + "' permission.");
@@ -699,7 +706,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      */
     public void receiveCommand(AuthToken authToken,
                                String deviceId,
-                               String message) throws StoreModelServiceException {
+                               String message) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check permission
+        if ( ! this.authService.hasPermission(authToken, CONTROL_APPLIANCE, null) ) {
+            throw new AccessDeniedException("receive command", "Does not have '" + CONTROL_APPLIANCE + "' permission.");
+        }
+
         // Command message must be present
         if (message == null) {
             throw new StoreModelServiceException("create command", "Message is required to create a command.");

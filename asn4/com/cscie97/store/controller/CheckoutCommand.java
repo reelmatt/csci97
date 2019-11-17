@@ -112,6 +112,12 @@ public class CheckoutCommand extends AbstractCommand {
             System.err.println(e);
         } catch (StoreModelServiceException e) {
             System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
+            System.err.println(e);
         }
 
 

@@ -377,7 +377,7 @@ public interface StoreModelServiceInterface extends Subject {
      */
     public void receiveCommand(AuthToken authToken,
                                String deviceId,
-                               String message) throws StoreModelServiceException;
+                               String message) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException;
 
     /**
      * Receive an event from a Device.

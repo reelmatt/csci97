@@ -91,6 +91,12 @@ public class EmergencyCommand extends AbstractCommand {
             super.sendCommands(robots, "Assist customers leaving the store");
         } catch (StoreModelServiceException e) {
             System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
+            System.err.println(e);
         }
 
         return;

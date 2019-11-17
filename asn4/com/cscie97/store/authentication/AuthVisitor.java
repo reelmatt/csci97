@@ -121,7 +121,7 @@ public class AuthVisitor implements Visitor {
     };
 
     public boolean hasPermission() {
-        System.out.println("VISITOR: authToken == " + this.foundAuthToken);
+//        System.out.println("VISITOR: authToken == " + this.foundAuthToken);
         return hasPermission;
     }
 }

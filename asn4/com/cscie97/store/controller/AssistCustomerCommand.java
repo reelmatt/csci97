@@ -60,6 +60,12 @@ public class AssistCustomerCommand extends AbstractCommand {
             super.sendCommand(robot, message);
         } catch (StoreModelServiceException e) {
             System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
+            System.err.println(e);
         }
         return;
     };

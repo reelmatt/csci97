@@ -6,6 +6,21 @@
 # commands (at the bottom) were written by Matthew Thomas for assignment 3.
 #########################################################################################
 
+################################################################################
+# create root user
+# create auth_root_user <user_id> <password>
+################################################################################
+
+
+create auth_root_user root root
+
+################################################################################
+# login
+# login user <user_id> password <credential>
+################################################################################
+login user root password root
+
+
 #########################################################################################
 # Store configuration - copied from Adaeze Ezeh's store.script sample posted to Canvas
 #########################################################################################
@@ -146,22 +161,9 @@ process-transaction 7 amount 700 fee 10 payload "fund account" payer master rece
 # validate the state of the blockchain
 Validate
 
-################################################################################
-# create root user
-# create auth_root_user <user_id> <password>
-################################################################################
 
+# define user user1 "john"
 
-create auth_root_user root root
-
-
-define user user1 "john"
-
-################################################################################
-# login
-# login user <user_id> password <credential>
-################################################################################
-login user root password root
 
 ################################################################################
 # define user
@@ -251,7 +253,7 @@ add entitlement_to_user user1 admin
 add entitlement_to_user user1 admin
 add entitlement_to_user user1 adult_consumer
 
-add entitlement_to_user user2 adult_consumer
+add entitlement_to_user user2 guest
 
 add entitlement_to_user user3 child_consumer
 
@@ -273,7 +275,7 @@ get auth_inventory foobar
 create event turn_a1 event "user1 --face:jason-- customer cust_1 waiting to enter"
 
 # Welcome BILL ROSE to the store
-create event turn_a2 event "user2 --face:bill-- customer cust_2 waiting to enter"
+create event turn_a2 event "user2 --voice:bill-- customer cust_2 waiting to enter"
 
 # Welcome MARY KELVIN to the store
 create event turn_a3 event "user3 --face:mary-- customer cust_3 waiting to enter"

@@ -50,8 +50,6 @@ public class MissingPersonCommand extends AbstractCommand {
 
     /**
      * {@inheritDoc}
-     *
-     *
      */
     public void execute() {
         // Convert name to lower case
@@ -103,15 +101,14 @@ public class MissingPersonCommand extends AbstractCommand {
             // Notification of Customer's location
             Appliance helperSpeaker = super.getOneAppliance(ApplianceType.SPEAKER);
             super.sendCommand(helperSpeaker, message);
-
         } catch (StoreModelServiceException e) {
             System.err.println(e);
-//        } catch (AccessDeniedException e) {
-//            System.err.println(e);
-//        } catch (AuthenticationException e) {
-//            System.err.println(e);
-//        } catch (InvalidAuthTokenException e) {
-//            System.err.println(e);
+        } catch (AccessDeniedException e) {
+            System.err.println(e);
+        } catch (AuthenticationException e) {
+            System.err.println(e);
+        } catch (InvalidAuthTokenException e) {
+            System.err.println(e);
         }
 
         return;

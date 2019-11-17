@@ -83,7 +83,7 @@ public abstract class AbstractCommand implements Command {
      * @param   commandMessage              The message to send.
      * @throws  StoreModelServiceException  The call to the StoreModel API fails.
      */
-    public void sendCommands(List<Appliance> appliances, String commandMessage) throws StoreModelServiceException {
+    public void sendCommands(List<Appliance> appliances, String commandMessage) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         for (Appliance appliance : appliances) {
             this.storeModel.receiveCommand(this.authToken, appliance.getId(), commandMessage);
         }
@@ -96,7 +96,7 @@ public abstract class AbstractCommand implements Command {
      * @param   commandMessage              The message to send.
      * @throws  StoreModelServiceException  The call to the StoreModel API fails.
      */
-    public void sendCommand(Appliance appliance, String commandMessage) throws StoreModelServiceException {
+    public void sendCommand(Appliance appliance, String commandMessage) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         this.storeModel.receiveCommand(this.authToken, appliance.getId(), commandMessage);
     }
 
@@ -107,7 +107,7 @@ public abstract class AbstractCommand implements Command {
      * @param   commandMessage              The message to send.
      * @throws  StoreModelServiceException  The call to the StoreModel API fails.
      */
-    public void sendCommand(String applianceId, String commandMessage) throws StoreModelServiceException {
+    public void sendCommand(String applianceId, String commandMessage) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         this.storeModel.receiveCommand(this.authToken, applianceId, commandMessage);
     }
 

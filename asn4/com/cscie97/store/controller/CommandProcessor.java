@@ -545,7 +545,7 @@ public class CommandProcessor {
      *                                      printed in the processCommand() method.
      */
     private void createCommand(AuthToken authToken, String command, String deviceId, List<String> args)
-            throws CommandProcessorException, StoreModelServiceException {
+            throws CommandProcessorException, StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Get information needed to add basket item
         String message = null;
 
