@@ -87,19 +87,16 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return user;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void acceptVisitor(Visitor visitor) {
         visitor.visitAuthenticationService(this);
         return;
     };
 
     /**
-     * Add Entitlement to User.
-     *
-     *
-     *
-     * @param userId
-     * @param entitlementId
-     * @throws AuthenticationException
+     * {@inheritDoc}
      */
     public void addEntitlementToUser(AuthToken token, String userId, String entitlementId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
@@ -129,12 +126,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     };
 
     /**
-     * Add Entitlement to Role.
-     *
-     *
-     *
-     * @param entitlementId
-     * @param roleId
+     * {@inheritDoc}
      */
     public void addEntitlementToRole(AuthToken token, String entitlementId, String roleId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
@@ -162,7 +154,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return;
     };
 
-
+    /**
+     * {@inheritDoc}
+     */
     public String addUserCredential(AuthToken token, String userId, String credentialType, String credential) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
@@ -213,6 +207,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         }
     };
 
+    /**
+     * {@inheritDoc}
+     */
     public void createRootUser(String userId, String password) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         if (this.rootUser) {
             throw new AuthenticationException("create root user", "A root user has already been created.");
@@ -265,7 +262,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return Base64.getEncoder().encodeToString(encodedHash);
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     public boolean authenticateCredential(User user, String credential) {
         if (credential.equals(user.getVoicePrint())) {
             return true;
@@ -307,6 +306,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return false;
     };
 
+    /**
+     * {@inheritDoc}
+     */
     public Permission definePermission(AuthToken token, String id, String name, String description) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("define permission", "no admin access");
@@ -336,6 +338,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newPermission;
     };
 
+    /**
+     * {@inheritDoc}
+     */
     public Resource defineResource(AuthToken token, String id, String description) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
@@ -368,7 +373,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     };
 
 
-
+    /**
+     * {@inheritDoc}
+     */
     public Role defineRole(AuthToken token, String id, String name, String description, String resourceId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
@@ -415,6 +422,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newRole;
     };
 
+    /**
+     * {@inheritDoc}
+     */
     public User defineUser(AuthToken token, String id, String name) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
@@ -446,6 +456,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return newUser;
     };
 
+    /**
+     * {@inheritDoc}
+     */
     public AuthToken login(String userId, String credential) throws AuthenticationException, AccessDeniedException {
         System.out.println("AUTH: userId = " + userId + " && credential == " + credential);
         User user = getUser(userId);
@@ -484,6 +497,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         throw new AccessDeniedException("login", "login credential is not recognized for " + userId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void logout(AuthToken authToken) {
         if (authToken != null) {
             authToken.invalidate();
@@ -491,6 +507,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return;
     };
 
+    /**
+     * {@inheritDoc}
+     */
     public void getInventory(AuthToken authToken) throws AuthenticationException {
         Visitor inventory = new InventoryVisitor();
         acceptVisitor(inventory);
