@@ -1,150 +1,3 @@
-#########################################################################################
-# Store Controller Service Sample Script
-# 
-# Store configuration commands are mostly copied from Adaeze Ezeh's sample script posted
-# for assignment 2, modified to accomodate slight syntax differences. The Controller
-# commands (at the bottom) were written by Matthew Thomas for assignment 3.
-#########################################################################################
-
-#########################################################################################
-# Store configuration - copied from Adaeze Ezeh's store.script sample posted to Canvas
-#########################################################################################
-
-# Store Commands
-# define  store  <identifier> name <name> address <address>
-define  store  store_123 name RelianceMart  address  ahmedabad
-define  store  store_456 name KwikEMary  address  springfield
-
-# Aisle Commands
-# Define an aisle within the store
-# define  aisle  <store_id>:<aisle_number>  name  <name>  description  <description> location  (floor  |  stock_room)
-define  aisle  store_123:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  stock_room
-define  aisle  store_123:aisle_A2  name  AISLE_A2  description  AISLE_A2_desc location  floor
-define  aisle  store_123:aisle_A3  name  AISLE_A3  description  AISLE_A3_desc location  floor
-define  aisle  store_123:aisle_B1  name  AISLE_B1  description  AISLE_B1_desc location  stock_room
-define  aisle  store_123:aisle_B2  name  AISLE_B2  description  AISLE_B2_desc location  floor
-define  aisle  store_123:aisle_B3  name  AISLE_B3  description  AISLE_B3_desc location  floor
-
-#Shelf Commands
-# Define a new shelf within the store
-# define  shelf  <store_id>:<aisle_number>:<shelf_id>  name  <name>  level  (high  | medium  |  low)  description  <description>  [temperature  (frozen  |  refrigerated  | ambient  |  warm  |  hot  )]
-define  shelf  store_123:aisle_A1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
-define  shelf  store_123:aisle_A1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
-define  shelf  store_123:aisle_A1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
-define  shelf  store_123:aisle_A1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
-define  shelf  store_123:aisle_A1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
-
-
-define  shelf  store_123:aisle_A2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
-define  shelf  store_123:aisle_A2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
-define  shelf  store_123:aisle_A2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
-define  shelf  store_123:aisle_A2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
-define  shelf  store_123:aisle_A2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
-
-
-define  shelf  store_123:aisle_A3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
-define  shelf  store_123:aisle_A3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
-define  shelf  store_123:aisle_A3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
-define  shelf  store_123:aisle_A3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
-define  shelf  store_123:aisle_A3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
-
-
-define  shelf  store_123:aisle_B1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
-define  shelf  store_123:aisle_B1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
-define  shelf  store_123:aisle_B1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
-define  shelf  store_123:aisle_B1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
-define  shelf  store_123:aisle_B1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
-
-
-define  shelf  store_123:aisle_B2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
-define  shelf  store_123:aisle_B2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
-define  shelf  store_123:aisle_B2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
-define  shelf  store_123:aisle_B2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
-define  shelf  store_123:aisle_B2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
-
-
-define  shelf  store_123:aisle_B3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
-define  shelf  store_123:aisle_B3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
-define  shelf  store_123:aisle_B3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
-define  shelf  store_123:aisle_B3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
-define  shelf  store_123:aisle_B3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
-
-
-# Define a new product
-# define  product  <product_id>        name  <name>  description  <description>  size <size>  category  <category>  unit_price  <unit_price>        [temperature  (frozen  | refrigerated  |  ambient  |  warm  |  hot  )]
-define  product  prod10        name  bournvita  description  bournvita  size 12  category  Food  unit_price  2        temperature  frozen
-define  product  prod11        name  tea  description  green_tea  size 1.5  category  Food  unit_price  1        temperature  ambient
-define  product  prod12        name  coffee  description  coffee  size 1.5  category  Food  unit_price  3        temperature  refrigerated
-define  product  prod13        name  goggles  description  spectacles  size 1  category  Men_accessories  unit_price  5        temperature  ambient
-define  product  prod14        name  sun_glass  description  spectacles  size 2  category  Fashion  unit_price  7        temperature  ambient
-
-
-# Inventory Commands
-# Define a new inventory item within the store
-# define  inventory  <inventory_id>  location  <store_id>:<aisle_number>:<shelf_id> capacity  <capacity>  count  <count>  product  <product_id>
-define  inventory  inv_u21  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  1000  product  prod10
-define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q2 capacity  1500  count  1000  product  prod11
-define  inventory  inv_u23  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod11
-define  inventory  inv_u24  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod13
-define  inventory  inv_u25  location  store_123:aisle_A2:shelf_q2 capacity  200  count  100  product  prod14
-define  inventory  inv_u26  location  store_123:aisle_A2:shelf_q3 capacity  300  count  100  product  prod12
-define  inventory  inv_u27  location  store_123:aisle_A2:shelf_q3 capacity  200  count  50   product  prod12
-
-#Customer Commands
-# Define a new customer
-# define  customer  <customer_id>        first_name  <first_name>  last_name  <last_name> type  (registered|guest)  email_address  <email>  account  <account_address>
-define  customer  cust_1        first_name  JASON  last_name  WALLACE type  guest  email_address  jason.wallace@ymail.com  account  jason
-define  customer  cust_2        first_name  BILL  last_name  ROSE type  registered  email_address  bill.rose@gmail.com  account  bill
-define  customer  cust_3        first_name  MARY last_name  KELVIN type  registered  email_address  mary.kevin@yahoomail.com  account  mary
-define  customer  cust_4        first_name  SILVER  last_name  HAWK type  guest  email_address  silver.hawk@rocketmail.com  account  silver
-define  customer  cust_5        first_name  MEGON  last_name  FOX type  guest  email_address  megonfox@testmail.com  account  megon
-define  customer  cust_6        first_name  MARIA last_name  WILIAMSON type  registered  email_address  maria4567@ymail.com  account  maria
-define  customer  cust_7        first_name  SALINA  last_name  GOMEZ type  registered  email_address  salina@gmail.com  account  salina
-
-# Create Sensors
-# define  device  <device_id>  name  <name>  type  (microphone|camera)  location <store>:<aisle>
-define  device  mic_A1  name  MicrophoneA1  type  microphone  location store_123:aisle_A2
-define  device  cam_A1  name  CameraA1  type  camera  location store_123:aisle_A1
-define  device  cam_A2  name  CameraA2  type  camera  location store_123:aisle_A2
-define  device  cam_B2  name  CameraB1  type  camera  location store_123:aisle_B2
-
-# Create Appliances
-# define  device  <device_id>  name  <name>  type  (speaker  |  robot  |  turnstile) location  <store>:<aisle>
-define  device  rob_1  name  ROBOT_1  type  robot location  store_123:aisle_A1
-define  device  rob_2  name  ROBOT_2  type  robot location  store_123:aisle_A2
-define  device  rob_3  name  ROBOT_3  type  robot location  store_123:aisle_A3
-define  device  rob_4  name  ROBOT_4  type  robot location  store_123:aisle_B1
-define  device  rob_5  name  ROBOT_5  type  robot location  store_123:aisle_B2
-define  device  spk_1  name  SPEAKER_1  type  speaker location  store_123:aisle_A1
-define  device  spk_2  name  SPEAKER_2  type  speaker location  store_123:aisle_A2
-define  device  turn_a1  name  TURNSTILE_A1  type  turnstile location  store_123:aisle_A2
-define  device  turn_a2  name  TURNSTILE_A2  type  turnstile location  store_123:aisle_A2
-define  device  turn_a3  name  TURNSTILE_A3  type  turnstile location  store_123:aisle_A2
-
-#########################################################################################
-# Ledger configuration
-#########################################################################################
-
-# create-account <account-id>
-create-account jason
-create-account bill
-create-account mary
-create-account silver
-create-account megon
-create-account maria
-create-account salina
-
-# process-transaction <transaction-id> amount <amount> fee <fee> payload <payload> payer <account-address> receiver <account-address>
-process-transaction 1 amount 20 fee 10 payload "fund account" payer master receiver jason
-process-transaction 2 amount 200 fee 10 payload "fund account" payer master receiver bill
-process-transaction 3 amount 300 fee 10 payload "fund account" payer master receiver mary
-process-transaction 4 amount 400 fee 10 payload "fund account" payer master receiver silver
-process-transaction 5 amount 500 fee 10 payload "fund account" payer master receiver megon
-process-transaction 6 amount 600 fee 10 payload "fund account" payer master receiver maria
-process-transaction 7 amount 700 fee 10 payload "fund account" payer master receiver salina
-
-# validate the state of the blockchain
-Validate
 
 ################################################################################
 # Controller commands - written by Matthew Thomas
@@ -152,50 +5,37 @@ Validate
 
 ################################################################################
 # Enter store
-# create event <turnstile> event "customer <customer> waiting to enter at the turnstile <turnstile>"
+# create event <turnstile> event "customer <customer> <credential> waiting to enter at the turnstile <turnstile>"
 ################################################################################
 
 # Welcome JASON WALLACE to the store
-create event turn_a1 event "customer cust_1 waiting to enter"
+create event turn_a1 event "customer cust_1 --face:jason-- waiting to enter"
 
 # Welcome BILL ROSE to the store
-create event turn_a2 event "customer cust_2 waiting to enter"
+create event turn_a2 event "customer cust_2 --voice:bill-- waiting to enter"
 
 # Welcome MARY KELVIN to the store
-create event turn_a3 event "customer cust_3 waiting to enter"
+create event turn_a3 event "customer cust_3 --face:mary--  waiting to enter"
 
 # Welcome SILVER HAWK to the store
-create event turn_a1 event "customer cust_4 waiting to enter"
+#create event turn_a1 event "customer cust_4 --face:NA-- waiting to enter"
 
 # Welcome MEGON FOX to the store
-create event turn_a2 event "customer cust_5 waiting to enter"
-
-# Welcome MARIA WILIAMSON to the store
-create event turn_a3 event "customer cust_6 waiting to enter"
-
-# Welcome SALINA GOMEZ to the store
-create event turn_a1 event "customer cust_7 waiting to enter"
+#create event turn_a2 event "customer cust_5 --face:NA-- waiting to enter"
 
 ################################################################################
 # Customer seen
 # create event <camera> event "customer <customer> enters <aisle>"
 ################################################################################
 
-create event cam_A1 event "customer cust_1 enters aisle_A1"
+create event cam_A1 event "customer cust_1 --face:jason-- enters aisle_A1"
 
-create event cam_A1 event "customer cust_2 enters aisle_A1"
+create event cam_A1 event "customer cust_2 --voice:bill-- enters aisle_A1"
 
-create event cam_B2 event "customer cust_3 enters aisle_B2"
-create event cam_B2 event "customer cust_3 enters aisle_B3"
-create event cam_B2 event "customer cust_3 enters aisle_A1"
+create event cam_B2 event "customer cust_3 --face:mary-- enters aisle_B2"
+create event cam_B2 event "customer cust_3 --face:mary-- enters aisle_B3"
+create event cam_B2 event "customer cust_3 --face:mary-- enters aisle_A1"
 
-create event cam_A1 event "customer cust_4 enters aisle_B1"
-
-create event cam_A1 event "customer cust_5 enters aisle_B1"
-
-create event cam_A1 event "customer cust_6 enters aisle_B2"
-
-create event cam_A2 event "customer cust_7 enters aisle_A3"
 
 # RelianceMart, aisle_A1
 show customer cust_1
@@ -209,7 +49,7 @@ show customer cust_6
 ########################################################################################
 # Emergency Command
 # create event <camera> event "emergency <emergency> in <aisle>"
-# 
+#
 # <emergency> can have one of the values: (fire | flood | earthquake | armed_intruder)
 ########################################################################################
 
@@ -227,10 +67,10 @@ create event cam_B2 event "emergency armed_intruder in aisle_A1"
 ################################################################################
 
 # Add 1 bournvita to customer's basket
-create event cam_A1 event "customer cust_1 adds prod10 from aisle_A1:shelf_q1"
+create event cam_A1 event "customer cust_1 --face:jason-- adds prod10 from aisle_A1:shelf_q1"
 
 # Removes 1 bournvita from customer's basket
-create event cam_A1 event "customer cust_1 removes prod10 from aisle_A1:shelf_q1"
+create event cam_A1 event "customer cust_1 --face:jason-- removes prod10 from aisle_A1:shelf_q1"
 
 ################################################################################
 # Basket Event (with Restock)
@@ -239,11 +79,11 @@ create event cam_A1 event "customer cust_1 removes prod10 from aisle_A1:shelf_q1
 
 # Add 1 coffee to customer's basket. Inventory 100 -> 99 (capacity of 300).
 # Generate restock command to bring Inventory count from 99 -> 300.
-create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q3"
+create event cam_A2 event "customer cust_1 --face:jason-- adds prod12 from aisle_A2:shelf_q3"
 
 # Add 1 sunglass to customer's basket. Inventory 200 -> 199 (capacity of 500).
 # Generate restock command to bring Inventory count from 199 -> 500.
-create event cam_A1 event "customer cust_3 adds prod13 from aisle_B2:shelf_q2"
+create event cam_A1 event "customer cust_1 --face:jason-- adds prod13 from aisle_B2:shelf_q2"
 
 ################################################################################
 # Restock Event
@@ -299,14 +139,14 @@ create event mic_A1 event "can you help me find 'cust_7'"
 
 # Reduce inventory from 50 -> 45. Basket count 0 -> 5. Generate restock command
 # to bring Inventory from 45 -> 200.
-create event mic_A1 event "customer cust_1 says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
+create event mic_A1 event "customer cust_1 --face:jason-- says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
 
 # Reduce inventory from 100 -> 90. Basket count 0 -> 10. Generate restock command
 # to bring Inventory from 90 -> 200.
-create event mic_A1 event "customer cust_2 says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25"
+create event mic_A1 event "customer cust_2 --voice:bill-- says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25"
 
 # Reduce inventory from 300 -> 296. Basket count 1 -> 5.
-create event mic_A1 event "customer cust_3 says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24"
+create event mic_A1 event "customer cust_3 --voice:NA-- says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24"
 
 
 ################################################################################
@@ -317,17 +157,17 @@ create event mic_A1 event "customer cust_3 says please get me 4 of prod13 from s
 # Customer 1 (Jason) has 5 'coffee' (from Fetch Product).
 # Unit price = 3 * 5 = basket total of 15
 # Total (15 + 10 min fee) is more than Jason's account balance of 20
-create event mic_A1 event "customer cust_1 says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_1 --face:jason-- says 'What is the total basket value?'"
 
 # Customer 5 has 1 'coffee' (from Restock Command).
 # Unit price = 3 * 1 = basket total of 3
 # Total (3 + 10 min fee) is less than Megon's account balance of 500
-create event mic_A1 event "customer cust_5 says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_5 --voice:NA-- says 'What is the total basket value?'"
 
 # Customer 2 has 10 'tea' (from Fetch Product).
 # Unit price = 1 * 10 = basket total of 10
 # Total (10 + 10 min fee) is less than Bill's account balance of 200
-create event mic_A1 event "customer cust_2 says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_2 --voice:bill-- says 'What is the total basket value?'"
 
 ################################################################################
 # Checkout
@@ -336,7 +176,7 @@ create event mic_A1 event "customer cust_2 says 'What is the total basket value?
 
 # Customer 5 (Megon) basket total is 3 + 10 min fee (against balance of 500
 # Transaction successful, assigned ID of 8 (there are 7 initial transactions)
-create event turn_a3 event "customer cust_5 approaches turnstile"
+create event turn_a3 event "customer cust_5 --voice:NA-- approaches turnstile"
 
 ################################################################################
 # Assist customer to car
@@ -346,4 +186,4 @@ create event turn_a3 event "customer cust_5 approaches turnstile"
 # Bill's basket total is 10 + 10 min fee (against balance of 200)
 # Transaction successful, with ID of 8 (7 initial transactions above)
 # Triggers assistance command -- basket has 10 items of size 1.5 lbs > 10 lbs max
-create event turn_a2 event "customer cust_2 approaches turnstile"
+create event turn_a2 event "ccustomer cust_2 --voice:bill-- approaches turnstile"

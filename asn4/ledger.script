@@ -1,0 +1,24 @@
+######################################################################################
+# Ledger configuration
+#########################################################################################
+
+# create-account <account-id>
+create-account jason
+create-account bill
+create-account mary
+create-account silver
+create-account megon
+create-account maria
+create-account salina
+
+# process-transaction <transaction-id> amount <amount> fee <fee> payload <payload> payer <account-address> receiver <account-address>
+process-transaction 1 amount 20 fee 10 payload "fund account" payer master receiver jason
+process-transaction 2 amount 200 fee 10 payload "fund account" payer master receiver bill
+process-transaction 3 amount 300 fee 10 payload "fund account" payer master receiver mary
+process-transaction 4 amount 400 fee 10 payload "fund account" payer master receiver silver
+process-transaction 5 amount 500 fee 10 payload "fund account" payer master receiver megon
+process-transaction 6 amount 600 fee 10 payload "fund account" payer master receiver maria
+process-transaction 7 amount 700 fee 10 payload "fund account" payer master receiver salina
+
+# validate the state of the blockchain
+Validate

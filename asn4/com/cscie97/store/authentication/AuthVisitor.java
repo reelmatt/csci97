@@ -96,8 +96,10 @@ public class AuthVisitor implements Visitor {
         if (this.token == null || userToken == null) {
             return;
         }
+//        System.out.println("AUTH: visit user " + user.getId() + " has token " + userToken.getId());
 
         if (this.token.getId().equals(userToken.getId())) {
+//            System.out.println("TOKEN belongs to user " + user.getId());
             this.foundAuthToken = true;
         } else {
             return;

@@ -23,7 +23,7 @@ import com.cscie97.store.authentication.InvalidAuthTokenException;
  */
 public interface StoreModelServiceInterface extends Subject {
 
-    public List<Appliance> getAppliances(AuthToken authToken, ApplianceType type, String storeId) throws StoreModelServiceException;
+    public List<Appliance> getAppliances(AuthToken authToken, ApplianceType type, String storeId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Add a given count of a Product to a Customer's Basket.
@@ -394,7 +394,7 @@ public interface StoreModelServiceInterface extends Subject {
      */
     public void receiveEvent(AuthToken authToken,
                              String deviceId,
-                             String event) throws StoreModelServiceException;
+                             String event) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException;
 
     /**
      * Remove a given amount of a product from a Customer's basket.

@@ -46,6 +46,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     private static final String OPEN_ACCESS = "open_access";
     private static final String CHECKOUT = "checkout";
     private static final String CONTROL_APPLIANCE = "control_robot";
+    private static final String BASKET_ITEMS = "basket_items";
 
     /**
      * StoreModelService Constructor
@@ -69,6 +70,11 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                               String customerId,
                                               String productId,
                                               Integer itemCount) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException  {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, BASKET_ITEMS, null) ) {
+            throw new AccessDeniedException("add item to basket", "Does not have '" + BASKET_ITEMS + "' permission.");
+        }
+
         // All information must be present
         if (customerId == null || productId == null) {
             throw new StoreModelServiceException("add basket_item", "Required information is missing.");
@@ -102,7 +108,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      */
     public void clearBasket(AuthToken authToken,
                             String customerId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
-        // Throws exception if Customer does not exist
+        // Throws exception if Customer does not exist, or lacking AuthToken permissions
         Customer customer = getCustomer(authToken, customerId);
         customer.clearBasket();
         return;
@@ -115,8 +121,11 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                              String fullyQualifiedAisleId,
                              String name,
                              String description,
-                             Location location) throws StoreModelServiceException {
-
+                             Location location) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("define aisle", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
         // All Aisle information must be present
         if (fullyQualifiedAisleId == null || name == null || description == null || location == null) {
             throw new StoreModelServiceException("define aisle", "Required aisle information is missing.");
@@ -156,8 +165,9 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      */
     public Basket defineBasket(AuthToken authToken,
                                String customerId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
         if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("get basket", "Does not have '" + OPEN_ACCESS + "' permission.");
+            throw new AccessDeniedException("define basket", "Does not have '" + OPEN_ACCESS + "' permission.");
         }
 
         // Throws Exception if Customer does not exist
@@ -180,7 +190,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                    String lastName,
                                    CustomerType type,
                                    String email,
-                                   String account) throws StoreModelServiceException {
+                                   String account) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("define customer", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // All Customer information must be present
         if (customerId == null || type == null || email == null || account == null) {
             throw new StoreModelServiceException(
@@ -220,7 +235,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                String deviceId,
                                String name,
                                String type,
-                               String fullyQualifiedAisleId) throws StoreModelServiceException {
+                               String fullyQualifiedAisleId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("define device", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // All Device information must be present
         if (deviceId == null || name == null || type == null || fullyQualifiedAisleId == null) {
             throw new StoreModelServiceException(
@@ -272,7 +292,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                      String location,
                                      Integer capacity,
                                      Integer count,
-                                     String productId) throws StoreModelServiceException {
+                                     String productId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("define inventory", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // All Inventory information must be present
         if (inventoryId == null || location == null || productId == null) {
             throw new StoreModelServiceException(
@@ -328,7 +353,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                  Double size,
                                  String category,
                                  Integer price,
-                                 Temperature temperature) throws StoreModelServiceException {
+                                 Temperature temperature) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("define product", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // All Product information must be present
         if (productId == null || name == null || description == null || category == null) {
             throw new StoreModelServiceException("define product", "Required product information is missing.");
@@ -363,7 +393,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                              String name,
                              Level level,
                              String description,
-                             Temperature temperature) throws StoreModelServiceException {
+                             Temperature temperature) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("define shelf", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // All Shelf information must be present
         if (fullyQualifiedShelfId == null || name == null || level == null || description == null) {
             throw new StoreModelServiceException("define shelf", "Some shelf info is missing.");
@@ -445,7 +480,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * {@inheritDoc}
      */
     public Aisle getAisle(AuthToken authToken,
-                          String locationId) throws StoreModelServiceException {
+                          String locationId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get aisle", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // Must include a location
         if (locationId == null) {
             throw new StoreModelServiceException("get aisle", "No location provided.");
@@ -497,7 +537,6 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
             throw new AccessDeniedException("get basket", "Does not have '" + CHECKOUT + "' permission.");
         }
 
-        System.out.println("STORE: looking for customer " + customerId);
         Customer customer = getCustomer(authToken, customerId);
         Basket basket = customer.getBasket();
 
@@ -508,7 +547,6 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
             );
         }
 
-        System.out.println("STORE: got basket " + basket);
         return basket;
     }
 
@@ -565,7 +603,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * {@inheritDoc}
      */
     public Device getDevice(AuthToken authToken,
-                            String deviceId) throws StoreModelServiceException {
+                            String deviceId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get device", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         Device device = this.deviceMap.get(deviceId);
 
         if (device == null) {
@@ -582,7 +625,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * {@inheritDoc}
      */
     public Inventory getInventory(AuthToken authToken,
-                                  String locationId) throws StoreModelServiceException {
+                                  String locationId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get inventory", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // Must include a location
         if (locationId == null) {
             throw new StoreModelServiceException("get inventory", "No location provided.");
@@ -630,7 +678,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * {@inheritDoc}
      */
     public Product getProduct(AuthToken authToken,
-                              String productId) throws StoreModelServiceException  {
+                              String productId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get product", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         Product product = this.productMap.get(productId);
 
         if (product == null) {
@@ -647,7 +700,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * {@inheritDoc}
      */
     public Shelf getShelf(AuthToken authToken,
-                          String locationId) throws StoreModelServiceException {
+                          String locationId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get shelf", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         // Must include a location
         if (locationId == null) {
             throw new StoreModelServiceException("get aisle", "No location provided.");
@@ -691,7 +749,12 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * {@inheritDoc}
      */
     public Store getStore(AuthToken authToken,
-                          String storeId) throws StoreModelServiceException {
+                          String storeId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
+            throw new AccessDeniedException("get store", "Does not have '" + OPEN_ACCESS + "' permission.");
+        }
+
         Store store = this.storeMap.get(storeId);
 
         if (store == null) {
@@ -736,7 +799,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      */
     public void receiveEvent(AuthToken authToken,
                              String deviceId,
-                             String event) throws StoreModelServiceException {
+                             String event) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Event string must be present
         if (event == null) {
             throw new StoreModelServiceException("create event", "Event is required.");
@@ -759,6 +822,11 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                                    String customerId,
                                                    String productId,
                                                    Integer itemCount) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check for admin "open_access" privileges
+        if ( ! this.authService.hasPermission(authToken, BASKET_ITEMS, null) ) {
+            throw new AccessDeniedException("remove basket_item", "Does not have '" + BASKET_ITEMS + "' permission.");
+        }
+
         // All information must be present
         if (customerId == null || productId == null) {
             throw new StoreModelServiceException("remove basket_item", "Required information is missing.");
@@ -838,7 +906,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      */
     public void updateInventory(AuthToken authToken,
                                 String fullyQualifiedInventoryId,
-                                Integer amount) throws StoreModelServiceException {
+                                Integer amount) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Must include a location
         if (fullyQualifiedInventoryId == null) {
             throw new StoreModelServiceException("update inventory", "No location provided.");
@@ -895,7 +963,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * @param   storeId     The store whose Devices to search for.
      * @return              List of Devices currently located in the Store.
      */
-    public List<Device> getStoreDevices(AuthToken authToken, String storeId) throws StoreModelServiceException {
+    public List<Device> getStoreDevices(AuthToken authToken, String storeId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         Store store = getStore(authToken, storeId);
 
         List<Device> storeDeviceList = new ArrayList<Device>();
@@ -921,7 +989,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
      * @return              List of Devices currently located in the Store.
      * @throws StoreModelServiceException
      */
-    public List<Appliance> getAppliances(AuthToken authToken, ApplianceType type, String storeId) throws StoreModelServiceException{
+    public List<Appliance> getAppliances(AuthToken authToken, ApplianceType type, String storeId) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         Store store = getStore(authToken, storeId);
 
         List<Appliance> applianceList = new ArrayList<Appliance>();

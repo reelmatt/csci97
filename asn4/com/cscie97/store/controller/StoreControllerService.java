@@ -24,9 +24,8 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
     /** The Ledger which processes transactions. */
     private Ledger ledger;
 
-    /** Token to authenticate actions - forthcoming in assignment 4. */
-//    private String authToken = null;
-    private AuthToken authToken = null;
+    /** Token to authenticate actions. */
+    private AuthToken adminToken = null;
 
     /** Factory to generate Command objects to execute. */
     private CommandFactory factory;
@@ -44,7 +43,6 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
         this.authService = authService;
         this.storeModel = storeModel;
         this.ledger = ledger;
-//        this.authToken = "authToken implemented in assignment 4";
 
         // Initialize a CommandFactory to create commands to execute
         this.factory = new CommandFactory(storeModel, authService, ledger);
@@ -63,7 +61,7 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
     public void update(Device device, String event) {
         try {
             // Create the requested Command
-            Command storeCommand = factory.createCommand(getAuthToken(), event, device);
+            Command storeCommand = factory.createCommand(getAdminToken(), event, device);
 
             // If Command was created, execute right away
             if (storeCommand != null) {
@@ -76,10 +74,18 @@ public class StoreControllerService implements StoreControllerServiceInterface, 
         return;
     }
 
-    /** Returns the authentication token from the Controller - forthcoming in
-     * assingment 4. */
-    public AuthToken getAuthToken() {
-        return this.authToken;
+    /** Returns the authentication token from the Controller. */
+    public AuthToken getAdminToken() {
+        return this.adminToken;
+    }
+
+    /**
+     * Set the Admin Token to access restricted methods.
+     *
+     * @param adminToken    The AuthToken with admin privileges.
+     */
+    public void setAdminToken(AuthToken adminToken) {
+        this.adminToken = adminToken;
     }
 
     /** Returns the Ledger associated with the Controller. */

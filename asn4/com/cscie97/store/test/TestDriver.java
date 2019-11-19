@@ -25,19 +25,18 @@ import com.cscie97.ledger.LedgerException;
  */
 public class TestDriver {
     public static void main(String[] args) {
-        // Require only one command line argument (command file)
-        if (args.length == 0 || args.length > 1) {
+        // Require at least one command line argument (command file)
+        if (args.length < 1) {
             System.err.println(
-                "usage: java -cp . com.cscie97.store.test.TestDriver <test script file>"
+                "usage: java -cp . com.cscie97.store.test.TestDriver <test script file(s)>"
             );
             return;
         }
 
-
-
+        // Instantiate a Singleton Authentication Service
         AuthenticationServiceInterface auth = AuthenticationService.getInstance();
 
-        /** Ledger to manage accounts and process transactions. */
+        //Ledger to manage accounts and process transactions.
         Ledger ledger = null;
         try {
             ledger = new Ledger("test", "test ledger", "cambridge");
@@ -47,16 +46,20 @@ public class TestDriver {
             return;
         }
 
-        /** StoreModelService to create, read, and update Store objects. */
+        // StoreModelService to create, read, and update Store objects.
         StoreModelServiceInterface model = new StoreModelService(auth);
 
-        /** StoreControllerService to monitor store state and control appliances. */
+        // StoreControllerService to monitor store state and control appliances.
         StoreControllerServiceInterface controller = new StoreControllerService(auth, model, ledger);
 
-        // Process file
+        // CommandProcessor to handle script files
+        CommandProcessor processor = new CommandProcessor(controller, model, auth, ledger);
+
+        // Process file(s)
         try {
-            CommandProcessor processor = new CommandProcessor(controller, model, auth, ledger);
-            processor.processCommandFile(args[0]);
+            for(int i = 0; i < args.length; i++) {
+                processor.processCommandFile(args[i]);
+            }
         } catch (CommandProcessorException e) {
             System.err.println(e);
         }

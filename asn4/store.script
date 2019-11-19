@@ -1,0 +1,114 @@
+#########################################################################################
+# Store configuration - copied from Adaeze Ezeh's store.script sample posted to Canvas
+#########################################################################################
+
+# Store Commands
+# define  store  <identifier> name <name> address <address>
+define  store  store_123 name RelianceMart  address  ahmedabad
+define  store  store_456 name KwikEMary  address  springfield
+
+# Aisle Commands
+# Define an aisle within the store
+# define  aisle  <store_id>:<aisle_number>  name  <name>  description  <description> location  (floor  |  stock_room)
+define  aisle  store_123:aisle_A1  name  AISLE_A1  description  AISLE_A1_desc location  stock_room
+define  aisle  store_123:aisle_A2  name  AISLE_A2  description  AISLE_A2_desc location  floor
+define  aisle  store_123:aisle_A3  name  AISLE_A3  description  AISLE_A3_desc location  floor
+define  aisle  store_123:aisle_B1  name  AISLE_B1  description  AISLE_B1_desc location  stock_room
+define  aisle  store_123:aisle_B2  name  AISLE_B2  description  AISLE_B2_desc location  floor
+define  aisle  store_123:aisle_B3  name  AISLE_B3  description  AISLE_B3_desc location  floor
+
+#Shelf Commands
+# Define a new shelf within the store
+# define  shelf  <store_id>:<aisle_number>:<shelf_id>  name  <name>  level  (high  | medium  |  low)  description  <description>  [temperature  (frozen  |  refrigerated  | ambient  |  warm  |  hot  )]
+define  shelf  store_123:aisle_A1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+define  shelf  store_123:aisle_A1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+define  shelf  store_123:aisle_A1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+define  shelf  store_123:aisle_A1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+define  shelf  store_123:aisle_A1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+
+
+define  shelf  store_123:aisle_A2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+define  shelf  store_123:aisle_A2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+define  shelf  store_123:aisle_A2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+define  shelf  store_123:aisle_A2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+define  shelf  store_123:aisle_A2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+
+
+define  shelf  store_123:aisle_A3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+define  shelf  store_123:aisle_A3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+define  shelf  store_123:aisle_A3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+define  shelf  store_123:aisle_A3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+define  shelf  store_123:aisle_A3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+
+
+define  shelf  store_123:aisle_B1:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+define  shelf  store_123:aisle_B1:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+define  shelf  store_123:aisle_B1:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+define  shelf  store_123:aisle_B1:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+define  shelf  store_123:aisle_B1:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+
+
+define  shelf  store_123:aisle_B2:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+define  shelf  store_123:aisle_B2:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+define  shelf  store_123:aisle_B2:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+define  shelf  store_123:aisle_B2:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+define  shelf  store_123:aisle_B2:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+
+
+define  shelf  store_123:aisle_B3:shelf_q1  name  Shelf_Q1  level  high   description  Shelf_Q1_Desc  temperature  frozen
+define  shelf  store_123:aisle_B3:shelf_q2  name  Shelf_Q2  level  medium   description  Shelf_Q2_Desc  temperature  ambient
+define  shelf  store_123:aisle_B3:shelf_q3  name  Shelf_Q3  level  low   description  Shelf_Q3_Desc  temperature  refrigerated
+define  shelf  store_123:aisle_B3:shelf_q4  name  Shelf_Q4  level  low   description  Shelf_Q4_Desc  temperature  warm
+define  shelf  store_123:aisle_B3:shelf_q5  name  Shelf_Q5  level  medium   description  Shelf_Q5_Desc  temperature  hot
+
+
+# Define a new product
+# define  product  <product_id>        name  <name>  description  <description>  size <size>  category  <category>  unit_price  <unit_price>        [temperature  (frozen  | refrigerated  |  ambient  |  warm  |  hot  )]
+define  product  prod10        name  bournvita  description  bournvita  size 12  category  Food  unit_price  2        temperature  frozen
+define  product  prod11        name  tea  description  green_tea  size 1.5  category  Food  unit_price  1        temperature  ambient
+define  product  prod12        name  coffee  description  coffee  size 1.5  category  Food  unit_price  3        temperature  refrigerated
+define  product  prod13        name  goggles  description  spectacles  size 1  category  Men_accessories  unit_price  5        temperature  ambient
+define  product  prod14        name  sun_glass  description  spectacles  size 2  category  Fashion  unit_price  7        temperature  ambient
+
+
+# Inventory Commands
+# Define a new inventory item within the store
+# define  inventory  <inventory_id>  location  <store_id>:<aisle_number>:<shelf_id> capacity  <capacity>  count  <count>  product  <product_id>
+define  inventory  inv_u21  location  store_123:aisle_A1:shelf_q1 capacity  1500  count  1000  product  prod10
+define  inventory  inv_u22  location  store_123:aisle_A1:shelf_q2 capacity  1500  count  1000  product  prod11
+define  inventory  inv_u23  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod11
+define  inventory  inv_u24  location  store_123:aisle_B2:shelf_q2 capacity  500  count  200  product  prod13
+define  inventory  inv_u25  location  store_123:aisle_A2:shelf_q2 capacity  200  count  100  product  prod14
+define  inventory  inv_u26  location  store_123:aisle_A2:shelf_q3 capacity  300  count  100  product  prod12
+define  inventory  inv_u27  location  store_123:aisle_A2:shelf_q3 capacity  200  count  50   product  prod12
+
+#Customer Commands
+# Define a new customer
+# define  customer  <customer_id>        first_name  <first_name>  last_name  <last_name> type  (registered|guest)  email_address  <email>  account  <account_address>
+define  customer  cust_1        first_name  JASON  last_name  WALLACE type  guest  email_address  jason.wallace@ymail.com  account  jason
+define  customer  cust_2        first_name  BILL  last_name  ROSE type  registered  email_address  bill.rose@gmail.com  account  bill
+define  customer  cust_3        first_name  MARY last_name  KELVIN type  registered  email_address  mary.kevin@yahoomail.com  account  mary
+define  customer  cust_4        first_name  SILVER  last_name  HAWK type  guest  email_address  silver.hawk@rocketmail.com  account  silver
+define  customer  cust_5        first_name  MEGON  last_name  FOX type  guest  email_address  megonfox@testmail.com  account  megon
+define  customer  cust_6        first_name  MARIA last_name  WILIAMSON type  registered  email_address  maria4567@ymail.com  account  maria
+define  customer  cust_7        first_name  SALINA  last_name  GOMEZ type  registered  email_address  salina@gmail.com  account  salina
+
+# Create Sensors
+# define  device  <device_id>  name  <name>  type  (microphone|camera)  location <store>:<aisle>
+define  device  mic_A1  name  MicrophoneA1  type  microphone  location store_123:aisle_A2
+define  device  cam_A1  name  CameraA1  type  camera  location store_123:aisle_A1
+define  device  cam_A2  name  CameraA2  type  camera  location store_123:aisle_A2
+define  device  cam_B2  name  CameraB1  type  camera  location store_123:aisle_B2
+
+# Create Appliances
+# define  device  <device_id>  name  <name>  type  (speaker  |  robot  |  turnstile) location  <store>:<aisle>
+define  device  rob_1  name  ROBOT_1  type  robot location  store_123:aisle_A1
+define  device  rob_2  name  ROBOT_2  type  robot location  store_123:aisle_A2
+define  device  rob_3  name  ROBOT_3  type  robot location  store_123:aisle_A3
+define  device  rob_4  name  ROBOT_4  type  robot location  store_123:aisle_B1
+define  device  rob_5  name  ROBOT_5  type  robot location  store_123:aisle_B2
+define  device  spk_1  name  SPEAKER_1  type  speaker location  store_123:aisle_A1
+define  device  spk_2  name  SPEAKER_2  type  speaker location  store_123:aisle_A2
+define  device  turn_a1  name  TURNSTILE_A1  type  turnstile location  store_123:aisle_A2
+define  device  turn_a2  name  TURNSTILE_A2  type  turnstile location  store_123:aisle_A2
+define  device  turn_a3  name  TURNSTILE_A3  type  turnstile location  store_123:aisle_A2

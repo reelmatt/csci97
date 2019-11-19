@@ -59,7 +59,7 @@ public abstract class AbstractCommand implements Command {
      * @return                              An list of Appliances matching the type.
      * @throws  StoreModelServiceException  The call to the StoreModel API fails.
      */
-    public List<Appliance> getAppliances(ApplianceType type) throws StoreModelServiceException {
+    public List<Appliance> getAppliances(ApplianceType type) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         return this.storeModel.getAppliances(this.authToken, type, this.source.getStore());
     }
 
@@ -70,7 +70,7 @@ public abstract class AbstractCommand implements Command {
      * @return                              An appliance matching the type.
      * @throws  StoreModelServiceException  The call to the StoreModel API fails.
      */
-    public Appliance getOneAppliance(ApplianceType type) throws StoreModelServiceException {
+    public Appliance getOneAppliance(ApplianceType type) throws StoreModelServiceException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         List<Appliance> appliances = getAppliances(type);
 
         return appliances.remove(0);

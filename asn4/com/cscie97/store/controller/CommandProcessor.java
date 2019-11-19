@@ -39,7 +39,8 @@ public class CommandProcessor {
     /** Ledger to manage accounts and process transactions. */
     private Ledger ledger = null;
 
-    private AuthToken token = null;
+    /** Administrator AuthToken to access restricted methods. */
+    private AuthToken adminToken = null;
 
     /**
      * CommandProcessor Constructor.
@@ -172,7 +173,7 @@ public class CommandProcessor {
         }
 
         // Process Store Model Command
-        processStoreModelCommand(this.token, command, storeObject, id, args, lineNumber);
+        processStoreModelCommand(this.adminToken, command, storeObject, id, args, lineNumber);
         return;
     }
 
@@ -256,12 +257,15 @@ public class CommandProcessor {
                     break;
                 case "login":
                     System.out.println(String.format("command: %s\nobject: %s\nid: %s\n", command, storeObject, id));
-                    this.token = this.authenticationService.login(id, args.get(1));
+                    this.adminToken = this.authenticationService.login(id, args.get(1));
+                    this.storeControllerService.setAdminToken(this.adminToken);
+                    System.out.println("LOGGED IN: token " + this.adminToken);
                     break;
                 case "logout":
                     System.out.println("Logging out " + authToken);
                     this.authenticationService.logout(authToken);
-                    this.token = null;
+                    this.adminToken = null;
+                    this.storeControllerService.setAdminToken(null);
                     System.out.println("Logout successful.");
                     break;
                 case "remove":

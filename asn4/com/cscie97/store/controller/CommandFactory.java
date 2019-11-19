@@ -62,7 +62,7 @@ public class CommandFactory {
      * If recognized, a helper method is called that handles retrieving necessary
      * store objects from event parameters.
      *
-     * @param   authToken                       Token to authenticate with StoreModel API.
+     * @param   adminToken                       Token to authenticate with StoreModel API.
      * @param   event                           Event message created by a store Device.
      * @param   device                          The Device which detected the event.
      * @return                                  The Command to be executed.
@@ -70,7 +70,7 @@ public class CommandFactory {
      *                                          different Exception is thrown while creating
      *                                          the Command (such as missing parameters).
      */
-    public Command createCommand(AuthToken token, String event, Device device)
+    public Command createCommand(AuthToken adminToken, String event, Device device)
             throws StoreControllerServiceException {
         // Break stimulus into a list of arguments
         List<String> eventArgs = parseCommand(event);
@@ -82,16 +82,16 @@ public class CommandFactory {
         String id = null;
 
         try {
-            // First argument is the user id
-            userId = eventArgs.remove(0);
+//            // First argument is the user id
+//            userId = eventArgs.remove(0);
+//
+//            // First argument is the auth credential
+//            credential = eventArgs.remove(0);
 
-            // First argument is the auth credential
-            credential = eventArgs.remove(0);
-
-            // Second argument is the keyword of the stimulus
+            // First argument is the keyword of the stimulus
             eventCommand = eventArgs.remove(0);
 
-            // Third argument is often an id (customer, product)
+            // Second argument is often an id (customer, product)
             // Natural language commands check full event for substring, so OK
             // to remove from parse list
             id = eventArgs.remove(0);
@@ -100,19 +100,17 @@ public class CommandFactory {
         }
 
         // Check user Credential and retireve authToken
-        AuthToken authToken;
-        try {
-            authToken = this.authService.login(userId, credential);
-        } catch (AuthenticationException e) {
-            System.err.println(e);
-            return null;
-        } catch (AccessDeniedException e) {
-            System.err.println(e);
-            return null;
-        }
+//        AuthToken authToken;
+//        try {
+//            authToken = this.authService.login(userId, credential);
+//        } catch (AuthenticationException e) {
+//            System.err.println(e);
+//            return null;
+//        } catch (AccessDeniedException e) {
+//            System.err.println(e);
+//            return null;
+//        }
 
-
-        System.out.println("FACTORY: token == " + authToken.toString());
         // Command to create
         Command storeCommand = null;
 
@@ -121,7 +119,6 @@ public class CommandFactory {
             switch (eventCommand.toLowerCase()) {
                 case "customer":
                     storeCommand = createCustomerCommand(
-                        authToken,
                         this.storeModel,
                         this.ledger,
                         device,
@@ -132,7 +129,7 @@ public class CommandFactory {
                     break;
                 case "emergency":
                     storeCommand = createEmergencyCommand(
-                        authToken,
+                        adminToken,
                         this.storeModel,
                         device,
                         eventArgs,
@@ -141,7 +138,7 @@ public class CommandFactory {
                     break;
                 case "product":
                     storeCommand = createProductCommand(
-                        authToken,
+                        adminToken,
                         this.storeModel,
                         device,
                         event,
@@ -154,7 +151,7 @@ public class CommandFactory {
                     // check for natural language requests via microphones
                     // requests start with 'can' or 'sound'
                     storeCommand = createMicrophoneCommand(
-                        authToken,
+                        adminToken,
                         storeModel,
                         device,
                         event,
@@ -198,8 +195,6 @@ public class CommandFactory {
      * EnterStoreCommand
      *      customer <customer> waiting to enter
      *
-     *
-     * @param   authToken                       Token to authenticate with StoreModel API
      * @param   storeModel                      StoreModel to get/update state.
      * @param   ledger                          Ledger to use for transactions.
      * @param   device                          The Device which detected the event.
@@ -210,8 +205,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createCustomerCommand(AuthToken authToken,
-                                         StoreModelServiceInterface storeModel,
+    private Command createCustomerCommand(StoreModelServiceInterface storeModel,
                                          Ledger ledger,
                                          Device device,
                                          String event,
@@ -219,8 +213,24 @@ public class CommandFactory {
                                          String customerId)
             throws StoreControllerServiceException {
         try {
+
+            // Check user Credential and retireve authToken
+            String credential = eventArgs.remove(0);
+
+            AuthToken authToken;
+            try {
+                authToken = this.authService.login(customerId, credential);
+            } catch (AuthenticationException e) {
+                System.err.println(e);
+                return null;
+            } catch (AccessDeniedException e) {
+                System.err.println(e);
+                return null;
+            }
+
             // Retrieve the Customer
             Customer customer = this.storeModel.getCustomer(authToken, customerId);
+
 
             // Extract the next keyword from the event message
             String action = eventArgs.remove(0);
@@ -300,9 +310,6 @@ public class CommandFactory {
             if (event.toLowerCase().contains("what is the total basket value")) {
                 return new CheckAccountBalanceCommand(authToken, storeModel, device, this.ledger, customer);
             } else if (event.toLowerCase().contains("please get me ")) {
-//                System.out.println("FETCH PRODUCT");
-//                eventArgs.forEach(arg -> System.out.println(arg));
-
                 // Retrieve the amount
                 Integer amount = Integer.parseInt(eventArgs.get(3));
 
@@ -341,7 +348,7 @@ public class CommandFactory {
      * the fully qualified aisle ID (of form <store>:<aisle>) to retrieve the
      * Aisle object from the Store Model.
      *
-     * @param   authToken                       Token to authenticate with StoreModel API
+     * @param   adminToken                       Token to authenticate with StoreModel API
      * @param   storeModel                      StoreModel to get/update state.
      * @param   device                          The Device which detected the event.
      * @param   eventArgs                       The remaining arguments in the parsed event.
@@ -350,7 +357,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createEmergencyCommand(AuthToken authToken,
+    private Command createEmergencyCommand(AuthToken adminToken,
                                            StoreModelServiceInterface storeModel,
                                            Device device,
                                            List<String> eventArgs,
@@ -359,8 +366,8 @@ public class CommandFactory {
         try {
             // Construct fully qualified aisle location
             String aisleLocation = device.getStore() + ":" + eventArgs.get(1);
-            Aisle aisle = this.storeModel.getAisle(authToken, aisleLocation);
-            return new EmergencyCommand(authToken, this.storeModel, device, emergency, aisle);
+            Aisle aisle = this.storeModel.getAisle(adminToken, aisleLocation);
+            return new EmergencyCommand(adminToken, this.storeModel, device, emergency, aisle);
         } catch (IndexOutOfBoundsException e) {
             throw new StoreControllerServiceException("emergency event", "Missing aisle location.");
         } catch (StoreModelServiceException e) {
@@ -395,7 +402,7 @@ public class CommandFactory {
      * during parsing, leaving the customer name at index 3. The Command accepts
      * a customer name as either their ID, or full name structure as "first last".
      *
-     * @param   authToken                       Token to authenticate with StoreModel API
+     * @param   adminToken                       Token to authenticate with StoreModel API
      * @param   storeModel                      StoreModel to get/update state.
      * @param   device                          The Device which detected the event.
      * @param   event                           The full event message emitted by the Device.
@@ -404,7 +411,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createMicrophoneCommand(AuthToken authToken,
+    private Command createMicrophoneCommand(AuthToken adminToken,
                                             StoreModelServiceInterface storeModel,
                                             Device device,
                                             String event,
@@ -414,11 +421,11 @@ public class CommandFactory {
             if (event.toLowerCase().contains("sound of breaking glass")) {
                 // Construct fully qualified aisle location
                 String aisleLocation = device.getStore() + ":" + eventArgs.get(3);
-                Aisle aisle = this.storeModel.getAisle(authToken, aisleLocation);
-                return new BrokenGlassCommand(authToken, storeModel, device, aisle);
+                Aisle aisle = this.storeModel.getAisle(adminToken, aisleLocation);
+                return new BrokenGlassCommand(adminToken, storeModel, device, aisle);
             } else if (event.toLowerCase().contains("can you help me find")) {
                 String customerName = eventArgs.get(3);
-                return new MissingPersonCommand(authToken, storeModel, device, customerName);
+                return new MissingPersonCommand(adminToken, storeModel, device, customerName);
             } else {
                 throw new StoreControllerServiceException(event, "Unknown command.");
             }
@@ -452,7 +459,7 @@ public class CommandFactory {
      * and have their corresponding Store objects passed in to the Command
      * constructor.
      *
-     * @param   authToken                       Token to authenticate with StoreModel API
+     * @param   adminToken                       Token to authenticate with StoreModel API
      * @param   storeModel                      StoreModel to get/update state.
      * @param   device                          The Device which detected the event.
      * @param   event                           The full event message emitted by the Device.
@@ -462,7 +469,7 @@ public class CommandFactory {
      * @throws StoreControllerServiceException  If parameters are missing in the event, or
      *                                          an exception with retrieving Store Model objects.
      */
-    private Command createProductCommand(AuthToken authToken,
+    private Command createProductCommand(AuthToken adminToken,
                                           StoreModelServiceInterface storeModel,
                                           Device device,
                                           String event,
@@ -471,19 +478,19 @@ public class CommandFactory {
             throws StoreControllerServiceException {
         try {
             // Retrieve the product referenced
-            Product product = this.storeModel.getProduct(authToken, productId);
+            Product product = this.storeModel.getProduct(adminToken, productId);
 
             if (event.toLowerCase().contains("on floor")) {
                 // Retrieve the Aisle referenced
-                Aisle aisle = this.storeModel.getAisle(authToken, eventArgs.get(2));
-                return new CleaningCommand(authToken, storeModel, device, product, aisle);
+                Aisle aisle = this.storeModel.getAisle(adminToken, eventArgs.get(2));
+                return new CleaningCommand(adminToken, storeModel, device, product, aisle);
             } else if (event.toLowerCase().contains("restock")) {
                 // Retrieve the Inventory location
                 String inventoryLocation = eventArgs.get(1);
 
                 // Retrieve the Inventory object
-                Inventory inventory = this.storeModel.getInventory(authToken, inventoryLocation);
-                return new RestockCommand(authToken, storeModel, device, product, inventory, inventoryLocation);
+                Inventory inventory = this.storeModel.getInventory(adminToken, inventoryLocation);
+                return new RestockCommand(adminToken, storeModel, device, product, inventory, inventoryLocation);
             } else {
                 throw new StoreControllerServiceException(event, "Unknown command.");
             }

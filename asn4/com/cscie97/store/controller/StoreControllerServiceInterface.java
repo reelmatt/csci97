@@ -1,6 +1,7 @@
 package com.cscie97.store.controller;
 
 import com.cscie97.store.model.Observer;
+import com.cscie97.store.authentication.AuthToken;
 
 /**
  * Interface for a Store Controller Service.
@@ -19,4 +20,6 @@ import com.cscie97.store.model.Observer;
  *
  * @author Matthew Thomas
  */
-public interface StoreControllerServiceInterface extends Observer { }
+public interface StoreControllerServiceInterface extends Observer {
+    public void setAdminToken(AuthToken adminToken);
+}

@@ -460,7 +460,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
      * {@inheritDoc}
      */
     public AuthToken login(String userId, String credential) throws AuthenticationException, AccessDeniedException {
-        System.out.println("AUTH: userId = " + userId + " && credential == " + credential);
         User user = getUser(userId);
 
         if (authenticateCredential(user, credential)) {
@@ -470,7 +469,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             user.setToken(newToken);
             this.tokenMap.put(tokenId, newToken);
 
-            System.out.println("AUTH: token == " + newToken);
             return newToken;
         }
 
@@ -571,6 +569,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 //        if (this.rootUser && token == null) {
 //            throw new InvalidAuthTokenException("define user", "No token provided.");
 //        }
+
         // If a root user has been created, permissions must be checked
         if (this.rootUser) {
             validateToken(authToken);
@@ -584,7 +583,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             Visitor access = new AuthVisitor(authToken, permission, resource);
             acceptVisitor(access);
 
-            System.out.println("AUTH: visitor done, access is " + access.hasPermission());
             return access.hasPermission();
         }
 
