@@ -1,17 +1,24 @@
 package com.cscie97.store.authentication;
 
-
 import java.util.List;
 import java.util.ArrayList;
 
-
+/**
+ *
+ */
 public class Role extends Entitlement {
-
-//    private List<Permission> permissionList;
-
+    /** A list of Entitlements contained within the Role. */
     private List<Entitlement> entitlementList;
 
-
+    /**
+     * Role Constructor.
+     *
+     *
+     *
+     * @param id
+     * @param name
+     * @param description
+     */
     public Role (String id, String name, String description) {
         super(id, name, description);
         this.entitlementList = new ArrayList<Entitlement>();

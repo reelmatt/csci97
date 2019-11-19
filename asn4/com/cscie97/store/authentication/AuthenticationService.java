@@ -1,14 +1,9 @@
 package com.cscie97.store.authentication;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import com.cscie97.ledger.Ledger;
-import com.cscie97.store.model.Device;
 import com.cscie97.store.model.Observer;
 import com.cscie97.store.model.StoreModelServiceInterface;
-
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Base64;
 import java.security.MessageDigest;
@@ -21,7 +16,6 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author Matthew Thomas
  */
-
 public class AuthenticationService implements AuthenticationServiceInterface {
     /** Singleton instance of the Authentication Service. */
     private static AuthenticationService instance = null;
@@ -48,7 +42,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     private static final String ADMIN_ACCESS = "user_admin";
 
     /**
-     * AuthenticationService Constructor.
+     * Private AuthenticationService Constructor. Adheres to Singleton Pattern.
      */
     private AuthenticationService() {
         this.userMap = new HashMap<String, User>();
@@ -56,7 +50,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         this.roleMap = new HashMap<String, Role>();
         this.resourceMap = new HashMap<String, Resource>();
         this.tokenMap = new HashMap<Integer, AuthToken>();
-
     }
 
     /**
@@ -73,24 +66,11 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return instance;
     }
 
-
-    public User getUser(String userId) throws AuthenticationException {
-        User user = this.userMap.get(userId);
-
-        if (user == null) {
-            throw new AuthenticationException(
-                "get user",
-                String.format("A user with id '%s' is not registered with the AuthenticationService.", userId)
-            );
-        }
-
-        return user;
-    }
-
     /**
      * {@inheritDoc}
      */
-    public void acceptVisitor(Visitor visitor) {
+    public void acceptVisitor(Visitor visitor)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         visitor.visitAuthenticationService(this);
         return;
     };
@@ -98,22 +78,26 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * {@inheritDoc}
      */
-    public void addEntitlementToUser(AuthToken token, String userId, String entitlementId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+    public void addEntitlementToUser(AuthToken token, String userId, String entitlementId)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("add entitlement to user", "no admin access");
         }
 
-
+        // Retrieve specified User and Entitlement
         User user = getUser(userId);
         Entitlement entitlement = getEntitlement(entitlementId);
 
+        // Check that User exists
         if (user == null) {
             throw new AuthenticationException(
                 "add entitlement to User",
                 "User " + userId + " does not exist."
             );
         }
+
+        // Check that Entitlement exists
         if (entitlement == null) {
             throw new AuthenticationException(
                 "add entitlement to User",
@@ -121,6 +105,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             );
         }
 
+        // Add Entitlement to User
         user.addEntitlement(entitlement);
         return;
     };
@@ -128,21 +113,26 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * {@inheritDoc}
      */
-    public void addEntitlementToRole(AuthToken token, String entitlementId, String roleId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+    public void addEntitlementToRole(AuthToken token, String entitlementId, String roleId)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("add entitlement to role", "no admin access");
         }
 
+        // Retrieve specified Entitlement and Role
         Entitlement entitlement = getEntitlement(entitlementId);
         Role role = getRole(roleId);
 
+        // Check that Entitlement exists
         if (entitlement == null) {
             throw new AuthenticationException(
                 "add entitlement to role",
                 "Entitlement " + entitlementId + " does not exist."
             );
         }
+
+        // Check that Role exists
         if (role == null) {
             throw new AuthenticationException(
                 "add entitlement to role",
@@ -150,14 +140,73 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             );
         }
 
+        // Add Entitlement to Role
         role.addEntitlement(entitlement);
         return;
+    };
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public void createRootUser(String userId, String password)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check if root user has already been initialized
+        if (this.rootUser) {
+            throw new AuthenticationException("create root user", "A root user has already been created.");
+        }
+
+        // Create the root user with userId provided
+        User root = defineUser(null, userId, "root");
+
+        // Hash the password and store it with the user
+        String credential = defineCredential(null, userId, "password", password);
+
+        // Create new admin Permission
+        Permission admin_permission = new Permission(ADMIN_ACCESS, "User administrator", "Create, Update, Delete Users");
+
+        // Add to map
+        this.permissionMap.put(ADMIN_ACCESS, admin_permission);
+
+        // Grant the root user the admin privileges
+        addEntitlementToUser(null, userId, "user_admin");
+
+        // Indicate root user has been created, prevent overwriting
+        this.rootUser = true;
+        return;
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean authenticateCredential(User user, String credential) {
+        // Check Voice Print
+        if (credential.equals(user.getVoicePrint())) {
+            return true;
+        }
+
+        // Check Face Print
+        if (credential.equals(user.getFacePrint())) {
+            return true;
+        }
+
+        // Check Password, compare hashes
+        String login = user.getPassword();
+        String hashedPassword = hashToString(credential.getBytes());
+
+        if (login != null && login.equals(hashedPassword)) {
+            return true;
+        }
+
+        return false;
     };
 
     /**
      * {@inheritDoc}
      */
-    public String addUserCredential(AuthToken token, String userId, String credentialType, String credential) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+    public String defineCredential(AuthToken token, String userId, String credentialType, String credential)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("add user credential", "no admin access");
@@ -172,8 +221,8 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
             if (! credential.equals(voiceCheck)) {
                 throw new AuthenticationException(
-                    "define credential",
-                    "Voice print does not match format --voice:<username>--"
+                        "define credential",
+                        "Voice print does not match format --voice:<username>--"
                 );
             }
 
@@ -185,8 +234,8 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
             if (! credential.equals(faceCheck)) {
                 throw new AuthenticationException(
-                    "define credential",
-                    "Face print does not match format --voice:<username>--"
+                        "define credential",
+                        "Face print does not match format --voice:<username>--"
                 );
             }
 
@@ -201,115 +250,19 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             return hashedPassword;
         } else {
             throw new AuthenticationException(
-                "define credential",
-                "Unknown credential type"
+                    "define credential",
+                    "Unknown credential type"
             );
         }
     };
 
-    /**
-     * {@inheritDoc}
-     */
-    public void createRootUser(String userId, String password) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
-        if (this.rootUser) {
-            throw new AuthenticationException("create root user", "A root user has already been created.");
-        }
-
-        User root = defineUser(null, userId, "root");
-
-        String credential = addUserCredential(null, userId, "password", password);
-
-
-//        Permission admin_permission = getPermission("user_admin");
-        // Create new Permission
-        Permission admin_permission = new Permission("user_admin", "User administrator", "Create, Update, Delete Users");
-
-        // Add to map
-        this.permissionMap.put("user_admin", admin_permission);
-//        if (admin_permission == null) {
-//            admin_permission = definePermission(null, "user_admin", "User administrator", "Create, Update, Delete Users");
-//        }
-
-        addEntitlementToUser(null, userId, "user_admin");
-        this.rootUser = true;
-        return;
-    }
-
-    /**
-     * Generate a hash and convert to a String. Use SHA-256.
-     *
-     * Citations:
-     * src: https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
-     * src: https://www.baeldung.com/sha-256-hashing-java
-     *
-     * @param   toHash  The byte array to hash.
-     * @return          String representation of hash.
-     */
-    private String hashToString(byte[] toHash) {
-        // Initialize a SHA-256 hasher
-        MessageDigest digest = null;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(e.toString());
-        }
-
-        // Hash the byte-ified Block object
-        byte[] encodedHash = digest.digest(toHash);
-
-        // Converting byte[] to String
-        // src: https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
-        return Base64.getEncoder().encodeToString(encodedHash);
-    }
 
     /**
      * {@inheritDoc}
      */
-    public boolean authenticateCredential(User user, String credential) {
-        if (credential.equals(user.getVoicePrint())) {
-            return true;
-        }
-
-        if (credential.equals(user.getFacePrint())) {
-            return true;
-        }
-
-        String login = user.getPassword();
-        String hashedPassword = hashToString(credential.getBytes());
-
-        if (login != null && login.equals(hashedPassword)) {
-            return true;
-        }
-
-
-//        if (credentialType.equals("password")) {
-//            String login = user.getPassword();
-//            String hashedPassword = hashToString(credential.getBytes());
-//
-//            if (login.equals(hashedPassword)) {
-//
-//                return true;
-//
-//            }
-//        } else if (credentialType.equals("voice_print")) {
-//            if (credential.equals(user.getVoicePrint())) {
-//                return true;
-//            }
-//
-//        } else if (credentialType.equals("face_print")) {
-//            if (credential.equals(user.getFacePrint())) {
-//                return true;
-//            }
-//        }
-
-
-        return false;
-    };
-
-    /**
-     * {@inheritDoc}
-     */
-    public Permission definePermission(AuthToken token, String id, String name, String description) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+    public Permission definePermission(AuthToken token, String id, String name, String description)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("define permission", "no admin access");
         }
@@ -341,7 +294,8 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * {@inheritDoc}
      */
-    public Resource defineResource(AuthToken token, String id, String description) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+    public Resource defineResource(AuthToken token, String id, String description)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("define resource", "no admin access");
@@ -376,7 +330,8 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * {@inheritDoc}
      */
-    public Role defineRole(AuthToken token, String id, String name, String description, String resourceId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+    public Role defineRole(AuthToken token, String id, String name, String description, String resourceId)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("define role", "no admin access");
@@ -418,14 +373,14 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         // Add to map
         this.roleMap.put(id, newRole);
-
         return newRole;
     };
 
     /**
      * {@inheritDoc}
      */
-    public User defineUser(AuthToken token, String id, String name) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+    public User defineUser(AuthToken token, String id, String name)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check the caller has ADMIN_ACCESS permission
         if (! hasPermission(token, ADMIN_ACCESS, null)) {
             throw new AccessDeniedException("define user", "no admin access");
@@ -452,14 +407,14 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         // Add to map
         this.userMap.put(id, newUser);
-
         return newUser;
     };
 
     /**
      * {@inheritDoc}
      */
-    public AuthToken login(String userId, String credential) throws AuthenticationException, AccessDeniedException {
+    public AuthToken login(String userId, String credential)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         User user = getUser(userId);
 
         if (authenticateCredential(user, credential)) {
@@ -471,26 +426,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
             return newToken;
         }
-
-
-//        if (credentialType.equals("password")) {
-//            String login = user.getPassword();
-//
-//            byte[] toHash = credential.getBytes();
-//
-//            String hashedPassword = hashToString(toHash);
-//
-//            if (login.equals(hashedPassword)) {
-//                Integer tokenId = this.tokenMap.size() + 1;
-//                AuthToken newToken = new AuthToken(String.valueOf(tokenId));
-//
-//                user.setToken(newToken);
-//                this.tokenMap.put(tokenId, newToken);
-//
-//                return newToken;
-//
-//            }
-//        }
 
         throw new AccessDeniedException("login", "login credential is not recognized for " + userId);
     }
@@ -508,15 +443,18 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * {@inheritDoc}
      */
-    public void getInventory(AuthToken authToken) throws AuthenticationException {
-        Visitor inventory = new InventoryVisitor();
+    public void getInventory(AuthToken authToken)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        Visitor inventory = new InventoryVisitor(authToken);
         acceptVisitor(inventory);
 
 
         return;
     }
 
-    public Entitlement getEntitlement(String entitlementId) {
+    private Entitlement getEntitlement(String entitlementId)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException{
+
         Iterator<Map.Entry<String, Role>> roles = listRoles();
         while (roles.hasNext()) {
             Role role = roles.next().getValue();
@@ -540,15 +478,21 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return userMap.entrySet().iterator();
     }
 
-    public Iterator<Map.Entry<String, Resource>> listResources() {
+    public Iterator<Map.Entry<String, Resource>> listResources(AuthToken token)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Check the caller has ADMIN_ACCESS permission
+        if (! hasPermission(token, ADMIN_ACCESS, null)) {
+            throw new AccessDeniedException("get resource list", "no admin access");
+        }
+
         return resourceMap.entrySet().iterator();
     }
 
-    public Resource getResource(String id) {
+    private Resource getResource(String id) {
         return resourceMap.get(id);
     }
 
-    public Permission getPermission(String id) {
+    private Permission getPermission(String id) {
         return permissionMap.get(id);
     }
 
@@ -560,11 +504,27 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return roleMap.entrySet().iterator();
     }
 
-    public Role getRole(String id) {
+    private Role getRole(String id) {
         return roleMap.get(id);
     }
 
-    public boolean hasPermission(AuthToken authToken, String permissionId, Resource resource) throws AuthenticationException, InvalidAuthTokenException {
+    private User getUser(String userId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+
+
+        User user = this.userMap.get(userId);
+
+        if (user == null) {
+            throw new AuthenticationException(
+                    "get user",
+                    String.format("A user with id '%s' is not registered with the AuthenticationService.", userId)
+            );
+        }
+
+        return user;
+    }
+
+
+    public boolean hasPermission(AuthToken authToken, String permissionId, Resource resource) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
 //        // If a root user has been created, a token is required
 //        if (this.rootUser && token == null) {
 //            throw new InvalidAuthTokenException("define user", "No token provided.");
@@ -608,6 +568,33 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         // find user
 
         return null;
-//        return this.userMap.get("userId");
     };
+
+    /**
+     * Generate a hash and convert to a String. Use SHA-256.
+     *
+     * Citations:
+     * src: https://stackoverflow.com/questions/5531455/how-to-hash-some-string-with-sha256-in-java
+     * src: https://www.baeldung.com/sha-256-hashing-java
+     *
+     * @param   toHash  The byte array to hash.
+     * @return          String representation of hash.
+     */
+    private String hashToString(byte[] toHash) {
+        // Initialize a SHA-256 hasher
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println(e.toString());
+        }
+
+        // Hash the byte-ified Block object
+        byte[] encodedHash = digest.digest(toHash);
+
+        // Converting byte[] to String
+        // src: https://howtodoinjava.com/array/convert-byte-array-string-vice-versa/
+        return Base64.getEncoder().encodeToString(encodedHash);
+    }
+
 }

@@ -17,17 +17,21 @@ public class InventoryVisitor implements Visitor {
 
     private Integer indentLevel = 0;
 
-    public InventoryVisitor() {
+    private AuthToken token = null;
+
+    public InventoryVisitor(AuthToken token) {
+        this.token = token;
+
         this.inventory = "========================\n";
         this.inventory += "| Auth Service Inventory\n";
         this.inventory += "========================\n";
     }
 
-    public void visitAuthenticationService(AuthenticationService authService) {
+    public void visitAuthenticationService(AuthenticationService authService) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
 
         // Get inventory of all Users
         addInventoryHeader("Resources");
-        Iterator<Map.Entry<String, Resource>> resources = authService.listResources();
+        Iterator<Map.Entry<String, Resource>> resources = authService.listResources(this.token);
         while( resources.hasNext() ) {
             Resource resource = resources.next().getValue();
             visitResource(resource);
@@ -68,27 +72,9 @@ public class InventoryVisitor implements Visitor {
         indentLevel++;
         for (Entitlement entitlement : role.getEntitlementList()) {
             visitEntitlement(entitlement);
-//            this.inventory += indent() + entitlement + "\n";
         }
         indentLevel--;
 
-//        for (Entitlement entitlement : role.getEntitlementList()) {
-//            this.inventory += "\t" + entitlement + "\n";
-//
-//            if (entitlement instanceof Permission) {
-//                continue;
-//            }
-//
-//            Role subRoleGroup = (Role) entitlement;
-//            for (Entitlement subEntitlement : subRoleGroup.getEntitlementList()) {
-//                if (subEntitlement instanceof Permission) {
-//                    visitPermission((Permission) subEntitlement);
-//                } else {
-//                    visitRole((Role) subEntitlement);
-//                }
-//
-//            }
-//        }
         return;
     };
 
@@ -104,11 +90,6 @@ public class InventoryVisitor implements Visitor {
         indentLevel++;
         for (Entitlement subEntitlement : role.getEntitlementList()) {
             visitEntitlement(subEntitlement);
-//            if (subEntitlement instanceof Permission) {
-//                visitPermission((Permission) subEntitlement);
-//            } else {
-//                visitRole((Role) subEntitlement);
-//            }
         }
         indentLevel--;
     }
@@ -133,7 +114,6 @@ public class InventoryVisitor implements Visitor {
         indentLevel++;
         for (Entitlement entitlement : user.getEntitlementList()) {
             visitEntitlement(entitlement);
-//            this.inventory += indent() + entitlement + "\n";
         }
         indentLevel--;
 

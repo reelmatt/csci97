@@ -16,7 +16,7 @@ public class AuthVisitor implements Visitor {
     private boolean hasPermission = false;
 
 
-    public AuthVisitor(AuthToken token, Permission permission, Resource resource) {
+    public AuthVisitor(AuthToken token, Permission permission, Resource resource) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         this.token = token;
         this.permission = permission;
         this.resource = resource;
@@ -96,7 +96,6 @@ public class AuthVisitor implements Visitor {
         if (this.token == null || userToken == null) {
             return;
         }
-//        System.out.println("AUTH: visit user " + user.getId() + " has token " + userToken.getId());
 
         if (this.token.getId().equals(userToken.getId())) {
 //            System.out.println("TOKEN belongs to user " + user.getId());
@@ -111,19 +110,12 @@ public class AuthVisitor implements Visitor {
             if (hasPermission) {
                 break;
             }
-
-//
-//            if (entitlement.hasResource(this.permission, this.resource)) {
-//                this.hasPermission = true;
-//            }
         }
-
 
         return;
     };
 
     public boolean hasPermission() {
-//        System.out.println("VISITOR: authToken == " + this.foundAuthToken);
         return hasPermission;
     }
 }

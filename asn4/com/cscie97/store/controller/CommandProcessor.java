@@ -732,7 +732,7 @@ public class CommandProcessor {
             );
         }
 
-        String credential = this.authenticationService.addUserCredential(token, userId, credentialType, credentialValue);
+        String credential = this.authenticationService.defineCredential(token, userId, credentialType, credentialValue);
         printCreatedEntity("credential", credential);
     }
 
@@ -1126,7 +1126,7 @@ public class CommandProcessor {
      * exist, create the basket and associate with the Customer.
      */
     private void getAuthInventory (AuthToken authToken, String command, String customerId, List<String> args)
-            throws CommandProcessorException, AuthenticationException {
+            throws CommandProcessorException, AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         // Check to see if the Customer already has a basket
 
        this.authenticationService.getInventory(authToken);

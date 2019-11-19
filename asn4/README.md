@@ -15,13 +15,31 @@ the assignment are:
 javac com/cscie97/store/model/*.java com/cscie97/store/controller/*.java com/cscie97/store/authentication/*.java com/cscie97/ledger/*.java com/cscie97/store/test/*.java
 
 // Run test script
-java -cp . com.cscie97.store.test.TestDriver <test script file>
+java -cp . com.cscie97.store.test.TestDriver <test script file(s)>
 
 
-where `<test script file>` is the name of the test script file. My test run
-outputs can also be found in the root level, with “.out” appended to the test
-file’s name. As per post @67 on Piazza, the TestDriver passes both the input and
+where `<test script file(s)>` is the name of a test script file or files. To simplify
+the test files, for assignment 4 I re-wrote my TestDriver to accept multiple test files
+to run in sequence. This allows for functionality to be broken up among several files, one
+for each service. My test run outputs can be found in the root level, with ".out" appended
+to the file name. As per post @67 on Piazza, the TestDriver passes both the input and
 formatted output data to stdout and into the resulting file.
+
+To obtain the results for "authentication.script.out", the following command was run:
+
+java -cp . com.cscie97.store.test.TestDriver authentication.script
+
+To simulate Permissions with the Store Controller and Model Services, and to obtain the
+results for "store24.out", the following command was run:
+
+java -cp . com.cscie97.store.test.TestDriver authentication.script ledger.script store.script controller.script
+
+For error testing, and to obtain the results for "errors.script.out", the following
+command was run:
+
+java -cp . com.cscie97.store.test.TestDriver errors.script
+
+
 
 # Source code
 + com/cscie97/

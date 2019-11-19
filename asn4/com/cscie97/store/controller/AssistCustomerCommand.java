@@ -67,6 +67,8 @@ public class AssistCustomerCommand extends AbstractCommand {
         } catch (InvalidAuthTokenException e) {
             System.err.println(e);
         }
+
+        super.logoutToken();
         return;
     };
 }

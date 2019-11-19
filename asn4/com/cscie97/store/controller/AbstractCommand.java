@@ -125,4 +125,10 @@ public abstract class AbstractCommand implements Command {
     public Device getSource() {
         return source;
     }
+
+    public void logoutToken() {
+        if (this.authToken != null) {
+            this.authToken.invalidate();
+        }
+    }
 }

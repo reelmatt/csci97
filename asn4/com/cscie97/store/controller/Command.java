@@ -23,4 +23,6 @@ public interface Command {
      *                                          Controller exception is thrown.
      */
     public void execute() throws StoreControllerServiceException;
+
+    public void logoutToken();
 }
