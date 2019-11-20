@@ -108,6 +108,8 @@ add entitlement_to_user cust_2 adult_consumer
 
 add entitlement_to_user cust_3 child_consumer
 
+add entitlement_to_user cust_4 open_access
+
 add entitlement_to_user cust_5 adult_consumer
 
 

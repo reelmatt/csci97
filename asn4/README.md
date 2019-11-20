@@ -21,18 +21,16 @@ java -cp . com.cscie97.store.test.TestDriver <test script file(s)>
 where `<test script file(s)>` is the name of a test script file or files. To simplify
 the test files, for assignment 4 I re-wrote my TestDriver to accept multiple test files
 to run in sequence. This allows for functionality to be broken up among several files, one
-for each service. My test run outputs can be found in the root level, with ".out" appended
+for each service. Comments describing each file, and the tests, can be found within the files.
+My test run outputs can be found in the root level, with ".out" appended
 to the file name. As per post @67 on Piazza, the TestDriver passes both the input and
 formatted output data to stdout and into the resulting file.
 
-To obtain the results for "authentication.script.out", the following command was run:
-
-java -cp . com.cscie97.store.test.TestDriver authentication.script
 
 To simulate Permissions with the Store Controller and Model Services, and to obtain the
 results for "store24.out", the following command was run:
 
-java -cp . com.cscie97.store.test.TestDriver authentication.script ledger.script store.script controller.script
+java -cp . com.cscie97.store.test.TestDriver store.script authentication.script ledger.script controller.script
 
 For error testing, and to obtain the results for "errors.script.out", the following
 command was run:
@@ -51,14 +49,22 @@ java -cp . com.cscie97.store.test.TestDriver errors.script
         + Transaction.java
     + store/
         + authentication/
-            + 
-            + 
-            + 
-            + 
-            + 
-            + 
-            + 
-            + 
+            + AccessDeniedException.java
+            + AuthenticationException.java
+            + AuthenticationService.java
+            + AuthenticationServiceInterface.java
+            + AuthToken.java
+            + AuthVisitor.java
+            + Entitlement.java
+            + EntitlementInterface.java
+            + InvalidAuthTokenException.java
+            + InventoryVisitor.java
+            + Permission.java
+            + Resource.java
+            + ResourceRole.java
+            + Role.java
+            + User.java
+            + Visitor.java
         + controller/
             + AbstractCommand.java
             + AssistCustomerCommand.java
@@ -107,31 +113,35 @@ java -cp . com.cscie97.store.test.TestDriver errors.script
             + TestDriver.java
     
 # Data files
++ authentication.script
 + errors.script
     + script that mostly test error cases
 + errors.script.out
     + results of running errors.script
-+ authentication.script
-    + Modified from the store.script and controller.script files used in submissions
-    for assignments 2 and 3. Many Store Model commands were written by Adaeze Ezeh
-    and provided on Canvas. All Controller-specific and Authentication-specific tests
-    were written by me and noted in the test file. Some syntax was changed from
-    assignment handouts to fit my CommandProcessor.
-+ authentication.script.out
-    + results of running authentication.script
++ controller.script
+    + From assignment 3 submission. Written by myself and modified for assignment
+    4 to test Authentication Service features.
++ ledger.script
+    + From assignment 1 submission
++ store24.out
+    + Results from running commands for Ledger, Store Model, Controller, and
+    Authentication Services. The input is spread across four files (one for each
+    service). Commands for Authentication Service only can be found in
+    authentication.script
++ store.script
+    + From assignment 2 submission. Written by Adaeze Ezeh and provided in course
+    files on Canvas. Modifications made by myself for assignment 3 and further
+    modifications for assignment 4 to incorporate face/voice prints.
+
 
 # Other files
 + Diagrams
-	+ Architecture.png					-- Component diagram from class handouts
-	+ CheckAccountBalance.png			-- Sequence diagram
-	+ Class Diagram-Full.png			-- Full class diagram, with Controller
-										   and Model packages
-	+ Class Diagram-StoreController.png	-- Subset of Class diagram, showing only
-										   Controller classes
-	+ EmergencyCommand.png				-- Sequence diagram
+	+ CheckAccountBalance.png			-- Sequence diagram with AuthVisitor
+	+ Class Diagram.png     			-- Class diagram
+	+ GetInventory.png				    -- Sequence diagram with InventoryVisitor
 	+ UseCase Diagram.png				-- Use Case diagram
++ matthew_thomas_asn4_results.pdf       -- Design changes and results document
 + matthew_thomas_asn4_design.pdf        -- My design document
 + matthew_thomas_asn3_design.pdf        -- My assignment 3 design (for reference)
 + matthew_thomas_asn2_design.pdf        -- My assignment 2 design (for reference)
-+ matthew_thomas_asn4_results.pdf       -- Design changes and results document
 + README.md                             -- This file

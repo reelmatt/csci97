@@ -1,5 +1,7 @@
 ################################################################################
-# Controller commands - written by Matthew Thomas
+# Controller commands - written by Matthew Thomas for Assignment 3
+# Modified for Assignment 4 to include face/voice prints to authenticate
+# Customer actions
 ################################################################################
 
 ################################################################################
@@ -14,13 +16,13 @@ create event turn_a1 event "customer cust_1 '--face:JASON WALLACE--' waiting to 
 create event turn_a2 event "customer cust_2 '--face:BILL ROSE--' waiting to enter"
 
 # Welcome MARY KELVIN to the store
-create event turn_a3 event "customer cust_3 '--face:MARY KELVIN--'  waiting to enter"
-
-# Welcome SILVER HAWK to the store
-create event turn_a1 event "customer cust_4 '--face:SILVER HAWK--' waiting to enter"
+#create event turn_a3 event "customer cust_3 '--face:MARY KELVIN--'  waiting to enter"
 
 # Welcome MEGON FOX to the store
 create event turn_a2 event "customer cust_5 '--face:MEGON FOX--' waiting to enter"
+
+# SILVER HAWK does not have any permissions, including 'open_access', so cannot enter
+create event turn_a1 event "customer cust_4 '--face:SILVER HAWK--' waiting to enter"
 
 ################################################################################
 # Customer seen
@@ -35,9 +37,12 @@ create event cam_B2 event "customer cust_3 '--face:MARY KELVIN--' enters aisle_B
 create event cam_B2 event "customer cust_3 '--face:MARY KELVIN--' enters aisle_B3"
 create event cam_B2 event "customer cust_3 '--face:MARY KELVIN--' enters aisle_A1"
 
-create event cam_A1 event "customer cust_4 '--face:SILVER HAWK--' enters aisle_B1"
-
 create event cam_A1 event "customer cust_5 '--face:MEGON FOX--' enters aisle_B1"
+
+
+# All these customers do not have any permissions, including "open_access", so cannot enter
+# the store, nor have their location update
+create event cam_A1 event "customer cust_4 '--face:SILVER HAWK--' enters aisle_B1"
 
 create event cam_A1 event "customer cust_6 '--face:MARIA WILIAMSON--' enters aisle_B2"
 
@@ -50,7 +55,7 @@ show customer cust_1
 # RelianceMart, aisle_A1 (last seen location)
 show customer cust_3
 
-# RelianceMart, aisle_B2
+# Not in store
 show customer cust_6
 
 ########################################################################################
@@ -61,6 +66,8 @@ show customer cust_6
 ########################################################################################
 
 # For all emergencies - open 3 turnstiles, announce on 2 speakers, 1 robot address, 4 robots assist
+# Demonstrates that the "root" (or admin) user, logged in via the Store Controller Service can
+# control the store Appliances
 
 create event cam_A1 event "emergency fire in aisle_A1"
 
@@ -88,56 +95,9 @@ create event cam_A1 event "customer cust_1 '--face:JASON WALLACE--' removes prod
 # Generate restock command to bring Inventory count from 99 -> 300.
 create event cam_A2 event "customer cust_5 '--face:MEGON FOX--' adds prod12 from aisle_A2:shelf_q3"
 
-# Add 1 sunglass to customer's basket. Inventory 200 -> 199 (capacity of 500).
-# Generate restock command to bring Inventory count from 199 -> 500.
+
+# MARY KELVIN does not have "basket_items" permissions, so cannot add product to basket
 create event cam_A1 event "customer cust_3 '--face:MARY KELVIN--' adds prod13 from aisle_B2:shelf_q2"
-
-################################################################################
-# Restock Event
-# create event <camera> event "product <product> inventory <inventory> restock"
-################################################################################
-
-# Restock 'bournvita' in Inventory, 1000 -> 1500
-create event cam_A1 event "product prod10 inventory store_123:aisle_A1:shelf_q1:inv_u21 restock"
-
-################################################################################
-# Cleaning Event
-# create event <camera> event "product <product> on floor <store:aisle>"
-################################################################################
-
-# clean up bournvita
-create event cam_A1 event "product prod10 on floor store_123:aisle_A1"
-
-# clean up tea
-create event cam_A1 event "product prod11 on floor store_123:aisle_A2"
-
-# clean up goggles
-create event cam_A1 event "product prod13 on floor store_123:aisle_B1"
-
-################################################################################
-# Broken glass
-# create event <microphone> event "sound of breaking glass in <aisle>"
-################################################################################
-
-# task a robot with cleaning up broken glass
-
-create event mic_A1 event "sound of breaking glass in aisle_A1"
-
-create event mic_A1 event "sound of breaking glass in aisle_B3"
-
-################################################################################
-# Missing person
-# create event <microphone> event "can you help me find <customer name>"
-################################################################################
-
-# RelianceMart, aisle_B2
-create event mic_A1 event "can you help me find 'cust_6'"
-
-# RelianceMart, aisle_A1 (last seen location)
-create event mic_A1 event "can you help me find 'MARY KELVIN'"
-
-# RelianceMart, aisle_A3
-create event mic_A1 event "can you help me find 'cust_7'"
 
 ################################################################################
 # Fetch product
@@ -152,7 +112,7 @@ create event mic_A1 event "customer cust_1 '--voice:JASON WALLACE--' says please
 # to bring Inventory from 90 -> 200.
 create event mic_A1 event "customer cust_2 '--voice:BILL ROSE--' says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25"
 
-# Reduce inventory from 300 -> 296. Basket count 1 -> 5.
+# MARY KELVIN does not have "control_robot" permission so cannot request a Product to be fetched
 create event mic_A1 event "customer cust_3 '--voice:MARY KELVIN--' says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24"
 
 
@@ -164,7 +124,7 @@ create event mic_A1 event "customer cust_3 '--voice:MARY KELVIN--' says please g
 # Customer 1 (Jason) has 5 'coffee' (from Fetch Product).
 # Unit price = 3 * 5 = basket total of 15
 # Total (15 + 10 min fee) is more than Jason's account balance of 20
-create event mic_A1 event "customer cust_1 '--face:JASON WALLACE--' says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_1 '--voice:JASON WALLACE--' says 'What is the total basket value?'"
 
 # Customer 5 has 1 'coffee' (from Restock Command).
 # Unit price = 3 * 1 = basket total of 3
@@ -184,6 +144,9 @@ create event mic_A1 event "customer cust_2 '--voice:BILL ROSE--' says 'What is t
 # Customer 5 (Megon) basket total is 3 + 10 min fee (against balance of 500
 # Transaction successful, assigned ID of 8 (there are 7 initial transactions)
 create event turn_a3 event "customer cust_5 '--face:MEGON FOX--' approaches turnstile"
+
+# Fails to checkout because SILVER HAWK does not have "checkout" Permission
+create event turn_a3 event "customer cust_4 '--face:SILVER HAWK--' approaches turnstile"
 
 ################################################################################
 # Assist customer to car

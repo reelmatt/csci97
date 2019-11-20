@@ -48,7 +48,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
      * For purposes of testing and assignment submission, milliseconds are used to demonstrate
      * InvalidAuthTokenException due to timeout.
      */
-    private static final long TOKEN_TIMEOUT = 27;
+    private static final long TOKEN_TIMEOUT = 1000;
 
     /**
      * Private AuthenticationService Constructor. Adheres to Singleton Pattern.

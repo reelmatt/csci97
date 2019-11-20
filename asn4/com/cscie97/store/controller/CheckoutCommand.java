@@ -8,6 +8,7 @@ import com.cscie97.store.model.Appliance;
 import com.cscie97.store.model.ApplianceType;
 import com.cscie97.store.model.Customer;
 import com.cscie97.store.model.Device;
+import com.cscie97.store.model.Basket;
 import com.cscie97.store.model.StoreModelServiceException;
 import com.cscie97.store.model.StoreModelServiceInterface;
 import com.cscie97.store.authentication.AuthToken;
@@ -68,6 +69,9 @@ public class CheckoutCommand extends AbstractCommand {
      */
     public void execute() throws StoreControllerServiceException{
         try {
+            Basket basket = super.getStoreModel().getBasket(super.getAuthToken(), this.customer.getId());
+
+
             // Calculate the Basket total
             Integer basketTotal = this.customer.calculateBasketTotal();
 
