@@ -42,7 +42,7 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
     private static final Integer INVENTORY = 3;
 
     /** Constants for access Permissions. */
-    private static final String ADMIN = "user_admin";
+    private static final String ADMIN_ACCESS = "user_admin";
     private static final String OPEN_ACCESS = "open_access";
     private static final String CHECKOUT = "checkout";
     private static final String CONTROL_APPLIANCE = "control_robot";
@@ -123,8 +123,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                              String description,
                              Location location) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Check for admin "open_access" privileges
-        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("define aisle", "Does not have '" + OPEN_ACCESS + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, ADMIN_ACCESS, null) ) {
+            throw new AccessDeniedException("define aisle", "Does not have '" + ADMIN_ACCESS + "' permission.");
         }
         // All Aisle information must be present
         if (fullyQualifiedAisleId == null || name == null || description == null || location == null) {
@@ -192,8 +192,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                    String email,
                                    String account) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Check for admin "open_access" privileges
-        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("define customer", "Does not have '" + OPEN_ACCESS + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, ADMIN_ACCESS, null) ) {
+            throw new AccessDeniedException("define customer", "Does not have '" + ADMIN_ACCESS + "' permission.");
         }
 
         // All Customer information must be present
@@ -237,8 +237,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                String type,
                                String fullyQualifiedAisleId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Check for admin "open_access" privileges
-        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("define device", "Does not have '" + OPEN_ACCESS + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, ADMIN_ACCESS, null) ) {
+            throw new AccessDeniedException("define device", "Does not have '" + ADMIN_ACCESS + "' permission.");
         }
 
         // All Device information must be present
@@ -294,8 +294,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                      Integer count,
                                      String productId) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Check for admin "open_access" privileges
-        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("define inventory", "Does not have '" + OPEN_ACCESS + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, ADMIN_ACCESS, null) ) {
+            throw new AccessDeniedException("define inventory", "Does not have '" + ADMIN_ACCESS + "' permission.");
         }
 
         // All Inventory information must be present
@@ -355,8 +355,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                                  Integer price,
                                  Temperature temperature) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Check for admin "open_access" privileges
-        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("define product", "Does not have '" + OPEN_ACCESS + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, ADMIN_ACCESS, null) ) {
+            throw new AccessDeniedException("define product", "Does not have '" + ADMIN_ACCESS + "' permission.");
         }
 
         // All Product information must be present
@@ -395,8 +395,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                              String description,
                              Temperature temperature) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
         // Check for admin "open_access" privileges
-        if ( ! this.authService.hasPermission(authToken, OPEN_ACCESS, null) ) {
-            throw new AccessDeniedException("define shelf", "Does not have '" + OPEN_ACCESS + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, ADMIN_ACCESS, null) ) {
+            throw new AccessDeniedException("define shelf", "Does not have '" + ADMIN_ACCESS + "' permission.");
         }
 
         // All Shelf information must be present
@@ -456,8 +456,8 @@ public class StoreModelService implements StoreModelServiceInterface, Subject {
                              String storeId,
                              String name,
                              String address) throws StoreModelServiceException, AccessDeniedException, AuthenticationException, InvalidAuthTokenException {
-        if ( ! this.authService.hasPermission(authToken, ADMIN, null) ) {
-            throw new AccessDeniedException("define store", "Does not have '" + ADMIN + "' permission.");
+        if ( ! this.authService.hasPermission(authToken, ADMIN_ACCESS, null) ) {
+            throw new AccessDeniedException("define store", "Does not have '" + ADMIN_ACCESS + "' permission.");
         }
 
         // All store information must be present

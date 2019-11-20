@@ -24,4 +24,11 @@ public class ResourceRole extends Role {
         super(id, name, description);
         this.resource = resource;
     }
+
+    /**
+     * Returns the Resource associated with the Role.
+     */
+    public Resource getResource() {
+        return resource;
+    }
 }

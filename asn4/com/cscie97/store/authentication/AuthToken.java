@@ -5,8 +5,6 @@ import java.util.Date;
 /**
  * An AuthToken to validate a User's permissions.
  *
- *
- *
  * @author Matthew Thomas
  */
 public class AuthToken {

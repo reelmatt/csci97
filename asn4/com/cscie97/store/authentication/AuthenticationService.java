@@ -45,10 +45,11 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * Time limit token is valid for before a new token needs to be issued (in miliseconds).
      * A longer duration, in minutes or hours, would be more appropriate in a production setting.
-     * For purposes of testing and assignment submission, miliseconds are used to demonstrate
+     * For purposes of testing and assignment submission, milliseconds are used to demonstrate
      * InvalidAuthTokenException due to timeout.
      */
-    private static final long TOKEN_TIMEOUT = 1000;
+    private static final long TOKEN_TIMEOUT = 27;
+
     /**
      * Private AuthenticationService Constructor. Adheres to Singleton Pattern.
      */
@@ -194,7 +195,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         // Hash the password and store it with the user
         String credential = defineCredential(null, userId, "password", password);
 
-        // Create new admin Permission
+        // Create new admin Permissions
         Permission admin_permission = new Permission(ADMIN_ACCESS, "User administrator", "Create, Update, Delete Users");
 
         // Add to map
@@ -218,6 +219,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             throw new AccessDeniedException("add user credential", "no admin access");
         }
 
+        // Check the userId exists
         User user = getUser(userId);
 
         // Check voice print
@@ -228,7 +230,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             if (! credential.equals(voiceCheck)) {
                 throw new AuthenticationException(
                         "define credential",
-                        "Voice print does not match format --voice:<username>--"
+                        "Voice print '" +  credential + "' does not match format " + voiceCheck
                 );
             }
 
@@ -241,7 +243,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             if (! credential.equals(faceCheck)) {
                 throw new AuthenticationException(
                         "define credential",
-                        "Face print does not match format --voice:<username>--"
+                        "Face print does not match format " + faceCheck
                 );
             }
 
@@ -421,10 +423,11 @@ public class AuthenticationService implements AuthenticationServiceInterface {
      */
     public void getInventory(AuthToken authToken)
             throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // Create Visitor
         Visitor inventory = new InventoryVisitor(authToken);
+
+        // Visitor traverses objects and prints Inventory once constructed
         acceptVisitor(inventory);
-
-
         return;
     }
 
@@ -437,15 +440,20 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         if (this.rootUser) {
             validateToken(authToken);
 
+            // Check the requested Permission exists
             if (permissionId == null) {
                 throw new AuthenticationException("has permission", "Missing required permission.");
             }
 
             Permission permission = getPermission(permissionId);
 
+            // Create the Visitor
             Visitor access = new AuthVisitor(authToken, permission, resource);
+
+            // Visitor traverses Users and Permissions
             acceptVisitor(access);
 
+            // Check if Permission was found
             return access.hasPermission();
         }
 
@@ -459,10 +467,13 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         User user = getUser(userId);
 
+        // Check credential against stored values
         if (authenticateCredential(user, credential)) {
+            // Credential valid, so create a new AuthToken
             Integer tokenId = this.tokenMap.size() + 1;
             AuthToken newToken = new AuthToken(String.valueOf(tokenId));
 
+            // Track the AuthToken and associate with User
             user.setToken(newToken);
             this.tokenMap.put(tokenId, newToken);
 

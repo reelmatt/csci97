@@ -1,57 +1,41 @@
 #########################################################################################
-# Store Controller Service Sample Script
+# Authentication Service commands
 #
-# Store configuration commands are mostly copied from Adaeze Ezeh's sample script posted
-# for assignment 2, modified to accomodate slight syntax differences. The Controller
-# commands (at the bottom) were written by Matthew Thomas for assignment 3.
+# These commands all pertain to setting up the Authentication Service. Creating the root
+# user, and logging the root user in, are performed in the 'store.script' file. This
+# allows for the creation of Customers/Users and Stores/Resources via the
+# CommandProcessor.
+#
+# As noted in the README file, the suggested flow for running the test scripts is
+#   store.script -> authentication.script -> ledger.script -> controller.script
+# which provides the output in the authentication.script.out file.
 #########################################################################################
-
-################################################################################
-# create root user
-# create auth_root_user <user_id> <password>
-################################################################################
-
-
-create auth_root_user root root
-
-################################################################################
-# login
-# login user <user_id> password <credential>
-################################################################################
-login user root password root
-
-
-# define user user1 "john"
-
-
-################################################################################
-# define user
-# define user <user_id> <user_name>
-################################################################################
-define user cust_1 "jason"
-define user cust_2 "bill"
-define user cust_3 "mary"
-
-
 
 ################################################################################
 # define user credential
 # define credential <user_id> (voice_print | face_print | password) <value>
 ################################################################################
-define credential cust_1 voice_print --voice:jason--
-define credential cust_1 face_print --face:jason--
+define credential cust_1 voice_print "--voice:JASON WALLACE--"
+define credential cust_1 face_print "--face:JASON WALLACE--"
 define credential cust_1 password "hello world"
 
-define credential foobar password "hello world"
+define credential cust_2 voice_print "--voice:BILL ROSE--"
+define credential cust_2 face_print "--face:BILL ROSE--"
 
-define credential cust_2 voice_print --voice:bill--
+define credential cust_3 voice_print "--voice:MARY KELVIN--"
+define credential cust_3 face_print "--face:MARY KELVIN--"
 
-################################################################################
-# define resource
-# define resource <resource_id> <resource_description>
-################################################################################
-define resource store_123 "Store 123"
-define resource turn_A1 "Turnstile A1"
+define credential cust_4 voice_print "--voice:SILVER HAWK--"
+define credential cust_4 face_print "--face:SILVER HAWK--"
+
+define credential cust_5 voice_print "--voice:MEGON FOX--"
+define credential cust_5 face_print "--face:MEGON FOX--"
+
+define credential cust_6 voice_print "--voice:MARIA WILIAMSON--"
+define credential cust_6 face_print "--face:MARIA WILIAMSON--"
+
+define credential cust_7 voice_print "--voice:SALINA GOMEZ--"
+define credential cust_7 face_print "--face:SALINA GOMEZ--"
 
 ################################################################################
 # define permission
@@ -78,7 +62,6 @@ define role admin "Admin role" "Has all permissions of an administrator"
 define role store_123_guest "Store 123 Guest" "Has all permissions of a guest in Store 123" store_123
 define role store_123_adult "Store 123 Adult Consumer" "Has all permissions of an Adult consumer in Store 123" store_123
 
-
 ################################################################################
 # add permission to role
 # add entitlement_to_role <entitlement_id> <role_id>
@@ -86,6 +69,8 @@ define role store_123_adult "Store 123 Adult Consumer" "Has all permissions of a
 add entitlement_to_role user_admin admin
 add entitlement_to_role control_robot admin
 add entitlement_to_role control_speaker admin
+add entitlement_to_role basket_items admin
+add entitlement_to_role checkout admin
 add entitlement_to_role control_turnstile admin
 add entitlement_to_role open_access admin
 
@@ -114,30 +99,19 @@ add entitlement_to_role adult_consumer store_123_adult
 add entitlement_to_user root open_access
 add entitlement_to_user root admin
 
+
 add entitlement_to_user cust_1 admin
 add entitlement_to_user cust_1 admin
 add entitlement_to_user cust_1 adult_consumer
 
-add entitlement_to_user cust_2 guest
+add entitlement_to_user cust_2 adult_consumer
 
 add entitlement_to_user cust_3 child_consumer
 
+add entitlement_to_user cust_5 adult_consumer
 
-################################################################################
-# login
-# login user <user_id> password <credential>
-################################################################################
-# logout user root
-#login user cust_1 password --face:jason--
 
 ################################################################################
 # Run InventoryVisitor
 ################################################################################
-get auth_inventory foobar
-
-################################################################################
-# logout
-# logout user <user_id>
-################################################################################
-# logout user cust_1
-# logout user root
+get auth inventory

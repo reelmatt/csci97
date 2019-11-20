@@ -1,4 +1,3 @@
-
 ################################################################################
 # Controller commands - written by Matthew Thomas
 ################################################################################
@@ -9,32 +8,40 @@
 ################################################################################
 
 # Welcome JASON WALLACE to the store
-create event turn_a1 event "customer cust_1 --face:jason-- waiting to enter"
+create event turn_a1 event "customer cust_1 '--face:JASON WALLACE--' waiting to enter"
 
 # Welcome BILL ROSE to the store
-create event turn_a2 event "customer cust_2 --voice:bill-- waiting to enter"
+create event turn_a2 event "customer cust_2 '--face:BILL ROSE--' waiting to enter"
 
 # Welcome MARY KELVIN to the store
-create event turn_a3 event "customer cust_3 --face:mary--  waiting to enter"
+create event turn_a3 event "customer cust_3 '--face:MARY KELVIN--'  waiting to enter"
 
 # Welcome SILVER HAWK to the store
-#create event turn_a1 event "customer cust_4 --face:NA-- waiting to enter"
+create event turn_a1 event "customer cust_4 '--face:SILVER HAWK--' waiting to enter"
 
 # Welcome MEGON FOX to the store
-#create event turn_a2 event "customer cust_5 --face:NA-- waiting to enter"
+create event turn_a2 event "customer cust_5 '--face:MEGON FOX--' waiting to enter"
 
 ################################################################################
 # Customer seen
 # create event <camera> event "customer <customer> enters <aisle>"
 ################################################################################
 
-create event cam_A1 event "customer cust_1 --face:jason-- enters aisle_A1"
+create event cam_A1 event "customer cust_1 '--face:JASON WALLACE--' enters aisle_A1"
 
-create event cam_A1 event "customer cust_2 --voice:bill-- enters aisle_A1"
+create event cam_A1 event "customer cust_2 '--face:BILL ROSE--' enters aisle_A1"
 
-create event cam_B2 event "customer cust_3 --face:mary-- enters aisle_B2"
-create event cam_B2 event "customer cust_3 --face:mary-- enters aisle_B3"
-create event cam_B2 event "customer cust_3 --face:mary-- enters aisle_A1"
+create event cam_B2 event "customer cust_3 '--face:MARY KELVIN--' enters aisle_B2"
+create event cam_B2 event "customer cust_3 '--face:MARY KELVIN--' enters aisle_B3"
+create event cam_B2 event "customer cust_3 '--face:MARY KELVIN--' enters aisle_A1"
+
+create event cam_A1 event "customer cust_4 '--face:SILVER HAWK--' enters aisle_B1"
+
+create event cam_A1 event "customer cust_5 '--face:MEGON FOX--' enters aisle_B1"
+
+create event cam_A1 event "customer cust_6 '--face:MARIA WILIAMSON--' enters aisle_B2"
+
+create event cam_A2 event "customer cust_7 '--face:SALINA GOMEZ--' enters aisle_A3"
 
 
 # RelianceMart, aisle_A1
@@ -67,10 +74,10 @@ create event cam_B2 event "emergency armed_intruder in aisle_A1"
 ################################################################################
 
 # Add 1 bournvita to customer's basket
-create event cam_A1 event "customer cust_1 --face:jason-- adds prod10 from aisle_A1:shelf_q1"
+create event cam_A1 event "customer cust_1 '--face:JASON WALLACE--' adds prod10 from aisle_A1:shelf_q1"
 
 # Removes 1 bournvita from customer's basket
-create event cam_A1 event "customer cust_1 --face:jason-- removes prod10 from aisle_A1:shelf_q1"
+create event cam_A1 event "customer cust_1 '--face:JASON WALLACE--' removes prod10 from aisle_A1:shelf_q1"
 
 ################################################################################
 # Basket Event (with Restock)
@@ -79,11 +86,11 @@ create event cam_A1 event "customer cust_1 --face:jason-- removes prod10 from ai
 
 # Add 1 coffee to customer's basket. Inventory 100 -> 99 (capacity of 300).
 # Generate restock command to bring Inventory count from 99 -> 300.
-create event cam_A2 event "customer cust_1 --face:jason-- adds prod12 from aisle_A2:shelf_q3"
+create event cam_A2 event "customer cust_5 '--face:MEGON FOX--' adds prod12 from aisle_A2:shelf_q3"
 
 # Add 1 sunglass to customer's basket. Inventory 200 -> 199 (capacity of 500).
 # Generate restock command to bring Inventory count from 199 -> 500.
-create event cam_A1 event "customer cust_1 --face:jason-- adds prod13 from aisle_B2:shelf_q2"
+create event cam_A1 event "customer cust_3 '--face:MARY KELVIN--' adds prod13 from aisle_B2:shelf_q2"
 
 ################################################################################
 # Restock Event
@@ -139,14 +146,14 @@ create event mic_A1 event "can you help me find 'cust_7'"
 
 # Reduce inventory from 50 -> 45. Basket count 0 -> 5. Generate restock command
 # to bring Inventory from 45 -> 200.
-create event mic_A1 event "customer cust_1 --face:jason-- says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
+create event mic_A1 event "customer cust_1 '--voice:JASON WALLACE--' says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
 
 # Reduce inventory from 100 -> 90. Basket count 0 -> 10. Generate restock command
 # to bring Inventory from 90 -> 200.
-create event mic_A1 event "customer cust_2 --voice:bill-- says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25"
+create event mic_A1 event "customer cust_2 '--voice:BILL ROSE--' says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25"
 
 # Reduce inventory from 300 -> 296. Basket count 1 -> 5.
-create event mic_A1 event "customer cust_3 --voice:NA-- says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24"
+create event mic_A1 event "customer cust_3 '--voice:MARY KELVIN--' says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24"
 
 
 ################################################################################
@@ -157,17 +164,17 @@ create event mic_A1 event "customer cust_3 --voice:NA-- says please get me 4 of 
 # Customer 1 (Jason) has 5 'coffee' (from Fetch Product).
 # Unit price = 3 * 5 = basket total of 15
 # Total (15 + 10 min fee) is more than Jason's account balance of 20
-create event mic_A1 event "customer cust_1 --face:jason-- says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_1 '--face:JASON WALLACE--' says 'What is the total basket value?'"
 
 # Customer 5 has 1 'coffee' (from Restock Command).
 # Unit price = 3 * 1 = basket total of 3
 # Total (3 + 10 min fee) is less than Megon's account balance of 500
-create event mic_A1 event "customer cust_5 --voice:NA-- says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_5 '--voice:MEGON FOX--' says 'What is the total basket value?'"
 
 # Customer 2 has 10 'tea' (from Fetch Product).
 # Unit price = 1 * 10 = basket total of 10
 # Total (10 + 10 min fee) is less than Bill's account balance of 200
-create event mic_A1 event "customer cust_2 --voice:bill-- says 'What is the total basket value?'"
+create event mic_A1 event "customer cust_2 '--voice:BILL ROSE--' says 'What is the total basket value?'"
 
 ################################################################################
 # Checkout
@@ -176,7 +183,7 @@ create event mic_A1 event "customer cust_2 --voice:bill-- says 'What is the tota
 
 # Customer 5 (Megon) basket total is 3 + 10 min fee (against balance of 500
 # Transaction successful, assigned ID of 8 (there are 7 initial transactions)
-create event turn_a3 event "customer cust_5 --voice:NA-- approaches turnstile"
+create event turn_a3 event "customer cust_5 '--face:MEGON FOX--' approaches turnstile"
 
 ################################################################################
 # Assist customer to car
@@ -186,4 +193,10 @@ create event turn_a3 event "customer cust_5 --voice:NA-- approaches turnstile"
 # Bill's basket total is 10 + 10 min fee (against balance of 200)
 # Transaction successful, with ID of 8 (7 initial transactions above)
 # Triggers assistance command -- basket has 10 items of size 1.5 lbs > 10 lbs max
-create event turn_a2 event "ccustomer cust_2 --voice:bill-- approaches turnstile"
+create event turn_a2 event "customer cust_2 '--voice:BILL ROSE--' approaches turnstile"
+
+################################################################################
+# logout
+# logout user <user_id>
+################################################################################
+logout user root

@@ -28,6 +28,13 @@ public class Resource {
     }
 
     /**
+     * Returns the Resource ID.
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
      * Overrides the default toString method.
      */
     public String toString() {

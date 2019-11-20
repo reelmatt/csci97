@@ -1,0 +1,157 @@
+################################################################################
+# Authentication commands - written by Matthew Thomas
+# Displays error conditions
+################################################################################
+
+# Missing information
+create auth_root_user
+create auth_root_user root
+
+# Create root user
+create auth_root_user root "hello world"
+
+# Since root is created, root AuthToken is needed
+define permission permission_1 permission_name permission_desc
+define role guest "Guest role" "Has all permissions of a guest"
+
+# Log in missing information
+login user root
+
+# Incorrect password
+login user root password "no this password"
+
+# Login in root to proceed
+login user root password "hello world"
+
+
+# Missing information
+define permission
+define permission perm_1
+define permission perm_1 perm_name
+
+# Create Permissions
+define permission checkout "Checkout of store" "Permission to checkout of store"
+define permission enter_store "Enter store" "Permission to enter store"
+define permission control_robot "Control robot" "Full control of robots"
+define permission control_speaker "Control speaker" "Full control of speakers"
+define permission control_turnstile "Control turnstile" "Full control of turnstiles"
+define permission open_access "Open access" "No restrictions on who can call"
+define permission basket_items "Basket items" "Allowed to add/remove basket items"
+
+
+# Creating duplicate should fail
+define permission control_speaker "Control speaker" "Full control of speakers"
+
+
+# Create Roles (no Resources)
+define role adult_consumer "Adult consumer role" "Has all permissions of an adult consumer"
+define role child_consumer "Child consumer role" "Has all permissions of an child consumer"
+define role guest "Guest role" "Has all permissions of a guest"
+define role admin "Admin role" "Has all permissions of an administrator"
+
+# Creating duplicate should fail
+define role admin "Admin role" "Has all permissions of an administrator"
+
+# Fail to create Roles (with Resources) -- should fail because Resources do not exist yet
+define role store_123_guest "Store 123 Guest" "Has all permissions of a guest in Store 123" store_123
+define role store_123_adult "Store 123 Adult Consumer" "Has all permissions of an Adult consumer in Store 123" store_123
+
+# Create Resources - uses 'define store' commands from Store Model Service
+define  store  store_123 name RelianceMart  address  ahmedabad
+define  store  store_456 name KwikEMary  address  springfield
+
+
+# Try again to create Roles (with Resources) -- should succeed now because Resources exist
+define role store_123_guest "Store 123 Guest" "Has all permissions of a guest in Store 123" store_123
+define role store_123_adult "Store 123 Adult Consumer" "Has all permissions of an Adult consumer in Store 123" store_123
+
+# Permission does not exist
+add entitlement_to_role foobar admin
+
+# Role does not exist
+add entitlement_to_role user_admin foobar
+
+# Add Entitlements to Roles
+add entitlement_to_role user_admin admin
+add entitlement_to_role control_robot admin
+add entitlement_to_role control_speaker admin
+add entitlement_to_role basket_items admin
+add entitlement_to_role checkout admin
+add entitlement_to_role control_turnstile admin
+add entitlement_to_role open_access admin
+
+
+add entitlement_to_role checkout adult_consumer
+add entitlement_to_role enter_store adult_consumer
+add entitlement_to_role control_robot adult_consumer
+add entitlement_to_role open_access adult_consumer
+add entitlement_to_role basket_items adult_consumer
+
+add entitlement_to_role enter_store child_consumer
+add entitlement_to_role checkout child_consumer
+add entitlement_to_role open_access child_consumer
+add entitlement_to_role basket_items adult_consumer
+
+add entitlement_to_role enter_store guest
+add entitlement_to_role open_access guest
+
+
+add entitlement_to_role adult_consumer store_123_adult
+
+# Fail to add Entitlements To User -- no Users have been created yet
+add entitlement_to_user cust_1 admin
+add entitlement_to_user cust_2 adult_consumer
+
+# Fail to add Credentials to Users -- no Users have been created yet
+define credential cust_1 voice_print "--voice:JASON WALLACE--"
+define credential cust_2 face_print "--face:BILL ROSE--"
+define credential cust_3 voice_print "--voice:MARY KELVIN--"
+
+# Create Users = uses 'define customer' commands from Store Model Service
+define  customer  cust_1        first_name  JASON  last_name  WALLACE type  guest  email_address  jason.wallace@ymail.com  account  jason
+define  customer  cust_2        first_name  BILL  last_name  ROSE type  registered  email_address  bill.rose@gmail.com  account  bill
+define  customer  cust_3        first_name  MARY last_name  KELVIN type  registered  email_address  mary.kevin@yahoomail.com  account  mary
+define  customer  cust_4        first_name  SILVER  last_name  HAWK type  guest  email_address  silver.hawk@rocketmail.com  account  silver
+define  customer  cust_5        first_name  MEGON  last_name  FOX type  guest  email_address  megonfox@testmail.com  account  megon
+define  customer  cust_6        first_name  MARIA last_name  WILIAMSON type  registered  email_address  maria4567@ymail.com  account  maria
+define  customer  cust_7        first_name  SALINA  last_name  GOMEZ type  registered  email_address  salina@gmail.com  account  salina
+
+
+# Successfully add Entitlements to Users
+add entitlement_to_user root open_access
+add entitlement_to_user root admin
+
+
+add entitlement_to_user cust_1 admin
+add entitlement_to_user cust_1 admin
+add entitlement_to_user cust_1 adult_consumer
+
+add entitlement_to_user cust_2 adult_consumer
+
+add entitlement_to_user cust_3 child_consumer
+
+#add entitlement_to_user cust_5 adult_consumer
+
+# Successfully add credentials to Users
+define credential cust_1 voice_print "--voice:JASON WALLACE--"
+define credential cust_1 face_print "--face:JASON WALLACE--"
+define credential cust_1 password "hello world"
+
+
+# When the TOKEN_TIMEOUT in AuthenticationService.java is set to '27', this should
+# simulate Token timeout conditions. Some of these tests may pass, but a few
+# should display the "invalid token" message.
+define credential cust_2 voice_print "--voice:BILL ROSE--"
+define credential cust_2 face_print "--face:BILL ROSE--"
+
+define credential cust_3 voice_print "--voice:MARY KELVIN--"
+define credential cust_3 face_print "--face:MARY KELVIN--"
+
+define credential cust_1 voice_print "--voice:JASON WALLACE--"
+define credential cust_2 face_print "--face:BILL ROSE--"
+define credential cust_3 voice_print "--voice:MARY KELVIN--"
+
+################################################################################
+# Control command errors can be found within the authentication.script.out file.
+# Those errors demonstrate lack of permissions and Invalid AuthTokens.
+################################################################################

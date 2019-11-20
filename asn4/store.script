@@ -1,6 +1,36 @@
 #########################################################################################
 # Store configuration - copied from Adaeze Ezeh's store.script sample posted to Canvas
+#
+# The first four commands are for the Authentication Service to create a root user, log
+# the root user in, and create an additional permission to allow 'root' to create Store
+# objects. The rest are commands from assignment 2, with syntax changes noted below.
 #########################################################################################
+
+################################################################################
+# create root user
+# create auth_root_user <user_id> <password>
+################################################################################
+create auth_root_user root root
+
+################################################################################
+# login
+# login user <user_id> password <credential>
+################################################################################
+login user root password root
+
+################################################################################
+# define permission
+# define permission <permission_id> <permission_name> <permission_description>
+################################################################################
+define permission open_access "Open access" "No restrictions on who can call"
+
+################################################################################
+# add entitlement to user
+# add entitlement_to_user <user_id> <entitlement_id>
+################################################################################
+add entitlement_to_user root open_access
+
+
 
 # Store Commands
 # define  store  <identifier> name <name> address <address>

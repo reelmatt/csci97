@@ -4,25 +4,36 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
+ * A User in the Authentication Service.
+ *
+ * A User is a representation of a person and can be associated with an
+ * AuthToken and a list of Entitlements allowing access to restrcited API
+ * methods. In relation to the Store 24X7 System, Users correspond to Customers
+ * in the Store Model Service and an Account in the Ledger Service.
  *
  * @author Matthew Thomas
  */
 public class User {
+    /** The User identifier. */
+    private String id;
 
+    /** The name of the User. */
+    private String name;
+
+    /** The AuthToken associated with the User. */
     private AuthToken token;
 
+    /** A hashed password credential. */
     private String password;
 
+    /** A face print credential, matching the form --face:<username>--. */
     private String facePrint;
 
+    /** A voice print credential, matching the form --voice:<username>--. */
     private String voicePrint;
 
     /** A list of Entitlements associated with the User. */
     private List<Entitlement> entitlementList;
-
-    private String id;
-
-    private String name;
 
     /**
      * User Constructor.
