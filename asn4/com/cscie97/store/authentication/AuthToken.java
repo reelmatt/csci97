@@ -13,8 +13,8 @@ public class AuthToken {
     /** The AuthToken's unique ID. */
     private String id;
 
-    /** Time the AuthToken was last used. */
-    private String lastUsed;
+    /** Time the AuthToken was issued. */
+    private Date timeIssued;
 
     /** The state of the AuthToken. True if valid, false otherwise. */
     private boolean active;
@@ -32,8 +32,7 @@ public class AuthToken {
         this.active = true;
 
         // Get current time
-        Date now = new Date();
-        this.lastUsed = now.toString();
+        this.timeIssued = new Date();
     }
 
     /**
@@ -58,6 +57,12 @@ public class AuthToken {
         return id;
     }
 
+    /**
+     * Returns the time the AuthToken was issued.
+     */
+    public long getTimeIssued() {
+        return this.timeIssued.getTime();
+    }
     /**
      * Override default toString method.
      */

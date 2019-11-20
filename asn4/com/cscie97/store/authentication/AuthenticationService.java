@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Base64;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 /**
  * AuthenticationService - concrete class
@@ -41,6 +42,13 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /** ID for admin permissions to call Authentication Service. */
     private static final String ADMIN_ACCESS = "user_admin";
 
+    /**
+     * Time limit token is valid for before a new token needs to be issued (in miliseconds).
+     * A longer duration, in minutes or hours, would be more appropriate in a production setting.
+     * For purposes of testing and assignment submission, miliseconds are used to demonstrate
+     * InvalidAuthTokenException due to timeout.
+     */
+    private static final long TOKEN_TIMEOUT = 1000;
     /**
      * Private AuthenticationService Constructor. Adheres to Singleton Pattern.
      */
@@ -145,6 +153,30 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         return;
     };
 
+    /**
+     * {@inheritDoc}
+     */
+    public boolean authenticateCredential(User user, String credential) {
+        // Check Voice Print
+        if (credential.equals(user.getVoicePrint())) {
+            return true;
+        }
+
+        // Check Face Print
+        if (credential.equals(user.getFacePrint())) {
+            return true;
+        }
+
+        // Check Password, compare hashes
+        String login = user.getPassword();
+        String hashedPassword = hashToString(credential.getBytes());
+
+        if (login != null && login.equals(hashedPassword)) {
+            return true;
+        }
+
+        return false;
+    };
 
     /**
      * {@inheritDoc}
@@ -175,32 +207,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
         this.rootUser = true;
         return;
     }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    public boolean authenticateCredential(User user, String credential) {
-        // Check Voice Print
-        if (credential.equals(user.getVoicePrint())) {
-            return true;
-        }
-
-        // Check Face Print
-        if (credential.equals(user.getFacePrint())) {
-            return true;
-        }
-
-        // Check Password, compare hashes
-        String login = user.getPassword();
-        String hashedPassword = hashToString(credential.getBytes());
-
-        if (login != null && login.equals(hashedPassword)) {
-            return true;
-        }
-
-        return false;
-    };
 
     /**
      * {@inheritDoc}
@@ -413,6 +419,42 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * {@inheritDoc}
      */
+    public void getInventory(AuthToken authToken)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        Visitor inventory = new InventoryVisitor(authToken);
+        acceptVisitor(inventory);
+
+
+        return;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public boolean hasPermission(AuthToken authToken, String permissionId, Resource resource)
+            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
+        // If a root user has been created, permissions must be checked
+        if (this.rootUser) {
+            validateToken(authToken);
+
+            if (permissionId == null) {
+                throw new AuthenticationException("has permission", "Missing required permission.");
+            }
+
+            Permission permission = getPermission(permissionId);
+
+            Visitor access = new AuthVisitor(authToken, permission, resource);
+            acceptVisitor(access);
+
+            return access.hasPermission();
+        }
+
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public AuthToken login(String userId, String credential)
             throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
         User user = getUser(userId);
@@ -443,13 +485,52 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     /**
      * {@inheritDoc}
      */
-    public void getInventory(AuthToken authToken)
-            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
-        Visitor inventory = new InventoryVisitor(authToken);
-        acceptVisitor(inventory);
+    public void validateToken(AuthToken authToken) throws InvalidAuthTokenException {
+        // Check token is not null
+        if (authToken == null) {
+            throw new InvalidAuthTokenException(null, "No token provided.");
+        }
 
+        // Check token is still active
+        if ( ! authToken.isActive() ) {
+            throw new InvalidAuthTokenException(authToken.getId(), "no longer active");
+        }
+
+        // Check token issue time against TIMEOUT duration
+        Date now = new Date();
+        if ( (now.getTime() - authToken.getTimeIssued()) > TOKEN_TIMEOUT ) {
+            throw new InvalidAuthTokenException(authToken.getId(), "Token has exceeded timeout duration of " + TOKEN_TIMEOUT);
+        }
 
         return;
+    };
+
+    /**
+     * Returns list of Permissions in the Authentication Service.
+     */
+    public Iterator<Map.Entry<String, Permission>> listPermissions() {
+        return permissionMap.entrySet().iterator();
+    }
+
+    /**
+     * Returns list of Resources in the Authentication Service.
+     */
+    public Iterator<Map.Entry<String, Resource>> listResources(AuthToken token) {
+        return resourceMap.entrySet().iterator();
+    }
+
+    /**
+     * Returns list of Roles in the Authentication Service.
+     */
+    public Iterator<Map.Entry<String, Role>> listRoles() {
+        return roleMap.entrySet().iterator();
+    }
+
+    /**
+     * Returns list of Users in the Authentication Service.
+     */
+    public Iterator<Map.Entry<String, User>> listUsers() {
+        return userMap.entrySet().iterator();
     }
 
     private Entitlement getEntitlement(String entitlementId)
@@ -474,34 +555,13 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
         return null;
     }
-    public Iterator<Map.Entry<String, User>> listUsers() {
-        return userMap.entrySet().iterator();
-    }
-
-    public Iterator<Map.Entry<String, Resource>> listResources(AuthToken token)
-            throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
-        // Check the caller has ADMIN_ACCESS permission
-        if (! hasPermission(token, ADMIN_ACCESS, null)) {
-            throw new AccessDeniedException("get resource list", "no admin access");
-        }
-
-        return resourceMap.entrySet().iterator();
-    }
-
-    private Resource getResource(String id) {
-        return resourceMap.get(id);
-    }
 
     private Permission getPermission(String id) {
         return permissionMap.get(id);
     }
 
-    public Iterator<Map.Entry<String, Permission>> listPermissions() {
-        return permissionMap.entrySet().iterator();
-    }
-
-    public Iterator<Map.Entry<String, Role>> listRoles() {
-        return roleMap.entrySet().iterator();
+    private Resource getResource(String id) {
+        return resourceMap.get(id);
     }
 
     private Role getRole(String id) {
@@ -509,8 +569,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     }
 
     private User getUser(String userId) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
-
-
         User user = this.userMap.get(userId);
 
         if (user == null) {
@@ -524,51 +582,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     }
 
 
-    public boolean hasPermission(AuthToken authToken, String permissionId, Resource resource) throws AuthenticationException, AccessDeniedException, InvalidAuthTokenException {
-//        // If a root user has been created, a token is required
-//        if (this.rootUser && token == null) {
-//            throw new InvalidAuthTokenException("define user", "No token provided.");
-//        }
 
-        // If a root user has been created, permissions must be checked
-        if (this.rootUser) {
-            validateToken(authToken);
-
-            if (permissionId == null) {
-                throw new AuthenticationException("has permission", "Missing required permission.");
-            }
-
-            Permission permission = getPermission(permissionId);
-
-            Visitor access = new AuthVisitor(authToken, permission, resource);
-            acceptVisitor(access);
-
-            return access.hasPermission();
-        }
-
-        return true;
-    }
-
-    public User validateToken(AuthToken authToken) throws InvalidAuthTokenException {
-
-
-        if (authToken == null) {
-            throw new InvalidAuthTokenException("validate token", "No token provided.");
-        }
-
-        if ( ! authToken.isActive() ) {
-            throw new InvalidAuthTokenException("validate token", "no longer active");
-        }
-
-        // check token hasn't timed out
-
-
-
-
-        // find user
-
-        return null;
-    };
 
     /**
      * Generate a hash and convert to a String. Use SHA-256.

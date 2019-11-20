@@ -7,14 +7,6 @@ import java.util.Iterator;
 public class InventoryVisitor implements Visitor {
     private String inventory;
 
-    private Map<String, User> userMap;
-
-    private Map<String, Permission> permissionMap;
-
-    private Map<String, Role> roleMap;
-
-    private Map<String, Resource> resourceMap;
-
     private Integer indentLevel = 0;
 
     private AuthToken token = null;

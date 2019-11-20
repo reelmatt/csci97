@@ -181,5 +181,5 @@ public interface AuthenticationServiceInterface {
 
     public void logout(AuthToken authToken);
 
-    public User validateToken(AuthToken authToken) throws InvalidAuthTokenException;
+    public void validateToken(AuthToken authToken) throws InvalidAuthTokenException;
 }

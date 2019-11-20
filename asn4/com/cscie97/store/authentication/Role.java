@@ -4,7 +4,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
+ * A Role in the Authentication Service.
  *
+ * Roles are a composite of Entitlements and can contain additional Roles,
+ * ResourceRoles, and Permissions.
+ *
+ * @author Matthew Thomas
  */
 public class Role extends Entitlement {
     /** A list of Entitlements contained within the Role. */
@@ -13,22 +18,19 @@ public class Role extends Entitlement {
     /**
      * Role Constructor.
      *
-     *
-     *
-     * @param id
-     * @param name
-     * @param description
+     * @param id            The unique Role id.
+     * @param name          The Role name.
+     * @param description   The description of the Role.
      */
     public Role (String id, String name, String description) {
         super(id, name, description);
         this.entitlementList = new ArrayList<Entitlement>();
-//        this.permissionList = new ArrayList<Permission>();
     }
 
-    public void acceptVisitor(Visitor visitor) {
-
-    };
-
+    /**
+     *
+     * @param newEntitlement
+     */
     public void addEntitlement(Entitlement newEntitlement) {
         // If no entitlement, don't add
         if (newEntitlement == null) {
@@ -47,15 +49,10 @@ public class Role extends Entitlement {
         return;
     }
 
+    /**
+     * Returns the list of Entitlements the Role contains.
+     */
     public List<Entitlement> getEntitlementList() {
         return entitlementList;
     }
-
-//    public List<Permission> getPermissionList() {
-//        return permissionList;
-//    }
-
-    public boolean hasResource(Permission permission, Resource resource) {
-        return false;
-    };
 }
