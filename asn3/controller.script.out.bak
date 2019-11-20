@@ -1,0 +1,369 @@
+################################################################################
+# Enter store
+# create event <turnstile> event "customer <customer> waiting to enter at the turnstile <turnstile>"
+################################################################################
+
+# Welcome JASON WALLACE to the store
+create event turn_a1 event "customer cust_1 waiting to enter"
+Device 'turn_a1' emitted event: customer cust_1 waiting to enter
+Appliance 'turn_a1' received command 'open'.
+Appliance 'turn_a1' received command 'Hello, JASON WALLACE, welcome to store_123'.
+
+# Welcome BILL ROSE to the store
+create event turn_a2 event "customer cust_2 waiting to enter"
+Device 'turn_a2' emitted event: customer cust_2 waiting to enter
+Appliance 'turn_a2' received command 'open'.
+Appliance 'turn_a2' received command 'Hello, BILL ROSE, welcome to store_123'.
+
+# Welcome MARY KELVIN to the store
+create event turn_a3 event "customer cust_3 waiting to enter"
+Device 'turn_a3' emitted event: customer cust_3 waiting to enter
+Appliance 'turn_a3' received command 'open'.
+Appliance 'turn_a3' received command 'Hello, MARY KELVIN, welcome to store_123'.
+
+# Welcome SILVER HAWK to the store
+create event turn_a1 event "customer cust_4 waiting to enter"
+Device 'turn_a1' emitted event: customer cust_4 waiting to enter
+Appliance 'turn_a1' received command 'open'.
+Appliance 'turn_a1' received command 'Hello, SILVER HAWK, welcome to store_123'.
+
+# Welcome MEGON FOX to the store
+create event turn_a2 event "customer cust_5 waiting to enter"
+Device 'turn_a2' emitted event: customer cust_5 waiting to enter
+Appliance 'turn_a2' received command 'open'.
+Appliance 'turn_a2' received command 'Hello, MEGON FOX, welcome to store_123'.
+
+# Welcome MARIA WILIAMSON to the store
+create event turn_a3 event "customer cust_6 waiting to enter"
+Device 'turn_a3' emitted event: customer cust_6 waiting to enter
+Appliance 'turn_a3' received command 'open'.
+Appliance 'turn_a3' received command 'Hello, MARIA WILIAMSON, welcome to store_123'.
+
+# Welcome SALINA GOMEZ to the store
+create event turn_a1 event "customer cust_7 waiting to enter"
+Device 'turn_a1' emitted event: customer cust_7 waiting to enter
+Appliance 'turn_a1' received command 'open'.
+Appliance 'turn_a1' received command 'Hello, SALINA GOMEZ, welcome to store_123'.
+
+################################################################################
+# Customer seen
+# create event <camera> event "customer <customer> enters <aisle>"
+################################################################################
+
+create event cam_A1 event "customer cust_1 enters aisle_A1"
+Device 'cam_A1' emitted event: customer cust_1 enters aisle_A1
+Customer cust_1's location updated. Currently located @ RelianceMart, aisle_A1.
+
+create event cam_A1 event "customer cust_2 enters aisle_A1"
+Device 'cam_A1' emitted event: customer cust_2 enters aisle_A1
+Customer cust_2's location updated. Currently located @ RelianceMart, aisle_A1.
+
+create event cam_B2 event "customer cust_3 enters aisle_B2"
+Device 'cam_B2' emitted event: customer cust_3 enters aisle_B2
+Customer cust_3's location updated. Currently located @ RelianceMart, aisle_B2.
+create event cam_B2 event "customer cust_3 enters aisle_B3"
+Device 'cam_B2' emitted event: customer cust_3 enters aisle_B3
+Customer cust_3's location updated. Currently located @ RelianceMart, aisle_B3.
+create event cam_B2 event "customer cust_3 enters aisle_A1"
+Device 'cam_B2' emitted event: customer cust_3 enters aisle_A1
+Customer cust_3's location updated. Currently located @ RelianceMart, aisle_A1.
+
+create event cam_A1 event "customer cust_4 enters aisle_B1"
+Device 'cam_A1' emitted event: customer cust_4 enters aisle_B1
+Customer cust_4's location updated. Currently located @ RelianceMart, aisle_B1.
+
+create event cam_A1 event "customer cust_5 enters aisle_B1"
+Device 'cam_A1' emitted event: customer cust_5 enters aisle_B1
+Customer cust_5's location updated. Currently located @ RelianceMart, aisle_B1.
+
+create event cam_A1 event "customer cust_6 enters aisle_B2"
+Device 'cam_A1' emitted event: customer cust_6 enters aisle_B2
+Customer cust_6's location updated. Currently located @ RelianceMart, aisle_B2.
+
+create event cam_A2 event "customer cust_7 enters aisle_A3"
+Device 'cam_A2' emitted event: customer cust_7 enters aisle_A3
+Customer cust_7's location updated. Currently located @ RelianceMart, aisle_A3.
+
+# RelianceMart, aisle_A1
+show customer cust_1
+Customer 'cust_1': JASON WALLACE
+	Currently located @ RelianceMart, aisle_A1
+	Last seen: Wed Oct 30 14:10:06 EDT 2019
+	Type: GUEST
+	Email: jason.wallace@ymail.com
+	Account address: jason
+
+# RelianceMart, aisle_A1 (last seen location)
+show customer cust_3
+Customer 'cust_3': MARY KELVIN
+	Currently located @ RelianceMart, aisle_A1
+	Last seen: Wed Oct 30 14:10:06 EDT 2019
+	Type: REGISTERED
+	Email: mary.kevin@yahoomail.com
+	Account address: mary
+
+# RelianceMart, aisle_B2
+show customer cust_6
+Customer 'cust_6': MARIA WILIAMSON
+	Currently located @ RelianceMart, aisle_B2
+	Last seen: Wed Oct 30 14:10:06 EDT 2019
+	Type: REGISTERED
+	Email: maria4567@ymail.com
+	Account address: maria
+
+########################################################################################
+# Emergency Command
+# create event <camera> event "emergency <emergency> in <aisle>"
+# 
+# <emergency> can have one of the values: (fire | flood | earthquake | armed_intruder)
+########################################################################################
+
+# For all emergencies - open 3 turnstiles, announce on 2 speakers, 1 robot address, 4 robots assist
+
+create event cam_A1 event "emergency fire in aisle_A1"
+Device 'cam_A1' emitted event: emergency fire in aisle_A1
+Appliance 'turn_a2' received command 'open'.
+Appliance 'turn_a1' received command 'open'.
+Appliance 'turn_a3' received command 'open'.
+Appliance 'spk_2' received command 'There is a FIRE in aisle aisle_A1, please leave store_123 immediately'.
+Appliance 'spk_1' received command 'There is a FIRE in aisle aisle_A1, please leave store_123 immediately'.
+Appliance 'rob_4' received command 'Address FIRE in aisle aisle_A1'.
+Appliance 'rob_5' received command 'Assist customers leaving the store'.
+Appliance 'rob_2' received command 'Assist customers leaving the store'.
+Appliance 'rob_3' received command 'Assist customers leaving the store'.
+Appliance 'rob_1' received command 'Assist customers leaving the store'.
+
+create event cam_B2 event "emergency flood in aisle_A1"
+Device 'cam_B2' emitted event: emergency flood in aisle_A1
+Appliance 'turn_a2' received command 'open'.
+Appliance 'turn_a1' received command 'open'.
+Appliance 'turn_a3' received command 'open'.
+Appliance 'spk_2' received command 'There is a FLOOD in aisle aisle_A1, please leave store_123 immediately'.
+Appliance 'spk_1' received command 'There is a FLOOD in aisle aisle_A1, please leave store_123 immediately'.
+Appliance 'rob_4' received command 'Address FLOOD in aisle aisle_A1'.
+Appliance 'rob_5' received command 'Assist customers leaving the store'.
+Appliance 'rob_2' received command 'Assist customers leaving the store'.
+Appliance 'rob_3' received command 'Assist customers leaving the store'.
+Appliance 'rob_1' received command 'Assist customers leaving the store'.
+
+create event cam_B2 event "emergency armed_intruder in aisle_A1"
+Device 'cam_B2' emitted event: emergency armed_intruder in aisle_A1
+Appliance 'turn_a2' received command 'open'.
+Appliance 'turn_a1' received command 'open'.
+Appliance 'turn_a3' received command 'open'.
+Appliance 'spk_2' received command 'There is a ARMED_INTRUDER in aisle aisle_A1, please leave store_123 immediately'.
+Appliance 'spk_1' received command 'There is a ARMED_INTRUDER in aisle aisle_A1, please leave store_123 immediately'.
+Appliance 'rob_4' received command 'Address ARMED_INTRUDER in aisle aisle_A1'.
+Appliance 'rob_5' received command 'Assist customers leaving the store'.
+Appliance 'rob_2' received command 'Assist customers leaving the store'.
+Appliance 'rob_3' received command 'Assist customers leaving the store'.
+Appliance 'rob_1' received command 'Assist customers leaving the store'.
+
+################################################################################
+# Basket Event
+# create event <camera> event "customer <customer> (adds|removes) <product> from <aisle:shelf>"
+################################################################################
+
+# Add 1 bournvita to customer's basket
+create event cam_A1 event "customer cust_1 adds prod10 from aisle_A1:shelf_q1"
+Device 'cam_A1' emitted event: customer cust_1 adds prod10 from aisle_A1:shelf_q1
+Added 1 of bournvita to the basket. Current count is 1.
+Inventory 'inv_u21' updated count of 'prod10' from 1000 to 999.
+
+# Removes 1 bournvita from customer's basket
+create event cam_A1 event "customer cust_1 removes prod10 from aisle_A1:shelf_q1"
+Device 'cam_A1' emitted event: customer cust_1 removes prod10 from aisle_A1:shelf_q1
+Removed 1 bournvita from the basket.
+No more of this item remains in the basket.
+Inventory 'inv_u21' updated count of 'prod10' from 999 to 1000.
+
+################################################################################
+# Basket Event (with Restock)
+# create event <camera> event "customer <customer> (adds|removes) <product> from <aisle:shelf>"
+################################################################################
+
+# Add 1 coffee to customer's basket. Inventory 100 -> 99 (capacity of 300).
+# Generate restock command to bring Inventory count from 99 -> 300.
+create event cam_A2 event "customer cust_5 adds prod12 from aisle_A2:shelf_q3"
+Device 'cam_A2' emitted event: customer cust_5 adds prod12 from aisle_A2:shelf_q3
+Added 1 of coffee to the basket. Current count is 1.
+Inventory 'inv_u26' updated count of 'prod12' from 100 to 99.
+Device 'cam_A2' emitted event: product prod12 inventory store_123:aisle_A2:shelf_q3:inv_u26 restock
+Appliance 'rob_4' received command 'Restock 201 of coffee in inventory inv_u26'.
+Inventory 'inv_u26' updated count of 'prod12' from 99 to 300.
+Inventory restocked. Now has 300 on shelf out of capacity of 300.
+
+# Add 1 sunglass to customer's basket. Inventory 200 -> 199 (capacity of 500).
+# Generate restock command to bring Inventory count from 199 -> 500.
+create event cam_A1 event "customer cust_3 adds prod13 from aisle_B2:shelf_q2"
+Device 'cam_A1' emitted event: customer cust_3 adds prod13 from aisle_B2:shelf_q2
+Added 1 of goggles to the basket. Current count is 1.
+Inventory 'inv_u24' updated count of 'prod13' from 200 to 199.
+Device 'cam_A1' emitted event: product prod13 inventory store_123:aisle_B2:shelf_q2:inv_u24 restock
+Appliance 'rob_4' received command 'Restock 301 of goggles in inventory inv_u24'.
+Inventory 'inv_u24' updated count of 'prod13' from 199 to 500.
+Inventory restocked. Now has 500 on shelf out of capacity of 500.
+
+################################################################################
+# Restock Event
+# create event <camera> event "product <product> inventory <inventory> restock"
+################################################################################
+
+# Restock 'bournvita' in Inventory, 1000 -> 1500
+create event cam_A1 event "product prod10 inventory store_123:aisle_A1:shelf_q1:inv_u21 restock"
+Device 'cam_A1' emitted event: product prod10 inventory store_123:aisle_A1:shelf_q1:inv_u21 restock
+Appliance 'rob_4' received command 'Restock 500 of bournvita in inventory inv_u21'.
+Inventory 'inv_u21' updated count of 'prod10' from 1000 to 1500.
+Inventory restocked. Now has 1500 on shelf out of capacity of 1500.
+
+################################################################################
+# Cleaning Event
+# create event <camera> event "product <product> on floor <store:aisle>"
+################################################################################
+
+# clean up bournvita
+create event cam_A1 event "product prod10 on floor store_123:aisle_A1"
+Device 'cam_A1' emitted event: product prod10 on floor store_123:aisle_A1
+Appliance 'rob_4' received command 'Clean up bournvita in aisle_A1.'.
+
+# clean up tea
+create event cam_A1 event "product prod11 on floor store_123:aisle_A2"
+Device 'cam_A1' emitted event: product prod11 on floor store_123:aisle_A2
+Appliance 'rob_4' received command 'Clean up tea in aisle_A2.'.
+
+# clean up goggles
+create event cam_A1 event "product prod13 on floor store_123:aisle_B1"
+Device 'cam_A1' emitted event: product prod13 on floor store_123:aisle_B1
+Appliance 'rob_4' received command 'Clean up goggles in aisle_B1.'.
+
+################################################################################
+# Broken glass
+# create event <microphone> event "sound of breaking glass in <aisle>"
+################################################################################
+
+# task a robot with cleaning up broken glass
+
+create event mic_A1 event "sound of breaking glass in aisle_A1"
+Device 'mic_A1' emitted event: sound of breaking glass in aisle_A1
+Appliance 'rob_4' received command 'Clean up broken glass in aisle_A1.'.
+
+create event mic_A1 event "sound of breaking glass in aisle_B3"
+Device 'mic_A1' emitted event: sound of breaking glass in aisle_B3
+Appliance 'rob_4' received command 'Clean up broken glass in aisle_B3.'.
+
+################################################################################
+# Missing person
+# create event <microphone> event "can you help me find <customer name>"
+################################################################################
+
+# RelianceMart, aisle_B2
+create event mic_A1 event "can you help me find 'cust_6'"
+Device 'mic_A1' emitted event: can you help me find 'cust_6'
+Appliance 'spk_2' received command 'Customer cust_6 is located Currently located @ RelianceMart, aisle_B2'.
+
+# RelianceMart, aisle_A1 (last seen location)
+create event mic_A1 event "can you help me find 'MARY KELVIN'"
+Device 'mic_A1' emitted event: can you help me find 'MARY KELVIN'
+Appliance 'spk_2' received command 'Customer MARY KELVIN is located Currently located @ RelianceMart, aisle_A1'.
+
+# RelianceMart, aisle_A3
+create event mic_A1 event "can you help me find 'cust_7'"
+Device 'mic_A1' emitted event: can you help me find 'cust_7'
+Appliance 'spk_2' received command 'Customer cust_7 is located Currently located @ RelianceMart, aisle_A3'.
+
+################################################################################
+# Fetch product
+# create event <camera> event "customer <customer> says please get me <number> of <product> from <store:aisle:shelf:inventory>"
+################################################################################
+
+# Reduce inventory from 50 -> 45. Basket count 0 -> 5. Generate restock command
+# to bring Inventory from 45 -> 200.
+create event mic_A1 event "customer cust_1 says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27"
+Device 'mic_A1' emitted event: customer cust_1 says please get me 5 of prod12 from store_123:aisle_A2:shelf_q3:inv_u27
+Appliance 'rob_4' received command 'Fetch 5 of store_123:aisle_A2:shelf_q3:inv_u27 from coffee and bring to customer.'.
+Inventory 'inv_u27' updated count of 'prod12' from 50 to 45.
+Added 5 of coffee to the basket. Current count is 5.
+Device 'mic_A1' emitted event: product prod12 inventory store_123:aisle_A2:shelf_q3:inv_u27 restock
+Appliance 'rob_4' received command 'Restock 155 of coffee in inventory inv_u27'.
+Inventory 'inv_u27' updated count of 'prod12' from 45 to 200.
+Inventory restocked. Now has 200 on shelf out of capacity of 200.
+
+# Reduce inventory from 100 -> 90. Basket count 0 -> 10. Generate restock command
+# to bring Inventory from 90 -> 200.
+create event mic_A1 event "customer cust_2 says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25"
+Device 'mic_A1' emitted event: customer cust_2 says please get me 10 of prod11 from store_123:aisle_A2:shelf_q2:inv_u25
+Appliance 'rob_4' received command 'Fetch 10 of store_123:aisle_A2:shelf_q2:inv_u25 from tea and bring to customer.'.
+Inventory 'inv_u25' updated count of 'prod14' from 100 to 90.
+Added 10 of tea to the basket. Current count is 10.
+Device 'mic_A1' emitted event: product prod11 inventory store_123:aisle_A2:shelf_q2:inv_u25 restock
+Appliance 'rob_4' received command 'Restock 110 of tea in inventory inv_u25'.
+Inventory 'inv_u25' updated count of 'prod14' from 90 to 200.
+Inventory restocked. Now has 200 on shelf out of capacity of 200.
+
+# Reduce inventory from 300 -> 296. Basket count 1 -> 5.
+create event mic_A1 event "customer cust_3 says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24"
+Device 'mic_A1' emitted event: customer cust_3 says please get me 4 of prod13 from store_123:aisle_B2:shelf_q2:inv_u24
+Appliance 'rob_4' received command 'Fetch 4 of store_123:aisle_B2:shelf_q2:inv_u24 from goggles and bring to customer.'.
+Inventory 'inv_u24' updated count of 'prod13' from 500 to 496.
+Added 4 of goggles to the basket. Current count is 5.
+
+
+################################################################################
+# Check account balance
+# create event <microphone> event "customer <customer> says 'What is the total basket value?'"
+################################################################################
+
+# Customer 1 (Jason) has 5 'coffee' (from Fetch Product).
+# Unit price = 3 * 5 = basket total of 15
+# Total (15 + 10 min fee) is more than Jason's account balance of 20
+create event mic_A1 event "customer cust_1 says 'What is the total basket value?'"
+Device 'mic_A1' emitted event: customer cust_1 says 'What is the total basket value?'
+JASON WALLACE basket total is 15
+Appliance 'spk_2' received command 'Total value of basket items (and 10 unit fee) is 25, which is more than your account balance of 20'.
+
+# Customer 5 has 1 'coffee' (from Restock Command).
+# Unit price = 3 * 1 = basket total of 3
+# Total (3 + 10 min fee) is less than Megon's account balance of 500
+create event mic_A1 event "customer cust_5 says 'What is the total basket value?'"
+Device 'mic_A1' emitted event: customer cust_5 says 'What is the total basket value?'
+MEGON FOX basket total is 3
+Appliance 'spk_2' received command 'Total value of basket items (and 10 unit fee) is 13, which is less than your account balance of 500'.
+
+# Customer 2 has 10 'tea' (from Fetch Product).
+# Unit price = 1 * 10 = basket total of 10
+# Total (10 + 10 min fee) is less than Bill's account balance of 200
+create event mic_A1 event "customer cust_2 says 'What is the total basket value?'"
+Device 'mic_A1' emitted event: customer cust_2 says 'What is the total basket value?'
+BILL ROSE basket total is 10
+Appliance 'spk_2' received command 'Total value of basket items (and 10 unit fee) is 20, which is less than your account balance of 200'.
+
+################################################################################
+# Checkout
+# create event <turnstile> event "customer <customer> approaches turnstile"
+################################################################################
+
+# Customer 5 (Megon) basket total is 3 + 10 min fee (against balance of 500
+# Transaction successful, assigned ID of 8 (there are 7 initial transactions)
+create event turn_a3 event "customer cust_5 approaches turnstile"
+Device 'turn_a3' emitted event: customer cust_5 approaches turnstile
+MEGON FOX basket total is 3
+Processed transaction #8
+Appliance 'turn_a3' received command 'Open'.
+Appliance 'spk_2' received command 'Goodbye MEGON FOX, thanks for shopping!'.
+
+################################################################################
+# Assist customer to car
+# checkout: total weight of products in basket exceeds 10lbs
+################################################################################
+
+# Bill's basket total is 10 + 10 min fee (against balance of 200)
+# Transaction successful, with ID of 8 (7 initial transactions above)
+# Triggers assistance command -- basket has 10 items of size 1.5 lbs > 10 lbs max
+create event turn_a2 event "customer cust_2 approaches turnstile"
+Device 'turn_a2' emitted event: customer cust_2 approaches turnstile
+BILL ROSE basket total is 10
+Processed transaction #9
+Device 'turn_a2' emitted event: customer cust_2 assistance
+Appliance 'rob_4' received command 'Basket weights 15.000000 lbs. Assist customer BILL ROSE to car'.
+Appliance 'turn_a2' received command 'Open'.
+Appliance 'spk_2' received command 'Goodbye BILL ROSE, thanks for shopping!'.
